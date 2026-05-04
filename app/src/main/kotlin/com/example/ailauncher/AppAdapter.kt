@@ -49,6 +49,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         holder.label.text = entry.label
         holder.stats.text = buildStats(entry)
+        holder.stats.alpha = if (showScores) 1f else 0f
 
         runCatching {
             holder.icon.setImageDrawable(pm.getApplicationIcon(entry.packageName))

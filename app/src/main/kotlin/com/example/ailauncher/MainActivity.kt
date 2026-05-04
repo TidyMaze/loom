@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: AppViewModel by viewModels()
     private lateinit var adapter: AppAdapter
     private lateinit var recycler: RecyclerView
+    private lateinit var search: EditText
     private lateinit var greeting: TextView
     private var fullList: List<AppEntry> = emptyList()
 
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         greeting = findViewById(R.id.tv_greeting)
         greeting.text = greetingText()
 
+        search = findViewById(R.id.et_search)
+
         adapter = AppAdapter { entry ->
             viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
         }
@@ -50,16 +53,12 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@MainActivity)
             this.adapter = this@MainActivity.adapter
             (itemAnimator as? DefaultItemAnimator)?.apply {
-                addDuration = 120
-                removeDuration = 80
-                moveDuration = 150
-                changeDuration = 100
+                addDuration = 120; removeDuration = 80; moveDuration = 150; changeDuration = 100
             }
         }
 
-        attachScoreGesture()
+        attachGestures()
 
-        val search = findViewById<EditText>(R.id.et_search)
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -69,6 +68,7 @@ class MainActivity : AppCompatActivity() {
                     if (query.isEmpty()) fullList
                     else fullList.filter { it.label.contains(query, ignoreCase = true) }
                 )
+                if (query.isEmpty()) hideSearch()
             }
         })
 
@@ -87,27 +87,49 @@ class MainActivity : AppCompatActivity() {
         greeting.text = greetingText()
         greeting.alpha = 0f
         greeting.animate().alpha(1f).setDuration(350).start()
-
-        val search = findViewById<EditText>(R.id.et_search)
-        search.text?.clear()
-        search.clearFocus()
-        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
-            .hideSoftInputFromWindow(search.windowToken, 0)
-
+        hideSearch()
         recycler.layoutAnimation = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_fall_down)
         viewModel.refresh()
     }
 
-    private fun attachScoreGesture() {
+    private fun showSearch() {
+        if (search.visibility == View.VISIBLE) return
+        search.visibility = View.VISIBLE
+        search.alpha = 0f
+        search.translationY = -24f
+        search.animate().alpha(1f).translationY(0f).setDuration(180).start()
+        search.requestFocus()
+        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+            .showSoftInput(search, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun hideSearch() {
+        if (search.visibility == View.GONE) return
+        search.animate().alpha(0f).translationY(-24f).setDuration(150).withEndAction {
+            search.visibility = View.GONE
+            search.text?.clear()
+        }.start()
+        search.clearFocus()
+        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+            .hideSoftInputFromWindow(search.windowToken, 0)
+    }
+
+    private fun attachGestures() {
         val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onLongPress(e: MotionEvent) = setScoresVisible(true)
+            override fun onLongPress(e: MotionEvent) = setDetailsVisible(true)
+
+            override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+                val lm = recycler.layoutManager as LinearLayoutManager
+                if (distanceY < -10f && lm.findFirstCompletelyVisibleItemPosition() == 0) showSearch()
+                return false
+            }
         })
 
         recycler.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                 detector.onTouchEvent(e)
                 if (e.action == MotionEvent.ACTION_UP || e.action == MotionEvent.ACTION_CANCEL) {
-                    setScoresVisible(false)
+                    setDetailsVisible(false)
                 }
                 return false
             }
@@ -116,16 +138,16 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun setScoresVisible(visible: Boolean) {
+    private fun setDetailsVisible(visible: Boolean) {
         if (adapter.showScores == visible) return
         adapter.showScores = visible
         val lm = recycler.layoutManager as LinearLayoutManager
         for (i in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
             val vh = recycler.findViewHolderForAdapterPosition(i) as? AppAdapter.ViewHolder ?: continue
             val entry = adapter.currentList.getOrNull(i) ?: continue
-            if (entry.launchCount > 0) {
-                vh.scoreText.animate().alpha(if (visible) 1f else 0f).setDuration(180).start()
-            }
+            val target = if (visible) 1f else 0f
+            vh.stats.animate().alpha(target).setDuration(180).start()
+            if (entry.launchCount > 0) vh.scoreText.animate().alpha(target).setDuration(180).start()
         }
     }
 
