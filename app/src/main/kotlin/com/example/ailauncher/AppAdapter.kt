@@ -57,7 +57,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         }
 
         if (entry.launchCount > 0) {
-            val rel = (entry.score / maxScore).coerceIn(0f, 1f).pow(0.5f) // sqrt stretches low end
+            val rel = (entry.score / maxScore).coerceIn(0f, 1f).pow(0.5f)
             holder.scoreBar.setBackgroundColor(scoreColor(rel))
             holder.scoreBar.alpha = 1f
             holder.scoreText.text = "%.2f".format(entry.score)
@@ -67,21 +67,22 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
             holder.scoreText.alpha = 0f
         }
 
-        holder.itemView.setOnClickListener { onClick(entry) }
-        holder.itemView.setOnLongClickListener { true } // consumed so touch UP reaches RecyclerView
+        holder.itemView.setOnClickListener { v ->
+            v.animate()
+                .scaleX(0.93f).scaleY(0.93f)
+                .setDuration(80)
+                .withEndAction {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                    onClick(entry)
+                }.start()
+        }
+        holder.itemView.setOnLongClickListener { true }
     }
 
-    // rel=1.0 → green #1DB954, rel=0.5 → yellow #F5A623, rel=0.0 → red #E53935
     private fun scoreColor(rel: Float): Int {
         return when {
-            rel >= 0.5f -> {
-                val t = (rel - 0.5f) * 2f
-                lerpColor(0xFFF5A623.toInt(), 0xFF1DB954.toInt(), t)
-            }
-            else -> {
-                val t = rel * 2f
-                lerpColor(0xFFE53935.toInt(), 0xFFF5A623.toInt(), t)
-            }
+            rel >= 0.5f -> lerpColor(0xFFF5A623.toInt(), 0xFF1DB954.toInt(), (rel - 0.5f) * 2f)
+            else -> lerpColor(0xFFE53935.toInt(), 0xFFF5A623.toInt(), rel * 2f)
         }
     }
 

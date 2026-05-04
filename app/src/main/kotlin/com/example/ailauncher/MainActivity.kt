@@ -8,10 +8,13 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.time.LocalTime
@@ -21,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: AppViewModel by viewModels()
     private lateinit var adapter: AppAdapter
     private lateinit var recycler: RecyclerView
+    private lateinit var greeting: TextView
     private var fullList: List<AppEntry> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +39,8 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        findViewById<TextView>(R.id.tv_greeting).text = greeting()
+        greeting = findViewById(R.id.tv_greeting)
+        greeting.text = greetingText()
 
         adapter = AppAdapter { entry ->
             viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
@@ -44,6 +49,12 @@ class MainActivity : AppCompatActivity() {
         recycler = findViewById<RecyclerView>(R.id.recycler).apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             this.adapter = this@MainActivity.adapter
+            (itemAnimator as? DefaultItemAnimator)?.apply {
+                addDuration = 120
+                removeDuration = 80
+                moveDuration = 150
+                changeDuration = 100
+            }
         }
 
         attachScoreGesture()
@@ -73,7 +84,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        findViewById<TextView>(R.id.tv_greeting).text = greeting()
+        greeting.text = greetingText()
+        greeting.alpha = 0f
+        greeting.animate().alpha(1f).setDuration(350).start()
+
+        val search = findViewById<EditText>(R.id.et_search)
+        search.text?.clear()
+        search.clearFocus()
+        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+            .hideSoftInputFromWindow(search.windowToken, 0)
+
+        recycler.layoutAnimation = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_fall_down)
         viewModel.refresh()
     }
 
@@ -108,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun greeting(): String = when (LocalTime.now().hour) {
+    private fun greetingText(): String = when (LocalTime.now().hour) {
         in 5..11 -> "Good morning."
         in 12..17 -> "Good afternoon."
         in 18..21 -> "Good evening."
