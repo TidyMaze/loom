@@ -12,6 +12,7 @@ import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var search: EditText
     private lateinit var greeting: TextView
     private var fullList: List<AppEntry> = emptyList()
+    private var searchShownAt = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +58,12 @@ class MainActivity : AppCompatActivity() {
                 addDuration = 120; removeDuration = 80; moveDuration = 150; changeDuration = 100
             }
         }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (search.visibility == View.VISIBLE) hideSearch()
+            }
+        })
 
         attachGestures()
 
@@ -94,13 +102,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSearch() {
         if (search.visibility == View.VISIBLE) return
+        searchShownAt = System.currentTimeMillis()
         search.visibility = View.VISIBLE
         search.alpha = 0f
         search.translationY = -24f
         search.animate().alpha(1f).translationY(0f).setDuration(180).start()
-        search.requestFocus()
-        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
-            .showSoftInput(search, InputMethodManager.SHOW_IMPLICIT)
     }
 
     private fun hideSearch() {
@@ -121,6 +127,8 @@ class MainActivity : AppCompatActivity() {
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 val lm = recycler.layoutManager as LinearLayoutManager
                 if (distanceY < -10f && lm.findFirstCompletelyVisibleItemPosition() == 0) showSearch()
+                if (distanceY > 10f && search.visibility == View.VISIBLE
+                    && System.currentTimeMillis() - searchShownAt > 400) hideSearch()
                 return false
             }
         })
