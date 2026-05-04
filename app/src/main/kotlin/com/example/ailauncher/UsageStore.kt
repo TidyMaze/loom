@@ -14,7 +14,12 @@ class UsageStore(context: Context) {
     fun record(packageName: String) {
         val events = load().toMutableList()
         events.add(UsageEvent(packageName = packageName, timestampMillis = System.currentTimeMillis()))
-        file.writeText(gson.toJson(events))
+        val trimmed = if (events.size > MAX_EVENTS) events.takeLast(MAX_EVENTS) else events
+        file.writeText(gson.toJson(trimmed))
+    }
+
+    companion object {
+        const val MAX_EVENTS = 1000
     }
 
     fun load(): List<UsageEvent> {
