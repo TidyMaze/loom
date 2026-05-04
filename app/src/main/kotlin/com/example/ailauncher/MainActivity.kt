@@ -4,6 +4,9 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.TextView
@@ -17,6 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: AppViewModel by viewModels()
     private lateinit var adapter: AppAdapter
+    private lateinit var recycler: RecyclerView
     private var fullList: List<AppEntry> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,10 +41,12 @@ class MainActivity : AppCompatActivity() {
             viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
         }
 
-        findViewById<RecyclerView>(R.id.recycler).apply {
+        recycler = findViewById<RecyclerView>(R.id.recycler).apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             this.adapter = this@MainActivity.adapter
         }
+
+        attachScoreGesture()
 
         val search = findViewById<EditText>(R.id.et_search)
         search.addTextChangedListener(object : TextWatcher {
@@ -69,6 +75,39 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         findViewById<TextView>(R.id.tv_greeting).text = greeting()
         viewModel.refresh()
+    }
+
+    private fun attachScoreGesture() {
+        val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onLongPress(e: MotionEvent) = setScoresVisible(true)
+        })
+
+        recycler.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                detector.onTouchEvent(e)
+                if (e.action == MotionEvent.ACTION_UP || e.action == MotionEvent.ACTION_CANCEL) {
+                    setScoresVisible(false)
+                }
+                return false
+            }
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) = Unit
+            override fun onRequestDisallowInterceptTouchEvent(b: Boolean) = Unit
+        })
+    }
+
+    private fun setScoresVisible(visible: Boolean) {
+        if (adapter.showScores == visible) return
+        adapter.showScores = visible
+        val lm = recycler.layoutManager as LinearLayoutManager
+        for (i in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
+            val vh = recycler.findViewHolderForAdapterPosition(i) as? AppAdapter.ViewHolder ?: continue
+            val entry = adapter.currentList.getOrNull(i) ?: continue
+            if (entry.launchCount > 0) {
+                val target = if (visible) (entry.score / adapter.maxScore).coerceIn(0.15f, 1f) else 0f
+                vh.scoreBar.animate().alpha(target).setDuration(180).start()
+                vh.scoreText.animate().alpha(target).setDuration(180).start()
+            }
+        }
     }
 
     private fun greeting(): String = when (LocalTime.now().hour) {

@@ -16,7 +16,10 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
 
     private val timeFmt = DateTimeFormatter.ofPattern("MMM d, HH:mm").withZone(ZoneId.systemDefault())
-    private var maxScore = 1f
+    var maxScore = 1f
+        private set
+
+    var showScores = false
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.iv_icon)
@@ -51,16 +54,17 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         }
 
         if (entry.launchCount > 0) {
-            val rel = (entry.score / maxScore).coerceIn(0.15f, 1f)
-            holder.scoreBar.alpha = rel
-            holder.scoreText.alpha = rel
             holder.scoreText.text = "%.2f".format(entry.score)
+            val targetAlpha = if (showScores) (entry.score / maxScore).coerceIn(0.15f, 1f) else 0f
+            holder.scoreBar.alpha = targetAlpha
+            holder.scoreText.alpha = targetAlpha
         } else {
             holder.scoreBar.alpha = 0f
             holder.scoreText.alpha = 0f
         }
 
         holder.itemView.setOnClickListener { onClick(entry) }
+        holder.itemView.setOnLongClickListener { true } // consumed so touch UP reaches RecyclerView
     }
 
     private fun buildStats(entry: AppEntry): String {
