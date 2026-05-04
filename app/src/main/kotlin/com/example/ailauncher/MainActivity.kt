@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var greeting: TextView
     private var fullList: List<AppEntry> = emptyList()
     private var searchShownAt = 0L
+    private var wasPaused = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +81,8 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        wasPaused = true // treat first launch as coming from outside
+
         viewModel.apps.observe(this) { apps ->
             fullList = apps
             val query = search.text?.toString()?.trim().orEmpty()
@@ -90,8 +93,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        wasPaused = true
+    }
+
     override fun onResume() {
         super.onResume()
+        if (!wasPaused) return
+        wasPaused = false
         greeting.text = greetingText()
         greeting.alpha = 0f
         greeting.animate().alpha(1f).setDuration(350).start()

@@ -1,6 +1,7 @@
 package com.example.ailauncher
 
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
 
     private val timeFmt = DateTimeFormatter.ofPattern("MMM d, HH:mm").withZone(ZoneId.systemDefault())
+    private val iconCache = HashMap<String, Drawable>()
     var maxScore = 1f
         private set
 
@@ -31,6 +33,10 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val scoreText: TextView = view.findViewById(R.id.tv_score)
         val scoreBar: View = view.findViewById(R.id.score_bar)
     }
+
+    init { setHasStableIds(true) }
+
+    override fun getItemId(position: Int) = getItem(position).packageName.hashCode().toLong()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -51,11 +57,12 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         holder.stats.text = buildStats(entry)
         holder.stats.alpha = if (showScores) 1f else 0f
 
-        runCatching {
-            holder.icon.setImageDrawable(pm.getApplicationIcon(entry.packageName))
-        }.onFailure {
-            holder.icon.setImageDrawable(pm.defaultActivityIcon)
-        }
+        holder.icon.setImageDrawable(
+            iconCache.getOrPut(entry.packageName) {
+                runCatching { pm.getApplicationIcon(entry.packageName) }
+                    .getOrDefault(pm.defaultActivityIcon)
+            }
+        )
 
         if (entry.launchCount > 0) {
             val rel = (entry.score / maxScore).coerceIn(0f, 1f).pow(0.5f)
