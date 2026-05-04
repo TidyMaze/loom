@@ -14,6 +14,7 @@ object ScoreEngine {
     fun score(
         events: List<UsageEvent>,
         currentHour: Int = java.time.LocalTime.now().hour,
+        currentDayOfWeek: Int = java.time.LocalDate.now().dayOfWeek.value,
         nowMillis: Long = System.currentTimeMillis()
     ): Map<String, Float> {
         return events
@@ -22,10 +23,18 @@ object ScoreEngine {
                 appEvents.sumOf { event ->
                     val hourMatch = if (abs(event.hour - currentHour) <= HOUR_TOLERANCE)
                         HOUR_MATCH_WEIGHT else HOUR_MISS_WEIGHT
+                    val dayMatch = when {
+                        event.dayOfWeek == 0 -> 1.0f // legacy event, no penalty
+                        event.dayOfWeek == currentDayOfWeek -> 1.0f
+                        isWeekend(event.dayOfWeek) == isWeekend(currentDayOfWeek) -> 0.6f
+                        else -> 0.2f
+                    }
                     val daysAgo = (nowMillis - event.timestampMillis) / MS_PER_DAY
                     val decay = 0.5f.pow(daysAgo / DECAY_HALF_LIFE_DAYS)
-                    (hourMatch * decay).toDouble()
+                    (hourMatch * dayMatch * decay).toDouble()
                 }.toFloat()
             }
     }
+
+    private fun isWeekend(dayOfWeek: Int) = dayOfWeek >= 6
 }
