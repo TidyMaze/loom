@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
             adapter.submitList(
                 if (query.isEmpty()) apps
                 else apps.filter { it.label.contains(query, ignoreCase = true) }
-            )
+            ) { recycler.scrollToPosition(0) }
         }
     }
 
@@ -103,9 +103,7 @@ class MainActivity : AppCompatActivity() {
             val vh = recycler.findViewHolderForAdapterPosition(i) as? AppAdapter.ViewHolder ?: continue
             val entry = adapter.currentList.getOrNull(i) ?: continue
             if (entry.launchCount > 0) {
-                val target = if (visible) (entry.score / adapter.maxScore).coerceIn(0.15f, 1f) else 0f
-                vh.scoreBar.animate().alpha(target).setDuration(180).start()
-                vh.scoreText.animate().alpha(target).setDuration(180).start()
+                vh.scoreText.animate().alpha(if (visible) 1f else 0f).setDuration(180).start()
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.ailauncher
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
@@ -54,10 +57,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         }
 
         if (entry.launchCount > 0) {
+            val rel = (entry.score / maxScore).coerceIn(0f, 1f).pow(0.5f) // sqrt stretches low end
+            holder.scoreBar.setBackgroundColor(scoreColor(rel))
+            holder.scoreBar.alpha = 1f
             holder.scoreText.text = "%.2f".format(entry.score)
-            val targetAlpha = if (showScores) (entry.score / maxScore).coerceIn(0.15f, 1f) else 0f
-            holder.scoreBar.alpha = targetAlpha
-            holder.scoreText.alpha = targetAlpha
+            holder.scoreText.alpha = if (showScores) 1f else 0f
         } else {
             holder.scoreBar.alpha = 0f
             holder.scoreText.alpha = 0f
@@ -65,6 +69,27 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         holder.itemView.setOnClickListener { onClick(entry) }
         holder.itemView.setOnLongClickListener { true } // consumed so touch UP reaches RecyclerView
+    }
+
+    // rel=1.0 → green #1DB954, rel=0.5 → yellow #F5A623, rel=0.0 → red #E53935
+    private fun scoreColor(rel: Float): Int {
+        return when {
+            rel >= 0.5f -> {
+                val t = (rel - 0.5f) * 2f
+                lerpColor(0xFFF5A623.toInt(), 0xFF1DB954.toInt(), t)
+            }
+            else -> {
+                val t = rel * 2f
+                lerpColor(0xFFE53935.toInt(), 0xFFF5A623.toInt(), t)
+            }
+        }
+    }
+
+    private fun lerpColor(from: Int, to: Int, t: Float): Int {
+        val r = (Color.red(from) + (Color.red(to) - Color.red(from)) * t).roundToInt()
+        val g = (Color.green(from) + (Color.green(to) - Color.green(from)) * t).roundToInt()
+        val b = (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * t).roundToInt()
+        return Color.rgb(r, g, b)
     }
 
     private fun buildStats(entry: AppEntry): String {
