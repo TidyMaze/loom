@@ -7,7 +7,8 @@
     android:layout_marginEnd="14dp"
     android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp"
-    android:background="@drawable/glass_bg">
+    android:background="@drawable/glass_bg"
+    android:clipToOutline="true">
 
     <!-- Progress Fill -->
     <View
@@ -42,11 +43,13 @@
 
             <TextView
                 android:id="@+id/tv_label"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
                 android:textColor="#FFFFFF"
-                android:fontFamily="sans-serif-black" />
+                android:fontFamily="sans-serif-black"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
         </LinearLayout>
 

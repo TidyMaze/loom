@@ -1,20 +1,16 @@
 package com.example.ailauncher
 
-import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import java.time.Duration
-import java.time.Instant
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
@@ -22,9 +18,6 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
 
     private val iconCache = HashMap<String, Drawable>()
-    var maxScore = 1f
-        private set
-
     var showScores = false
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -42,13 +35,13 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_app, parent, false)
+        view.clipToOutline = true
         return ViewHolder(view)
     }
 
     override fun submitList(list: List<AppEntry>?) = submitList(list, null)
 
     override fun submitList(list: List<AppEntry>?, commitCallback: Runnable?) {
-        maxScore = list?.filter { it.launchCount > 0 }?.maxOfOrNull { it.score }?.coerceAtLeast(0.001f) ?: 1f
         super.submitList(list, commitCallback)
     }
 
@@ -57,9 +50,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val pm = holder.itemView.context.packageManager
 
         holder.label.text = entry.label
-        
-        // Dynamic Weight based on Score (Slick Hybrid)
-        val relScore = if (maxScore > 0) (entry.score / maxScore).coerceIn(0f, 1f) else 0f
+
+        // Rank-based: #1 = 1.0, last = 0.0 — creates hierarchy even when scores cluster
+        val listSize = currentList.size
+        val relScore = if (listSize <= 1) 1f
+                       else 1f - position.toFloat() / (listSize - 1).toFloat()
         holder.label.typeface = when {
             relScore > 0.85f -> Typeface.create("sans-serif-black", Typeface.NORMAL)
             relScore > 0.6f  -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
@@ -119,12 +114,15 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
             val fillScale = when {
                 ratio >= 1.5f -> 1f
                 ratio > 0f    -> (ratio / 1.5f).coerceIn(0.05f, 1f)
-                else          -> if (entry.dailyAvg > 0f) 0.03f else 0f
+                else          -> if (entry.dailyAvg > 0f) 0.05f else 0f
             }
             val r = 14f * holder.progressFill.resources.displayMetrics.density
             val fillBg = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadii = floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
+                cornerRadii = if (fillScale >= 0.98f)
+                    floatArrayOf(r, r, r, r, r, r, r, r)
+                else
+                    floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
                 setColor(heatColor)
             }
             holder.progressFill.background = fillBg
