@@ -18,6 +18,7 @@
         android:alpha="0.07" />
 
     <LinearLayout
+        android:id="@+id/ll_row"
         android:layout_width="match_parent"
         android:layout_height="62dp"
         android:orientation="horizontal"

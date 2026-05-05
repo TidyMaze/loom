@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     vh.stats.text = adapter.buildStatsPublic(entry)
                     vh.stats.setTextColor(
-                        if (vh.stats.text == "now") 0xFF1DB954.toInt() else 0xFF888888.toInt()
+                        if (vh.stats.text == "now") 0xFFFFFFFF.toInt() else 0xFF888888.toInt()
                     )
                     vh.stats.animate().alpha(0.6f).setDuration(180).start()
                 }

@@ -32,6 +32,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val label: TextView = view.findViewById(R.id.tv_label)
         val stats: TextView = view.findViewById(R.id.tv_stats)
         val progressFill: View = view.findViewById(R.id.v_progress_fill)
+        val row: android.widget.LinearLayout = view.findViewById(R.id.ll_row)
     }
 
     init { setHasStableIds(true) }
@@ -65,14 +66,31 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
             relScore > 0.3f  -> Typeface.create("sans-serif", Typeface.NORMAL)
             else             -> Typeface.create("sans-serif-light", Typeface.NORMAL)
         }
-        holder.label.textSize = if (relScore > 0.85f) 20f else 18f
+        holder.label.textSize = when {
+            relScore > 0.85f -> 20f
+            relScore > 0.5f  -> 18f
+            else             -> 16f
+        }
         holder.label.alpha = 0.35f + (relScore * 0.65f)
+
+        val dp = holder.itemView.resources.displayMetrics.density
+
+        // Row height: sqrt curve for more dramatic top-app differentiation
+        val rowHeight = (46f + relScore.pow(0.6f) * 30f) * dp
+        holder.row.layoutParams.height = rowHeight.toInt()
+        holder.row.requestLayout()
+
+        // Icon size scales with rank
+        val iconSizePx = ((28f + relScore * 14f) * dp).toInt()
+        holder.icon.layoutParams.width = iconSizePx
+        holder.icon.layoutParams.height = iconSizePx
+        holder.icon.requestLayout()
 
         val statsText = buildStats(entry)
         holder.stats.text = statsText
         holder.stats.alpha = if (showScores) 1f else 0.75f
         holder.stats.setTextColor(
-            if (statsText == "now") 0xFF1DB954.toInt() else 0xFF888888.toInt()
+            if (statsText == "now") 0xFFFFFFFF.toInt() else 0xFF888888.toInt()
         )
 
         holder.icon.setImageDrawable(
@@ -83,29 +101,35 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         )
         holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
-        // Card tint based on recency heat (mutate to avoid shared-state mutation)
-        val cardColor = if (entry.launchCount > 0 && relScore > 0.9f) 0x1A1DB954.toInt()
-                        else 0x0FFFFFFF.toInt()
+        // Card luminosity: 2% (near invisible) → 28% (clearly lit) — wider range
+        val cardAlpha = ((0.02f + relScore.pow(0.7f) * 0.26f) * 255).toInt()
+        val cardColor = (cardAlpha shl 24) or 0x00FFFFFF
         val bg = holder.itemView.background.mutate() as? GradientDrawable
         bg?.setColor(cardColor)
 
         if (entry.launchCount > 0) {
-            val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 1f
+            val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 0f
             val heatColor = when {
-                ratio >= 1.5f -> 0xFF1DB954.toInt()
-                ratio >= 0.5f -> 0xFFF5A623.toInt()
-                else          -> 0xFFE53935.toInt()
+                ratio >= 1.5f -> 0xFF00E676.toInt()
+                ratio >= 0.5f -> 0xFFFFAB00.toInt()
+                else          -> 0xFFFF1744.toInt()
+            }
+            // Width = today's usage ratio (not score — score drives row height/font/alpha already)
+            // 1.5x avg = full width; tiny sliver for "habit skipped today"
+            val fillScale = when {
+                ratio >= 1.5f -> 1f
+                ratio > 0f    -> (ratio / 1.5f).coerceIn(0.05f, 1f)
+                else          -> if (entry.dailyAvg > 0f) 0.03f else 0f
             }
             val r = 14f * holder.progressFill.resources.displayMetrics.density
             val fillBg = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                // left corners rounded, right corners square
                 cornerRadii = floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
                 setColor(heatColor)
             }
             holder.progressFill.background = fillBg
-            holder.progressFill.alpha = 0.28f
-            holder.progressFill.scaleX = relScore * 0.85f
+            holder.progressFill.alpha = 0.35f
+            holder.progressFill.scaleX = fillScale
             holder.progressFill.pivotX = 0f
             holder.progressFill.visibility = View.VISIBLE
         } else {
