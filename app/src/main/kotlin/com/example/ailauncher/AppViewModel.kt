@@ -39,7 +39,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     companion object {
-        private const val MOCK = true
+        private const val MOCK = false
     }
 
     fun recordLaunchAndGetIntent(packageName: String) = run {
