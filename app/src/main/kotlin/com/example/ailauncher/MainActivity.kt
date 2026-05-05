@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 val query = s?.toString()?.trim().orEmpty()
                 adapter.submitList(
-                    if (query.isEmpty()) fullList
+                    if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
                     else fullList.filter { it.label.contains(query, ignoreCase = true) }
                 )
                 if (query.isEmpty()) hideSearch()
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
             fullList = apps
             val query = search.text?.toString()?.trim().orEmpty()
             adapter.submitList(
-                if (query.isEmpty()) apps
+                if (query.isEmpty()) apps.filter { it.launchCount > 0 }
                 else apps.filter { it.label.contains(query, ignoreCase = true) }
             ) { recycler.scrollToPosition(0) }
         }

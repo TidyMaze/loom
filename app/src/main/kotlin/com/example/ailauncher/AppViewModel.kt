@@ -17,8 +17,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
-            val all = if (MOCK) mockApps() else repository.getRankedApps()
-            _apps.postValue(all.filter { it.launchCount > 0 })
+            _apps.postValue(if (MOCK) mockApps() else repository.getRankedApps())
         }
     }
 
