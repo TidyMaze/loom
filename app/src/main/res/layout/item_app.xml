@@ -12,7 +12,7 @@
     <!-- Progress Fill -->
     <View
         android:id="@+id/v_progress_fill"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/glass_bg"
         android:alpha="0.07" />

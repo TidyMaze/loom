@@ -44,9 +44,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         return ViewHolder(view)
     }
 
-    override fun submitList(list: List<AppEntry>?) {
+    override fun submitList(list: List<AppEntry>?) = submitList(list, null)
+
+    override fun submitList(list: List<AppEntry>?, commitCallback: Runnable?) {
         maxScore = list?.filter { it.launchCount > 0 }?.maxOfOrNull { it.score }?.coerceAtLeast(0.001f) ?: 1f
-        super.submitList(list)
+        super.submitList(list, commitCallback)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -103,13 +105,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
             }
             holder.progressFill.background = fillBg
             holder.progressFill.alpha = 0.28f
-            holder.itemView.post {
-                val params = holder.progressFill.layoutParams
-                params.width = (holder.itemView.width * relScore * 0.6f).toInt()
-                holder.progressFill.layoutParams = params
-            }
+            holder.progressFill.scaleX = relScore * 0.85f
+            holder.progressFill.pivotX = 0f
             holder.progressFill.visibility = View.VISIBLE
         } else {
+            holder.progressFill.scaleX = 0f
             holder.progressFill.visibility = View.GONE
         }
 
