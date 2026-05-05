@@ -21,7 +21,9 @@ object ScoreEngine {
             .groupBy { it.packageName }
             .mapValues { (_, appEvents) ->
                 appEvents.sumOf { event ->
-                    val hourMatch = if (abs(event.hour - currentHour) <= HOUR_TOLERANCE)
+                    val diff = abs(event.hour - currentHour)
+                    val hourDist = if (diff > 12) 24 - diff else diff
+                    val hourMatch = if (hourDist <= HOUR_TOLERANCE)
                         HOUR_MATCH_WEIGHT else HOUR_MISS_WEIGHT
                     val dayMatch = when {
                         event.dayOfWeek == 0 -> 1.0f // legacy event, no penalty
