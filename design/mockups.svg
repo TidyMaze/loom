@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1620" height="720" viewBox="0 0 1620 720" font-family="-apple-system, sans-serif">
+  <rect width="1620" height="720" fill="#1a1a1a"/>
+
+  <!-- ========== MOCKUP 1: Frequency-sized rows ========== -->
+  <g transform="translate(20,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">1. FREQUENCY-SIZED ROWS</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+
+    <!-- Big top app -->
+    <circle cx="40" cy="130" r="22" fill="#4285f4"/>
+    <text x="40" y="137" fill="#fff" font-size="14" text-anchor="middle">C</text>
+    <text x="75" y="137" fill="#fff" font-size="20">Chat</text>
+
+    <circle cx="38" cy="180" r="20" fill="#1a73e8"/>
+    <text x="38" y="186" fill="#fff" font-size="13" text-anchor="middle">M</text>
+    <text x="70" y="186" fill="#fff" font-size="18">Messages</text>
+
+    <circle cx="36" cy="225" r="18" fill="#34a853"/>
+    <text x="36" y="231" fill="#fff" font-size="12" text-anchor="middle">31</text>
+    <text x="65" y="231" fill="#fff" font-size="16">Agenda</text>
+
+    <circle cx="34" cy="265" r="16" fill="#fbbc04"/>
+    <text x="60" y="270" fill="#fff" font-size="15">Play Store</text>
+
+    <circle cx="32" cy="300" r="14" fill="#ea4335"/>
+    <text x="55" y="305" fill="#fff" font-size="14">Chrome</text>
+
+    <circle cx="30" cy="332" r="13" fill="#d93025"/>
+    <text x="50" y="336" fill="#ddd" font-size="13">Gmail</text>
+
+    <circle cx="28" cy="360" r="11" fill="#cc6633"/>
+    <text x="45" y="364" fill="#bbb" font-size="12">Claude</text>
+
+    <circle cx="26" cy="385" r="10" fill="#dc2626"/>
+    <text x="42" y="388" fill="#aaa" font-size="11">Banxo</text>
+
+    <circle cx="24" cy="408" r="9" fill="#1976d2"/>
+    <text x="40" y="411" fill="#999" font-size="11">Messenger</text>
+
+    <circle cx="23" cy="430" r="8" fill="#34a853"/>
+    <text x="38" y="433" fill="#888" font-size="10">Maps</text>
+
+    <circle cx="22" cy="450" r="7" fill="#666"/>
+    <text x="35" y="452" fill="#777" font-size="10">Settings</text>
+
+    <circle cx="21" cy="468" r="6" fill="#666"/>
+    <text x="33" y="470" fill="#666" font-size="9">Calculator</text>
+  </g>
+
+  <!-- ========== MOCKUP 2: Time-bucketed sections ========== -->
+  <g transform="translate(340,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">2. TIME-BUCKETED</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+
+    <text x="20" y="120" fill="#1DB954" font-size="10" letter-spacing="2">NOW · LAST HOUR</text>
+    <circle cx="35" cy="150" r="16" fill="#4285f4"/>
+    <text x="60" y="155" fill="#fff" font-size="16">Chat</text>
+    <circle cx="35" cy="185" r="16" fill="#1a73e8"/>
+    <text x="60" y="190" fill="#fff" font-size="16">Messages</text>
+
+    <text x="20" y="230" fill="#F5A623" font-size="10" letter-spacing="2">EARLIER TODAY</text>
+    <circle cx="35" cy="260" r="16" fill="#34a853"/>
+    <text x="60" y="265" fill="#fff" font-size="16">Agenda</text>
+    <circle cx="35" cy="295" r="16" fill="#fbbc04"/>
+    <text x="60" y="300" fill="#fff" font-size="16">Play Store</text>
+    <circle cx="35" cy="330" r="16" fill="#ea4335"/>
+    <text x="60" y="335" fill="#fff" font-size="16">Chrome</text>
+
+    <text x="20" y="375" fill="#888" font-size="10" letter-spacing="2">YESTERDAY</text>
+    <circle cx="35" cy="405" r="16" fill="#d93025"/>
+    <text x="60" y="410" fill="#ccc" font-size="16">Gmail</text>
+    <circle cx="35" cy="440" r="16" fill="#cc6633"/>
+    <text x="60" y="445" fill="#ccc" font-size="16">Claude</text>
+
+    <text x="20" y="485" fill="#555" font-size="10" letter-spacing="2">DORMANT</text>
+    <circle cx="35" cy="515" r="16" fill="#1976d2"/>
+    <text x="60" y="520" fill="#888" font-size="16">Messenger</text>
+    <circle cx="35" cy="550" r="16" fill="#34a853"/>
+    <text x="60" y="555" fill="#888" font-size="16">Maps</text>
+  </g>
+
+  <!-- ========== MOCKUP 3: Ambient row tinting ========== -->
+  <g transform="translate(660,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">3. AMBIENT ROW TINT</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+
+    <!-- Rows tinted by score -->
+    <rect x="0" y="105" width="300" height="42" fill="#1DB954" fill-opacity="0.18"/>
+    <circle cx="30" cy="126" r="14" fill="#4285f4"/>
+    <text x="58" y="131" fill="#fff" font-size="16">Chat</text>
+
+    <rect x="0" y="147" width="300" height="42" fill="#1DB954" fill-opacity="0.15"/>
+    <circle cx="30" cy="168" r="14" fill="#1a73e8"/>
+    <text x="58" y="173" fill="#fff" font-size="16">Messages</text>
+
+    <rect x="0" y="189" width="300" height="42" fill="#9bcc3a" fill-opacity="0.13"/>
+    <circle cx="30" cy="210" r="14" fill="#34a853"/>
+    <text x="58" y="215" fill="#fff" font-size="16">Agenda</text>
+
+    <rect x="0" y="231" width="300" height="42" fill="#F5A623" fill-opacity="0.13"/>
+    <circle cx="30" cy="252" r="14" fill="#fbbc04"/>
+    <text x="58" y="257" fill="#fff" font-size="16">Play Store</text>
+
+    <rect x="0" y="273" width="300" height="42" fill="#F5A623" fill-opacity="0.10"/>
+    <circle cx="30" cy="294" r="14" fill="#ea4335"/>
+    <text x="58" y="299" fill="#fff" font-size="16">Chrome</text>
+
+    <rect x="0" y="315" width="300" height="42" fill="#F5A623" fill-opacity="0.08"/>
+    <circle cx="30" cy="336" r="14" fill="#d93025"/>
+    <text x="58" y="341" fill="#fff" font-size="16">Gmail</text>
+
+    <rect x="0" y="357" width="300" height="42" fill="#E53935" fill-opacity="0.10"/>
+    <circle cx="30" cy="378" r="14" fill="#cc6633"/>
+    <text x="58" y="383" fill="#fff" font-size="16">Claude</text>
+
+    <rect x="0" y="399" width="300" height="42" fill="#E53935" fill-opacity="0.08"/>
+    <circle cx="30" cy="420" r="14" fill="#dc2626"/>
+    <text x="58" y="425" fill="#fff" font-size="16">Banxo</text>
+
+    <rect x="0" y="441" width="300" height="42" fill="#E53935" fill-opacity="0.05"/>
+    <circle cx="30" cy="462" r="14" fill="#1976d2"/>
+    <text x="58" y="467" fill="#fff" font-size="16">Messenger</text>
+
+    <circle cx="30" cy="504" r="14" fill="#34a853"/>
+    <text x="58" y="509" fill="#ccc" font-size="16">Maps</text>
+  </g>
+
+  <!-- ========== MOCKUP 4: Pinned thumb-zone top-3 ========== -->
+  <g transform="translate(980,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">4. THUMB-ZONE TOP-3</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="75" fill="#fff" font-size="20">A–Z</text>
+
+    <!-- Alphabetical scrolling list -->
+    <text x="20" y="110" fill="#666" font-size="11" letter-spacing="1">A</text>
+    <circle cx="35" cy="132" r="13" fill="#34a853"/>
+    <text x="58" y="137" fill="#ccc" font-size="14">Agenda</text>
+
+    <text x="20" y="165" fill="#666" font-size="11" letter-spacing="1">B</text>
+    <circle cx="35" cy="187" r="13" fill="#dc2626"/>
+    <text x="58" y="192" fill="#ccc" font-size="14">Banxo</text>
+
+    <text x="20" y="220" fill="#666" font-size="11" letter-spacing="1">C</text>
+    <circle cx="35" cy="242" r="13" fill="#4285f4"/>
+    <text x="58" y="247" fill="#ccc" font-size="14">Chat</text>
+    <circle cx="35" cy="270" r="13" fill="#ea4335"/>
+    <text x="58" y="275" fill="#ccc" font-size="14">Chrome</text>
+    <circle cx="35" cy="298" r="13" fill="#cc6633"/>
+    <text x="58" y="303" fill="#ccc" font-size="14">Claude</text>
+
+    <text x="20" y="330" fill="#666" font-size="11" letter-spacing="1">G</text>
+    <circle cx="35" cy="352" r="13" fill="#d93025"/>
+    <text x="58" y="357" fill="#ccc" font-size="14">Gmail</text>
+
+    <text x="20" y="385" fill="#666" font-size="11" letter-spacing="1">M</text>
+    <circle cx="35" cy="407" r="13" fill="#34a853"/>
+    <text x="58" y="412" fill="#ccc" font-size="14">Maps</text>
+
+    <!-- Divider -->
+    <line x1="20" y1="475" x2="280" y2="475" stroke="#222"/>
+    <text x="150" y="495" fill="#666" font-size="9" letter-spacing="2" text-anchor="middle">FOR YOU NOW</text>
+
+    <!-- 3 big cards in thumb zone -->
+    <rect x="15" y="510" width="85" height="140" rx="14" fill="#0f1f15" stroke="#1DB954" stroke-opacity="0.4"/>
+    <circle cx="57" cy="555" r="22" fill="#4285f4"/>
+    <text x="57" y="563" fill="#fff" font-size="16" text-anchor="middle">C</text>
+    <text x="57" y="600" fill="#fff" font-size="13" text-anchor="middle">Chat</text>
+    <text x="57" y="625" fill="#1DB954" font-size="9" text-anchor="middle">JUST NOW</text>
+
+    <rect x="107" y="510" width="85" height="140" rx="14" fill="#0f1f15" stroke="#1DB954" stroke-opacity="0.3"/>
+    <circle cx="149" cy="555" r="22" fill="#1a73e8"/>
+    <text x="149" y="563" fill="#fff" font-size="16" text-anchor="middle">M</text>
+    <text x="149" y="600" fill="#fff" font-size="13" text-anchor="middle">Messages</text>
+    <text x="149" y="625" fill="#1DB954" font-size="9" text-anchor="middle">2M AGO</text>
+
+    <rect x="199" y="510" width="85" height="140" rx="14" fill="#1a1a0f" stroke="#F5A623" stroke-opacity="0.3"/>
+    <circle cx="241" cy="555" r="22" fill="#34a853"/>
+    <text x="241" y="563" fill="#fff" font-size="14" text-anchor="middle">31</text>
+    <text x="241" y="600" fill="#fff" font-size="13" text-anchor="middle">Agenda</text>
+    <text x="241" y="625" fill="#F5A623" font-size="9" text-anchor="middle">15M AGO</text>
+  </g>
+
+  <!-- ========== MOCKUP 5: Search-first minimal ========== -->
+  <g transform="translate(1300,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">5. SEARCH-FIRST</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+
+    <text x="150" y="280" fill="#fff" font-size="28" text-anchor="middle">Good evening.</text>
+    <text x="150" y="310" fill="#666" font-size="13" text-anchor="middle">Tuesday · 18:57</text>
+
+    <!-- Cursor / search prompt -->
+    <line x1="140" y1="380" x2="140" y2="410" stroke="#1DB954" stroke-width="2">
+      <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+    </line>
+    <text x="150" y="445" fill="#444" font-size="11" text-anchor="middle">type to launch</text>
+
+    <!-- Hint at swipe-down list -->
+    <line x1="135" y1="640" x2="165" y2="640" stroke="#333" stroke-width="2"/>
+    <text x="150" y="660" fill="#333" font-size="9" text-anchor="middle">↓ swipe for list</text>
+  </g>
+
+</svg>

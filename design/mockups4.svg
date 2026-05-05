@@ -1,0 +1,303 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1620" height="720" viewBox="0 0 1620 720" font-family="-apple-system, sans-serif">
+  <rect width="1620" height="720" fill="#1a1a1a"/>
+
+  <!-- ========== MOCKUP 1: 1+5 merged — gradient bg + rail + recency ========== -->
+  <g transform="translate(20,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">1. BG GRADIENT + RAIL</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+    <defs>
+      <linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1DB954" stop-opacity="0.14"/>
+        <stop offset="45%" stop-color="#F5A623" stop-opacity="0.09"/>
+        <stop offset="100%" stop-color="#E53935" stop-opacity="0.03"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="100" width="300" height="570" fill="url(#bg1)"/>
+
+    <rect x="0" y="105" width="3" height="44" fill="#1DB954"/>
+    <circle cx="32" cy="127" r="15" fill="#4285f4"/>
+    <text x="58" y="123" fill="#fff" font-size="16">Chat</text>
+    <text x="58" y="138" fill="#1DB954" font-size="10" letter-spacing="1">NOW</text>
+
+    <rect x="0" y="151" width="3" height="44" fill="#1DB954" fill-opacity="0.85"/>
+    <circle cx="32" cy="173" r="15" fill="#1a73e8"/>
+    <text x="58" y="169" fill="#fff" font-size="16">Messages</text>
+    <text x="58" y="184" fill="#1DB954" font-size="10" letter-spacing="1">3M AGO</text>
+
+    <rect x="0" y="197" width="3" height="40" fill="#7ec850"/>
+    <circle cx="32" cy="217" r="15" fill="#34a853"/>
+    <text x="58" y="213" fill="#fff" font-size="16">Agenda</text>
+    <text x="58" y="227" fill="#9bcc3a" font-size="10" letter-spacing="1">22M AGO</text>
+
+    <rect x="0" y="239" width="3" height="38" fill="#F5A623"/>
+    <circle cx="32" cy="258" r="14" fill="#fbbc04"/>
+    <text x="58" y="254" fill="#fff" font-size="16">Play Store</text>
+    <text x="58" y="267" fill="#F5A623" font-size="10" letter-spacing="1">2H AGO</text>
+
+    <rect x="0" y="279" width="3" height="38" fill="#F5A623" fill-opacity="0.8"/>
+    <circle cx="32" cy="298" r="14" fill="#ea4335"/>
+    <text x="58" y="294" fill="#fff" font-size="16">Chrome</text>
+    <text x="58" y="307" fill="#F5A623" font-size="10" letter-spacing="1">5H AGO</text>
+
+    <rect x="0" y="319" width="3" height="36" fill="#d88020"/>
+    <circle cx="32" cy="337" r="13" fill="#d93025"/>
+    <text x="58" y="333" fill="#fff" font-size="16">Gmail</text>
+    <text x="58" y="346" fill="#888" font-size="10" letter-spacing="1">YESTERDAY</text>
+
+    <rect x="0" y="357" width="3" height="34" fill="#E53935" fill-opacity="0.8"/>
+    <circle cx="32" cy="374" r="13" fill="#cc6633"/>
+    <text x="58" y="370" fill="#fff" font-size="15">Claude</text>
+    <text x="58" y="383" fill="#666" font-size="10" letter-spacing="1">2D AGO</text>
+
+    <rect x="0" y="393" width="3" height="32" fill="#E53935" fill-opacity="0.5"/>
+    <circle cx="32" cy="409" r="12" fill="#dc2626"/>
+    <text x="58" y="405" fill="#ddd" font-size="15">Banxo</text>
+
+    <rect x="0" y="427" width="3" height="30" fill="#E53935" fill-opacity="0.3"/>
+    <circle cx="32" cy="442" r="12" fill="#1976d2"/>
+    <text x="58" y="438" fill="#ccc" font-size="14">Messenger</text>
+
+    <rect x="0" y="459" width="3" height="28" fill="#E53935" fill-opacity="0.15"/>
+    <circle cx="32" cy="473" r="11" fill="#34a853"/>
+    <text x="58" y="469" fill="#bbb" font-size="14">Maps</text>
+  </g>
+
+  <!-- ========== MOCKUP 2: Pill badge recency ========== -->
+  <g transform="translate(340,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">2. PILL BADGE RECENCY</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+    <defs>
+      <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1DB954" stop-opacity="0.14"/>
+        <stop offset="45%" stop-color="#F5A623" stop-opacity="0.09"/>
+        <stop offset="100%" stop-color="#E53935" stop-opacity="0.03"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="100" width="300" height="570" fill="url(#bg2)"/>
+
+    <!-- pill: rounded rect behind tag text -->
+    <circle cx="30" cy="124" r="16" fill="#4285f4"/>
+    <text x="58" y="129" fill="#fff" font-size="16">Chat</text>
+    <rect x="196" y="113" width="36" height="16" rx="8" fill="#1DB954" fill-opacity="0.25"/>
+    <text x="214" y="125" fill="#1DB954" font-size="9" text-anchor="middle" letter-spacing="0.5">NOW</text>
+
+    <circle cx="30" cy="168" r="16" fill="#1a73e8"/>
+    <text x="58" y="173" fill="#fff" font-size="16">Messages</text>
+    <rect x="200" y="157" width="28" height="16" rx="8" fill="#1DB954" fill-opacity="0.20"/>
+    <text x="214" y="169" fill="#1DB954" font-size="9" text-anchor="middle" letter-spacing="0.5">3M</text>
+
+    <circle cx="30" cy="212" r="16" fill="#34a853"/>
+    <text x="58" y="217" fill="#fff" font-size="16">Agenda</text>
+    <rect x="196" y="201" width="36" height="16" rx="8" fill="#9bcc3a" fill-opacity="0.20"/>
+    <text x="214" y="213" fill="#9bcc3a" font-size="9" text-anchor="middle" letter-spacing="0.5">22M</text>
+
+    <circle cx="30" cy="256" r="16" fill="#fbbc04"/>
+    <text x="58" y="261" fill="#fff" font-size="16">Play Store</text>
+    <rect x="200" y="245" width="28" height="16" rx="8" fill="#F5A623" fill-opacity="0.20"/>
+    <text x="214" y="257" fill="#F5A623" font-size="9" text-anchor="middle" letter-spacing="0.5">2H</text>
+
+    <circle cx="30" cy="300" r="16" fill="#ea4335"/>
+    <text x="58" y="305" fill="#fff" font-size="16">Chrome</text>
+    <rect x="200" y="289" width="28" height="16" rx="8" fill="#F5A623" fill-opacity="0.20"/>
+    <text x="214" y="301" fill="#F5A623" font-size="9" text-anchor="middle" letter-spacing="0.5">5H</text>
+
+    <circle cx="30" cy="344" r="16" fill="#d93025"/>
+    <text x="58" y="349" fill="#fff" font-size="16">Gmail</text>
+    <rect x="192" y="333" width="44" height="16" rx="8" fill="#888" fill-opacity="0.18"/>
+    <text x="214" y="345" fill="#888" font-size="9" text-anchor="middle" letter-spacing="0.5">YDAY</text>
+
+    <circle cx="30" cy="388" r="16" fill="#cc6633"/>
+    <text x="58" y="393" fill="#fff" font-size="16">Claude</text>
+    <rect x="197" y="377" width="34" height="16" rx="8" fill="#666" fill-opacity="0.18"/>
+    <text x="214" y="389" fill="#666" font-size="9" text-anchor="middle" letter-spacing="0.5">2D</text>
+
+    <circle cx="30" cy="432" r="16" fill="#dc2626"/>
+    <text x="58" y="437" fill="#fff" font-size="16">Banxo</text>
+    <rect x="197" y="421" width="34" height="16" rx="8" fill="#555" fill-opacity="0.15"/>
+    <text x="214" y="433" fill="#555" font-size="9" text-anchor="middle" letter-spacing="0.5">4D</text>
+
+    <circle cx="30" cy="476" r="16" fill="#1976d2"/>
+    <text x="58" y="481" fill="#ddd" font-size="16">Messenger</text>
+
+    <circle cx="30" cy="520" r="16" fill="#34a853"/>
+    <text x="58" y="525" fill="#ccc" font-size="16">Maps</text>
+  </g>
+
+  <!-- ========== MOCKUP 3: Right-aligned recency ========== -->
+  <g transform="translate(660,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">3. RIGHT-ALIGNED RECENCY</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+    <defs>
+      <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1DB954" stop-opacity="0.14"/>
+        <stop offset="45%" stop-color="#F5A623" stop-opacity="0.09"/>
+        <stop offset="100%" stop-color="#E53935" stop-opacity="0.03"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="100" width="300" height="570" fill="url(#bg3)"/>
+
+    <circle cx="30" cy="124" r="16" fill="#4285f4"/>
+    <text x="58" y="129" fill="#fff" font-size="16">Chat</text>
+    <text x="282" y="129" fill="#1DB954" font-size="11" text-anchor="end">NOW</text>
+
+    <circle cx="30" cy="168" r="16" fill="#1a73e8"/>
+    <text x="58" y="173" fill="#fff" font-size="16">Messages</text>
+    <text x="282" y="173" fill="#1DB954" font-size="11" text-anchor="end">3m</text>
+
+    <circle cx="30" cy="212" r="16" fill="#34a853"/>
+    <text x="58" y="217" fill="#fff" font-size="16">Agenda</text>
+    <text x="282" y="217" fill="#9bcc3a" font-size="11" text-anchor="end">22m</text>
+
+    <circle cx="30" cy="256" r="16" fill="#fbbc04"/>
+    <text x="58" y="261" fill="#fff" font-size="16">Play Store</text>
+    <text x="282" y="261" fill="#F5A623" font-size="11" text-anchor="end">2h</text>
+
+    <circle cx="30" cy="300" r="16" fill="#ea4335"/>
+    <text x="58" y="305" fill="#fff" font-size="16">Chrome</text>
+    <text x="282" y="305" fill="#F5A623" font-size="11" text-anchor="end">5h</text>
+
+    <circle cx="30" cy="344" r="16" fill="#d93025"/>
+    <text x="58" y="349" fill="#fff" font-size="16">Gmail</text>
+    <text x="282" y="349" fill="#888" font-size="11" text-anchor="end">1d</text>
+
+    <circle cx="30" cy="388" r="16" fill="#cc6633"/>
+    <text x="58" y="393" fill="#fff" font-size="16">Claude</text>
+    <text x="282" y="393" fill="#777" font-size="11" text-anchor="end">2d</text>
+
+    <circle cx="30" cy="432" r="16" fill="#dc2626"/>
+    <text x="58" y="437" fill="#fff" font-size="16">Banxo</text>
+    <text x="282" y="437" fill="#555" font-size="11" text-anchor="end">4d</text>
+
+    <circle cx="30" cy="476" r="16" fill="#1976d2"/>
+    <text x="58" y="481" fill="#ddd" font-size="16">Messenger</text>
+    <text x="282" y="481" fill="#444" font-size="11" text-anchor="end">1w</text>
+
+    <circle cx="30" cy="520" r="16" fill="#34a853"/>
+    <text x="58" y="525" fill="#ccc" font-size="16">Maps</text>
+    <text x="282" y="525" fill="#333" font-size="11" text-anchor="end">—</text>
+
+    <text x="150" y="630" fill="#444" font-size="9" text-anchor="middle">label clean · recency right-anchored</text>
+  </g>
+
+  <!-- ========== MOCKUP 4: Rail + right recency ========== -->
+  <g transform="translate(980,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">4. RAIL + RIGHT RECENCY</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+
+    <rect x="0" y="105" width="3" height="44" fill="#1DB954"/>
+    <circle cx="32" cy="127" r="15" fill="#4285f4"/>
+    <text x="58" y="132" fill="#fff" font-size="16">Chat</text>
+    <text x="282" y="132" fill="#1DB954" font-size="11" text-anchor="end">NOW</text>
+
+    <rect x="0" y="151" width="3" height="44" fill="#1DB954" fill-opacity="0.85"/>
+    <circle cx="32" cy="173" r="15" fill="#1a73e8"/>
+    <text x="58" y="178" fill="#fff" font-size="16">Messages</text>
+    <text x="282" y="178" fill="#1DB954" font-size="11" text-anchor="end">3m</text>
+
+    <rect x="0" y="197" width="3" height="40" fill="#7ec850"/>
+    <circle cx="32" cy="217" r="15" fill="#34a853"/>
+    <text x="58" y="222" fill="#fff" font-size="16">Agenda</text>
+    <text x="282" y="222" fill="#9bcc3a" font-size="11" text-anchor="end">22m</text>
+
+    <rect x="0" y="239" width="3" height="38" fill="#F5A623"/>
+    <circle cx="32" cy="258" r="14" fill="#fbbc04"/>
+    <text x="58" y="263" fill="#fff" font-size="16">Play Store</text>
+    <text x="282" y="263" fill="#F5A623" font-size="11" text-anchor="end">2h</text>
+
+    <rect x="0" y="279" width="3" height="38" fill="#F5A623" fill-opacity="0.8"/>
+    <circle cx="32" cy="298" r="14" fill="#ea4335"/>
+    <text x="58" y="303" fill="#fff" font-size="16">Chrome</text>
+    <text x="282" y="303" fill="#F5A623" font-size="11" text-anchor="end">5h</text>
+
+    <rect x="0" y="319" width="3" height="36" fill="#d88020"/>
+    <circle cx="32" cy="337" r="13" fill="#d93025"/>
+    <text x="58" y="342" fill="#fff" font-size="16">Gmail</text>
+    <text x="282" y="342" fill="#888" font-size="11" text-anchor="end">1d</text>
+
+    <rect x="0" y="357" width="3" height="34" fill="#E53935" fill-opacity="0.8"/>
+    <circle cx="32" cy="374" r="13" fill="#cc6633"/>
+    <text x="58" y="379" fill="#fff" font-size="15">Claude</text>
+    <text x="282" y="379" fill="#666" font-size="11" text-anchor="end">2d</text>
+
+    <rect x="0" y="393" width="3" height="32" fill="#E53935" fill-opacity="0.5"/>
+    <circle cx="32" cy="409" r="12" fill="#dc2626"/>
+    <text x="58" y="414" fill="#ddd" font-size="15">Banxo</text>
+    <text x="282" y="414" fill="#555" font-size="11" text-anchor="end">4d</text>
+
+    <rect x="0" y="427" width="3" height="30" fill="#E53935" fill-opacity="0.3"/>
+    <circle cx="32" cy="442" r="12" fill="#1976d2"/>
+    <text x="58" y="447" fill="#ccc" font-size="14">Messenger</text>
+    <text x="282" y="447" fill="#444" font-size="11" text-anchor="end">1w</text>
+
+    <rect x="0" y="459" width="3" height="28" fill="#E53935" fill-opacity="0.15"/>
+    <circle cx="32" cy="473" r="11" fill="#34a853"/>
+    <text x="58" y="478" fill="#bbb" font-size="14">Maps</text>
+    <text x="282" y="478" fill="#333" font-size="11" text-anchor="end">—</text>
+
+    <text x="150" y="630" fill="#444" font-size="9" text-anchor="middle">left rail = score · right = recency</text>
+  </g>
+
+  <!-- ========== MOCKUP 5: Rail thicker + inline recency same line ========== -->
+  <g transform="translate(1300,20)">
+    <text x="150" y="20" fill="#888" font-size="14" text-anchor="middle">5. THICK RAIL + INLINE</text>
+    <rect x="0" y="35" width="300" height="640" rx="20" fill="#000" stroke="#333"/>
+    <text x="20" y="80" fill="#fff" font-size="22">Good evening.</text>
+
+    <!-- 5px rail, label + recency on same line -->
+    <rect x="0" y="107" width="5" height="42" rx="2" fill="#1DB954"/>
+    <circle cx="34" cy="128" r="15" fill="#4285f4"/>
+    <text x="60" y="124" fill="#fff" font-size="16">Chat</text>
+    <text x="60" y="139" fill="#1DB954" font-size="10" letter-spacing="0.5">NOW · just opened</text>
+
+    <rect x="0" y="151" width="5" height="42" rx="2" fill="#1DB954" fill-opacity="0.8"/>
+    <circle cx="34" cy="172" r="15" fill="#1a73e8"/>
+    <text x="60" y="168" fill="#fff" font-size="16">Messages</text>
+    <text x="60" y="183" fill="#1DB954" font-size="10" letter-spacing="0.5">3M AGO</text>
+
+    <rect x="0" y="195" width="5" height="40" rx="2" fill="#7ec850"/>
+    <circle cx="34" cy="215" r="15" fill="#34a853"/>
+    <text x="60" y="211" fill="#fff" font-size="16">Agenda</text>
+    <text x="60" y="225" fill="#9bcc3a" font-size="10" letter-spacing="0.5">22M AGO</text>
+
+    <rect x="0" y="237" width="5" height="38" rx="2" fill="#F5A623"/>
+    <circle cx="34" cy="256" r="14" fill="#fbbc04"/>
+    <text x="60" y="252" fill="#fff" font-size="16">Play Store</text>
+    <text x="60" y="265" fill="#F5A623" font-size="10" letter-spacing="0.5">2H AGO</text>
+
+    <rect x="0" y="277" width="5" height="36" rx="2" fill="#F5A623" fill-opacity="0.75"/>
+    <circle cx="34" cy="295" r="14" fill="#ea4335"/>
+    <text x="60" y="291" fill="#fff" font-size="16">Chrome</text>
+    <text x="60" y="304" fill="#F5A623" font-size="10" letter-spacing="0.5">5H AGO</text>
+
+    <rect x="0" y="315" width="5" height="34" rx="2" fill="#d88020"/>
+    <circle cx="34" cy="332" r="13" fill="#d93025"/>
+    <text x="60" y="328" fill="#fff" font-size="16">Gmail</text>
+    <text x="60" y="341" fill="#888" font-size="10" letter-spacing="0.5">YESTERDAY</text>
+
+    <rect x="0" y="351" width="5" height="32" rx="2" fill="#E53935" fill-opacity="0.75"/>
+    <circle cx="34" cy="367" r="13" fill="#cc6633"/>
+    <text x="60" y="363" fill="#fff" font-size="15">Claude</text>
+    <text x="60" y="376" fill="#666" font-size="10" letter-spacing="0.5">2D AGO</text>
+
+    <rect x="0" y="385" width="5" height="30" rx="2" fill="#E53935" fill-opacity="0.5"/>
+    <circle cx="34" cy="400" r="12" fill="#dc2626"/>
+    <text x="60" y="396" fill="#ddd" font-size="15">Banxo</text>
+    <text x="60" y="408" fill="#555" font-size="10" letter-spacing="0.5">4D AGO</text>
+
+    <rect x="0" y="417" width="5" height="28" rx="2" fill="#E53935" fill-opacity="0.28"/>
+    <circle cx="34" cy="431" r="12" fill="#1976d2"/>
+    <text x="60" y="427" fill="#ccc" font-size="14">Messenger</text>
+    <text x="60" y="439" fill="#444" font-size="10" letter-spacing="0.5">1 WEEK AGO</text>
+
+    <rect x="0" y="447" width="5" height="26" rx="2" fill="#E53935" fill-opacity="0.13"/>
+    <circle cx="34" cy="460" r="11" fill="#34a853"/>
+    <text x="60" y="456" fill="#bbb" font-size="14">Maps</text>
+    <text x="60" y="467" fill="#333" font-size="10" letter-spacing="0.5">— NEVER</text>
+
+    <text x="150" y="630" fill="#444" font-size="9" text-anchor="middle">5px rail · recency below label</text>
+  </g>
+</svg>

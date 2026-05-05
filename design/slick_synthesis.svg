@@ -1,0 +1,32 @@
+<svg width="360" height="640" viewBox="0 0 360 640" xmlns="http://www.w3.org/2000/svg">
+  <rect width="360" height="640" fill="#020202"/>
+  <text x="24" y="60" fill="white" font-family="sans-serif" font-size="24" font-weight="200">Good evening.</text>
+  <text x="24" y="85" fill="#333" font-family="sans-serif" font-size="9" font-weight="bold" letter-spacing="2">THE SLICK HYBRID</text>
+
+  <!-- App 1 (Hot/High Score) -->
+  <g transform="translate(12, 110)">
+    <rect width="336" height="60" rx="12" fill="white" fill-opacity="0.05"/>
+    <rect width="280" height="60" rx="12" fill="#1DB954" fill-opacity="0.12"/>
+    <circle cx="32" cy="30" r="18" fill="#4444ff"/>
+    <text x="64" y="38" fill="white" font-family="sans-serif" font-size="22" font-weight="900">Chat</text>
+    <text x="320" y="36" fill="#1DB954" font-family="monospace" font-size="10" text-anchor="end" font-weight="bold">NOW</text>
+  </g>
+
+  <!-- App 2 (Warm/Mid Score) -->
+  <g transform="translate(12, 180)">
+    <rect width="336" height="60" rx="12" fill="white" fill-opacity="0.05"/>
+    <rect width="140" height="60" rx="12" fill="#F5A623" fill-opacity="0.12"/>
+    <circle cx="32" cy="30" r="18" fill="#4444ff" opacity="0.6"/>
+    <text x="64" y="38" fill="white" font-family="sans-serif" font-size="22" font-weight="400" opacity="0.8">Messages</text>
+    <text x="320" y="36" fill="#888" font-family="monospace" font-size="10" text-anchor="end">8M</text>
+  </g>
+
+  <!-- App 3 (Cold/Low Score) -->
+  <g transform="translate(12, 250)">
+    <rect width="336" height="60" rx="12" fill="white" fill-opacity="0.05"/>
+    <rect width="40" height="60" rx="12" fill="#E53935" fill-opacity="0.12"/>
+    <circle cx="32" cy="30" r="18" fill="#4444ff" opacity="0.3"/>
+    <text x="64" y="38" fill="white" font-family="sans-serif" font-size="22" font-weight="100" opacity="0.6">Agenda</text>
+    <text x="320" y="36" fill="#555" font-family="monospace" font-size="10" text-anchor="end">22M</text>
+  </g>
+</svg>
