@@ -17,7 +17,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
-            _apps.postValue(if (MOCK) mockApps() else repository.getRankedApps())
+            val all = if (MOCK) mockApps() else repository.getRankedApps()
+            val last = (all.size - 1).coerceAtLeast(1).toFloat()
+            _apps.postValue(all.mapIndexed { i, e -> e.copy(rank = 1f - i / last) })
         }
     }
 

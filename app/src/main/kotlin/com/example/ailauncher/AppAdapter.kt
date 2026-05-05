@@ -51,10 +51,8 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         holder.label.text = entry.label
 
-        // Rank-based: #1 = 1.0, last = 0.0 — creates hierarchy even when scores cluster
-        val listSize = currentList.size
-        val relScore = if (listSize <= 1) 1f
-                       else 1f - position.toFloat() / (listSize - 1).toFloat()
+        // Use pre-computed rank so filtered lists (search) keep original sizes
+        val relScore = entry.rank
         holder.label.typeface = when {
             relScore > 0.85f -> Typeface.create("sans-serif-black", Typeface.NORMAL)
             relScore > 0.6f  -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
@@ -70,13 +68,13 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         val dp = holder.itemView.resources.displayMetrics.density
 
-        // Row height: sqrt curve for more dramatic top-app differentiation
-        val rowHeight = (46f + relScore.pow(0.6f) * 30f) * dp
+        // Row height: 44–60dp range
+        val rowHeight = (44f + relScore.pow(0.6f) * 16f) * dp
         holder.row.layoutParams.height = rowHeight.toInt()
         holder.row.requestLayout()
 
-        // Icon size scales with rank
-        val iconSizePx = ((28f + relScore * 14f) * dp).toInt()
+        // Icon size: 26–34dp range
+        val iconSizePx = ((26f + relScore * 8f) * dp).toInt()
         holder.icon.layoutParams.width = iconSizePx
         holder.icon.layoutParams.height = iconSizePx
         holder.icon.requestLayout()
