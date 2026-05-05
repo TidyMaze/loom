@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import java.util.concurrent.TimeUnit
-import kotlin.math.pow
 
 class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
@@ -68,18 +67,6 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         val dp = holder.itemView.resources.displayMetrics.density
 
-        // Set height on root item view — RecyclerView reads this directly, no layout race
-        val rowHeight = (44f + relScore.pow(0.6f) * 16f) * dp
-        val rvLp = holder.itemView.layoutParams
-        rvLp.height = rowHeight.toInt()
-        holder.itemView.layoutParams = rvLp
-
-        // Icon size: 26–34dp range
-        val iconSizePx = ((26f + relScore * 8f) * dp).toInt()
-        holder.icon.layoutParams.width = iconSizePx
-        holder.icon.layoutParams.height = iconSizePx
-        holder.icon.requestLayout()
-
         val statsText = buildStats(entry)
         holder.stats.text = statsText
         holder.stats.alpha = if (showScores) 1f else 0.75f
@@ -95,8 +82,8 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         )
         holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
-        // Card luminosity: 2% (near invisible) → 28% (clearly lit) — wider range
-        val cardAlpha = ((0.02f + relScore.pow(0.7f) * 0.26f) * 255).toInt()
+        // Card luminosity: 2% (dim) → 28% (bright)
+        val cardAlpha = ((0.02f + relScore * 0.26f) * 255).toInt()
         val cardColor = (cardAlpha shl 24) or 0x00FFFFFF
         val bg = holder.itemView.background.mutate() as? GradientDrawable
         bg?.setColor(cardColor)
