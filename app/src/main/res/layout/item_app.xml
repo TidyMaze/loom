@@ -49,6 +49,14 @@
         android:gravity="center_horizontal"
         android:paddingStart="10dp">
 
+        <View
+            android:id="@+id/v_heatmap"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/circle"
+            android:alpha="0" />
+
         <TextView
             android:id="@+id/tv_score"
             android:layout_width="wrap_content"

@@ -5,5 +5,7 @@ data class AppEntry(
     val label: String,
     val score: Float,
     val launchCount: Int,
-    val lastLaunchedMillis: Long?
+    val lastLaunchedMillis: Long?,
+    val todayCount: Int,
+    val dailyAvg: Float
 )

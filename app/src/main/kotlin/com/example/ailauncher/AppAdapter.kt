@@ -2,6 +2,7 @@ package com.example.ailauncher
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,6 +33,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val stats: TextView = view.findViewById(R.id.tv_stats)
         val scoreText: TextView = view.findViewById(R.id.tv_score)
         val scoreBar: View = view.findViewById(R.id.score_bar)
+        val heatmap: View = view.findViewById(R.id.v_heatmap)
     }
 
     init { setHasStableIds(true) }
@@ -73,6 +75,20 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         } else {
             holder.scoreBar.alpha = 0f
             holder.scoreText.alpha = 0f
+        }
+
+        if (entry.todayCount > 0) {
+            val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 2f
+            val heatColor = when {
+                ratio >= 1f -> 0xFF1DB954.toInt()
+                ratio >= 0.5f -> 0xFFF5A623.toInt()
+                else -> 0xFFE53935.toInt()
+            }
+            (holder.heatmap.background as? GradientDrawable)?.setColor(heatColor)
+                ?: holder.heatmap.setBackgroundColor(heatColor)
+            holder.heatmap.alpha = 1f
+        } else {
+            holder.heatmap.alpha = 0f
         }
 
         holder.itemView.setOnClickListener { v ->
