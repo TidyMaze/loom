@@ -1,26 +1,26 @@
 package com.example.ailauncher
 
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 import kotlin.math.pow
-import kotlin.math.roundToInt
 
 class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
 
-    private val timeFmt = DateTimeFormatter.ofPattern("MMM d, HH:mm").withZone(ZoneId.systemDefault())
     private val iconCache = HashMap<String, Drawable>()
     var maxScore = 1f
         private set
@@ -31,9 +31,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val icon: ImageView = view.findViewById(R.id.iv_icon)
         val label: TextView = view.findViewById(R.id.tv_label)
         val stats: TextView = view.findViewById(R.id.tv_stats)
-        val scoreText: TextView = view.findViewById(R.id.tv_score)
-        val scoreBar: View = view.findViewById(R.id.score_bar)
-        val heatmap: View = view.findViewById(R.id.v_heatmap)
+        val progressFill: View = view.findViewById(R.id.v_progress_fill)
     }
 
     init { setHasStableIds(true) }
@@ -56,8 +54,23 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val pm = holder.itemView.context.packageManager
 
         holder.label.text = entry.label
-        holder.stats.text = buildStats(entry)
-        holder.stats.alpha = if (showScores) 1f else 0f
+        
+        // Dynamic Weight based on Score (Slick Hybrid)
+        val relScore = if (maxScore > 0) (entry.score / maxScore).coerceIn(0f, 1f) else 0f
+        holder.label.typeface = when {
+            relScore > 0.85f -> Typeface.create("sans-serif-black", Typeface.NORMAL)
+            relScore > 0.6f -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            relScore > 0.3f -> Typeface.create("sans-serif", Typeface.NORMAL)
+            else -> Typeface.create("sans-serif-light", Typeface.NORMAL)
+        }
+        holder.label.alpha = 0.6f + (relScore * 0.4f)
+
+        val statsText = buildStats(entry)
+        holder.stats.text = statsText
+        holder.stats.alpha = if (showScores) 1f else 0.6f
+        holder.stats.setTextColor(
+            if (statsText == "now") 0xFF1DB954.toInt() else 0xFF888888.toInt()
+        )
 
         holder.icon.setImageDrawable(
             iconCache.getOrPut(entry.packageName) {
@@ -65,64 +78,64 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                     .getOrDefault(pm.defaultActivityIcon)
             }
         )
+        holder.icon.alpha = 0.6f + (relScore * 0.4f)
+
+        // Card tint based on recency heat (mutate to avoid shared-state mutation)
+        val baseGlass = 0x0FFFFFFF.toInt()
+        val heatOverlay = when {
+            entry.launchCount == 0 -> 0
+            relScore > 0.85f -> 0x1A1DB954.toInt()
+            relScore > 0.5f  -> 0x14C8860A.toInt()
+            else             -> 0
+        }
+        val cardColor = if (heatOverlay != 0) heatOverlay else baseGlass
+        val bg = holder.itemView.background.mutate() as? GradientDrawable
+        bg?.setColor(cardColor)
 
         if (entry.launchCount > 0) {
-            val rel = (entry.score / maxScore).coerceIn(0f, 1f).pow(0.5f)
-            holder.scoreBar.setBackgroundColor(scoreColor(rel))
-            holder.scoreBar.alpha = 1f
-            holder.scoreText.text = "%.2f".format(entry.score)
-            holder.scoreText.alpha = if (showScores) 1f else 0f
-        } else {
-            holder.scoreBar.alpha = 0f
-            holder.scoreText.alpha = 0f
-        }
-
-        if (entry.todayCount > 0) {
-            val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 2f
+            val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 1f
             val heatColor = when {
-                ratio >= 1f -> 0xFF1DB954.toInt()
-                ratio >= 0.5f -> 0xFFF5A623.toInt()
-                else -> 0xFFE53935.toInt()
+                ratio >= 1.2f -> 0xFF1DB954.toInt()
+                ratio >= 0.7f -> 0xFFF5A623.toInt()
+                else          -> 0xFFE53935.toInt()
             }
-            (holder.heatmap.background as? GradientDrawable)?.setColor(heatColor)
-                ?: holder.heatmap.setBackgroundColor(heatColor)
-            holder.heatmap.alpha = 1f
+            val fillBg = holder.progressFill.background.mutate() as? GradientDrawable
+            fillBg?.setColor(heatColor) ?: holder.progressFill.setBackgroundColor(heatColor)
+            holder.progressFill.alpha = 0.12f
+            holder.itemView.post {
+                val params = holder.progressFill.layoutParams
+                params.width = (holder.itemView.width * relScore).toInt()
+                holder.progressFill.layoutParams = params
+            }
+            holder.progressFill.visibility = View.VISIBLE
         } else {
-            holder.heatmap.alpha = 0f
+            holder.progressFill.visibility = View.GONE
         }
 
         holder.itemView.setOnClickListener { v ->
             v.animate()
-                .scaleX(0.93f).scaleY(0.93f)
+                .scaleX(0.96f).scaleY(0.96f)
                 .setDuration(80)
                 .withEndAction {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
                     onClick(entry)
                 }.start()
         }
-        holder.itemView.setOnLongClickListener { true }
     }
 
-    private fun scoreColor(rel: Float): Int {
-        return when {
-            rel >= 0.5f -> lerpColor(0xFFF5A623.toInt(), 0xFF1DB954.toInt(), (rel - 0.5f) * 2f)
-            else -> lerpColor(0xFFE53935.toInt(), 0xFFF5A623.toInt(), rel * 2f)
-        }
-    }
-
-    private fun lerpColor(from: Int, to: Int, t: Float): Int {
-        val r = (Color.red(from) + (Color.red(to) - Color.red(from)) * t).roundToInt()
-        val g = (Color.green(from) + (Color.green(to) - Color.green(from)) * t).roundToInt()
-        val b = (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * t).roundToInt()
-        return Color.rgb(r, g, b)
-    }
+    fun buildStatsPublic(entry: AppEntry) = buildStats(entry)
 
     private fun buildStats(entry: AppEntry): String {
-        if (entry.launchCount == 0) return "never launched"
-        val lastStr = entry.lastLaunchedMillis?.let {
-            timeFmt.format(Instant.ofEpochMilli(it))
-        } ?: "?"
-        return "${entry.launchCount}× · last $lastStr"
+        if (entry.launchCount == 0) return "never"
+        val lastMillis = entry.lastLaunchedMillis ?: return ""
+        val diffMs = System.currentTimeMillis() - lastMillis
+        
+        return when {
+            diffMs < 60_000 -> "now"
+            diffMs < 3600_000 -> "${TimeUnit.MILLISECONDS.toMinutes(diffMs)}m"
+            diffMs < 86400_000 -> "${TimeUnit.MILLISECONDS.toHours(diffMs)}h"
+            else -> "${TimeUnit.MILLISECONDS.toDays(diffMs)}d"
+        }
     }
 
     companion object {

@@ -163,9 +163,18 @@ class MainActivity : AppCompatActivity() {
         for (i in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
             val vh = recycler.findViewHolderForAdapterPosition(i) as? AppAdapter.ViewHolder ?: continue
             val entry = adapter.currentList.getOrNull(i) ?: continue
-            val target = if (visible) 1f else 0f
-            vh.stats.animate().alpha(target).setDuration(180).start()
-            if (entry.launchCount > 0) vh.scoreText.animate().alpha(target).setDuration(180).start()
+            vh.stats.animate().alpha(1f).setDuration(180).withEndAction {
+                if (visible) {
+                    vh.stats.text = "%.2f".format(entry.score)
+                    vh.stats.setTextColor(0xFFFFFFFF.toInt())
+                } else {
+                    vh.stats.text = adapter.buildStatsPublic(entry)
+                    vh.stats.setTextColor(
+                        if (vh.stats.text == "now") 0xFF1DB954.toInt() else 0xFF888888.toInt()
+                    )
+                    vh.stats.animate().alpha(0.6f).setDuration(180).start()
+                }
+            }.start()
         }
     }
 

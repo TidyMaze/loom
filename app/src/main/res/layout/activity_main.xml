@@ -13,11 +13,24 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:paddingTop="16dp"
-        android:paddingBottom="4dp"
+        android:paddingBottom="2dp"
         android:textSize="28sp"
         android:textColor="#FFFFFF"
         android:fontFamily="sans-serif-light"
         android:letterSpacing="0.02" />
+
+    <TextView
+        android:id="@+id/tv_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="22dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="8dp"
+        android:text="THE SLICK HYBRID"
+        android:textSize="10sp"
+        android:textColor="#444444"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.18" />
 
     <EditText
         android:id="@+id/et_search"
