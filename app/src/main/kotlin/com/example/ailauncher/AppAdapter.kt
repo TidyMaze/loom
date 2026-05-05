@@ -68,10 +68,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         val dp = holder.itemView.resources.displayMetrics.density
 
-        // Row height: 44–60dp range
+        // Set height on root item view — RecyclerView reads this directly, no layout race
         val rowHeight = (44f + relScore.pow(0.6f) * 16f) * dp
-        holder.row.layoutParams.height = rowHeight.toInt()
-        holder.row.requestLayout()
+        val rvLp = holder.itemView.layoutParams
+        rvLp.height = rowHeight.toInt()
+        holder.itemView.layoutParams = rvLp
 
         // Icon size: 26–34dp range
         val iconSizePx = ((26f + relScore * 8f) * dp).toInt()
