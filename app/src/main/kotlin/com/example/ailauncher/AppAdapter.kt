@@ -90,8 +90,8 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         if (entry.launchCount > 0) {
             val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 1f
             val heatColor = when {
-                ratio >= 1.2f -> 0xFF1DB954.toInt()
-                ratio >= 0.7f -> 0xFFF5A623.toInt()
+                ratio >= 1.5f -> 0xFF1DB954.toInt()
+                ratio >= 0.5f -> 0xFFF5A623.toInt()
                 else          -> 0xFFE53935.toInt()
             }
             val r = 14f * holder.progressFill.resources.displayMetrics.density
