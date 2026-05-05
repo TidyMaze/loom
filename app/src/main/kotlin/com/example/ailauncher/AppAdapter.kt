@@ -59,15 +59,16 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val relScore = if (maxScore > 0) (entry.score / maxScore).coerceIn(0f, 1f) else 0f
         holder.label.typeface = when {
             relScore > 0.85f -> Typeface.create("sans-serif-black", Typeface.NORMAL)
-            relScore > 0.6f -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            relScore > 0.3f -> Typeface.create("sans-serif", Typeface.NORMAL)
-            else -> Typeface.create("sans-serif-light", Typeface.NORMAL)
+            relScore > 0.6f  -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            relScore > 0.3f  -> Typeface.create("sans-serif", Typeface.NORMAL)
+            else             -> Typeface.create("sans-serif-light", Typeface.NORMAL)
         }
-        holder.label.alpha = 0.6f + (relScore * 0.4f)
+        holder.label.textSize = if (relScore > 0.85f) 20f else 18f
+        holder.label.alpha = 0.35f + (relScore * 0.65f)
 
         val statsText = buildStats(entry)
         holder.stats.text = statsText
-        holder.stats.alpha = if (showScores) 1f else 0.6f
+        holder.stats.alpha = if (showScores) 1f else 0.75f
         holder.stats.setTextColor(
             if (statsText == "now") 0xFF1DB954.toInt() else 0xFF888888.toInt()
         )
@@ -78,17 +79,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                     .getOrDefault(pm.defaultActivityIcon)
             }
         )
-        holder.icon.alpha = 0.6f + (relScore * 0.4f)
+        holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
         // Card tint based on recency heat (mutate to avoid shared-state mutation)
-        val baseGlass = 0x0FFFFFFF.toInt()
-        val heatOverlay = when {
-            entry.launchCount == 0 -> 0
-            relScore > 0.85f -> 0x1A1DB954.toInt()
-            relScore > 0.5f  -> 0x14C8860A.toInt()
-            else             -> 0
-        }
-        val cardColor = if (heatOverlay != 0) heatOverlay else baseGlass
+        val cardColor = if (entry.launchCount > 0 && relScore > 0.9f) 0x1A1DB954.toInt()
+                        else 0x0FFFFFFF.toInt()
         val bg = holder.itemView.background.mutate() as? GradientDrawable
         bg?.setColor(cardColor)
 
@@ -99,12 +94,18 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                 ratio >= 0.7f -> 0xFFF5A623.toInt()
                 else          -> 0xFFE53935.toInt()
             }
-            val fillBg = holder.progressFill.background.mutate() as? GradientDrawable
-            fillBg?.setColor(heatColor) ?: holder.progressFill.setBackgroundColor(heatColor)
-            holder.progressFill.alpha = 0.12f
+            val r = 14f * holder.progressFill.resources.displayMetrics.density
+            val fillBg = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                // left corners rounded, right corners square
+                cornerRadii = floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
+                setColor(heatColor)
+            }
+            holder.progressFill.background = fillBg
+            holder.progressFill.alpha = 0.28f
             holder.itemView.post {
                 val params = holder.progressFill.layoutParams
-                params.width = (holder.itemView.width * relScore).toInt()
+                params.width = (holder.itemView.width * relScore * 0.6f).toInt()
                 holder.progressFill.layoutParams = params
             }
             holder.progressFill.visibility = View.VISIBLE
