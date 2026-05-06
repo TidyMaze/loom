@@ -62,6 +62,8 @@ class AppRepository(private val context: Context) {
             .sortedWith(compareByDescending<AppEntry> { it.score }.thenByDescending { it.lastLaunchedMillis }.thenBy { it.label })
     }
 
+    fun resetApp(packageName: String) = usageStore.deleteApp(packageName)
+
     fun getLaunchIntent(packageName: String): Intent? =
         context.packageManager.getLaunchIntentForPackage(packageName)
 }

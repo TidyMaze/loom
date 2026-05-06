@@ -15,12 +15,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _apps = MutableLiveData<List<AppEntry>>()
     val apps: LiveData<List<AppEntry>> = _apps
 
-    fun refresh() {
+    fun refresh() { viewModelScope.launch(Dispatchers.IO) { fetchAndPost() } }
+
+    fun resetApp(packageName: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val all = if (MOCK) mockApps() else repository.getRankedApps()
-            val last = (all.size - 1).coerceAtLeast(1).toFloat()
-            _apps.postValue(all.mapIndexed { i, e -> e.copy(rank = 1f - i / last) })
+            repository.resetApp(packageName)
+            fetchAndPost()
         }
+    }
+
+    private fun fetchAndPost() {
+        val all = if (MOCK) mockApps() else repository.getRankedApps()
+        val last = (all.size - 1).coerceAtLeast(1).toFloat()
+        _apps.postValue(all.mapIndexed { i, e -> e.copy(rank = 1f - i / last) })
     }
 
     private fun mockApps(): List<AppEntry> {

@@ -22,6 +22,10 @@ class UsageStore(context: Context) {
         const val MAX_EVENTS = 1000
     }
 
+    fun deleteApp(packageName: String) {
+        file.writeText(gson.toJson(load().filter { it.packageName != packageName }))
+    }
+
     fun load(): List<UsageEvent> {
         if (!file.exists()) return emptyList()
         return runCatching {

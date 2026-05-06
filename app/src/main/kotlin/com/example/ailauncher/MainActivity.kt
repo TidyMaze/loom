@@ -1,6 +1,9 @@
 package com.example.ailauncher
 
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,6 +19,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.time.LocalTime
@@ -67,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         attachGestures()
+        attachSwipeToReset()
 
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -176,6 +181,37 @@ class MainActivity : AppCompatActivity() {
                 }
             }.start()
         }
+    }
+
+    private fun attachSwipeToReset() {
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textSize = 13f * resources.displayMetrics.density
+            textAlign = Paint.Align.RIGHT
+        }
+        val helper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
+
+            override fun onSwiped(vh: RecyclerView.ViewHolder, direction: Int) {
+                val entry = adapter.currentList[vh.adapterPosition]
+                viewModel.resetApp(entry.packageName)
+            }
+
+            override fun onChildDraw(c: Canvas, rv: RecyclerView, vh: RecyclerView.ViewHolder,
+                dX: Float, dY: Float, actionState: Int, isActive: Boolean) {
+                val v = vh.itemView
+                val density = v.resources.displayMetrics.density
+                val mH = 14 * density; val mV = 4 * density; val r = 14 * density
+                val rect = RectF(v.left + mH, v.top + mV, v.right - mH, v.bottom - mV)
+                paint.color = 0xFFB71C1C.toInt()
+                c.drawRoundRect(rect, r, r, paint)
+                c.drawText("Reset", rect.right - 16 * density,
+                    rect.centerY() + textPaint.textSize * 0.35f, textPaint)
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, isActive)
+            }
+        })
+        helper.attachToRecyclerView(recycler)
     }
 
     private fun greetingText(): String = when (LocalTime.now().hour) {
