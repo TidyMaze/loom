@@ -13,11 +13,11 @@ data class Accent(
 // Single gold palette. Greeting text still shifts by hour ("Good morning." etc),
 // but the accent color stays gold throughout the day.
 fun accentForNow(): Accent = Accent(
-    greeting = 0xFFFFD060.toInt(),  // saturated warm gold
-    barStart = 0xCCFFB300.toInt(),  // ~80% alpha — bright warm gold at icon side
-    barEnd   = 0x66996300.toInt(),  // ~40% alpha — dark gold tail
-    haloCore = 0xE6FFE680.toInt(),  // ~90% alpha — cream-gold metallic highlight
-    haloMid  = 0x99FFC107.toInt(),  // ~60% alpha — pure gold
-    haloEdge = 0x00B8860B,          // transparent dark goldenrod
-    ambient  = 0x33FFB300
+    greeting = 0xFFFFFFFF.toInt(),  // pure white
+    barStart = 0x55FFFFFF.toInt(),  // ~33% alpha — soft white at icon side
+    barEnd   = 0x14FFFFFF.toInt(),  // ~8%  alpha — fades to near-invisible
+    haloCore = 0x66FFFFFF.toInt(),  // ~40% alpha — gentle highlight
+    haloMid  = 0x26FFFFFF.toInt(),  // ~15% alpha
+    haloEdge = 0x00FFFFFF,          // transparent
+    ambient  = 0x14FFFFFF
 )
