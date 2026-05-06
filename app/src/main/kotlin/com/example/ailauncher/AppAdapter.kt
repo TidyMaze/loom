@@ -86,19 +86,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         bg?.setColor(0x14FFFFFF.toInt()) // ~8% white → subtle dark card visible on black
 
         if (entry.launchCount > 0) {
-            val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 0f
-            val heatColor = when {
-                ratio >= 1.5f -> 0xFF00E676.toInt()
-                ratio >= 0.5f -> 0xFFFFAB00.toInt()
-                else          -> 0xFFFF1744.toInt()
-            }
-            // Width = today's usage ratio (not score — score drives row height/font/alpha already)
-            // 1.5x avg = full width; tiny sliver for "habit skipped today"
-            val fillScale = when {
-                ratio >= 1.5f -> 1f
-                ratio > 0f    -> (ratio / 1.5f).coerceIn(0.05f, 1f)
-                else          -> if (entry.dailyAvg > 0f) 0.05f else 0f
-            }
+            val fillScale = entry.rank.coerceIn(0.02f, 1f)
             val r = 14f * holder.progressFill.resources.displayMetrics.density
             val fillBg = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
@@ -106,10 +94,10 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                     floatArrayOf(r, r, r, r, r, r, r, r)
                 else
                     floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
-                setColor(heatColor)
+                setColor(0xFFFFFFFF.toInt())
             }
             holder.progressFill.background = fillBg
-            holder.progressFill.alpha = 0.55f
+            holder.progressFill.alpha = 0.35f
             holder.progressFill.scaleX = fillScale
             holder.progressFill.pivotX = 0f
             holder.progressFill.visibility = View.VISIBLE
@@ -135,13 +123,18 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         if (entry.launchCount == 0) return "never"
         val lastMillis = entry.lastLaunchedMillis ?: return ""
         val diffMs = System.currentTimeMillis() - lastMillis
-        
-        return when {
+        val time = when {
             diffMs < 60_000 -> "now"
             diffMs < 3600_000 -> "${TimeUnit.MILLISECONDS.toMinutes(diffMs)}m"
             diffMs < 86400_000 -> "${TimeUnit.MILLISECONDS.toHours(diffMs)}h"
             else -> "${TimeUnit.MILLISECONDS.toDays(diffMs)}d"
         }
+        val arrow = when {
+            entry.dailyAvg > 0f && entry.todayCount >= entry.dailyAvg * 1.5f -> " ↑"
+            entry.dailyAvg > 0f && entry.todayCount < entry.dailyAvg * 0.4f  -> " ↓"
+            else -> ""
+        }
+        return time + arrow
     }
 
     companion object {
