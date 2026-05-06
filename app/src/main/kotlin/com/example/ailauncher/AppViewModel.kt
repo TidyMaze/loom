@@ -26,8 +26,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun fetchAndPost() {
         val all = if (MOCK) mockApps() else repository.getRankedApps()
-        val last = (all.size - 1).coerceAtLeast(1).toFloat()
-        _apps.postValue(all.mapIndexed { i, e -> e.copy(rank = 1f - i / last) })
+        val maxScore = all.maxOfOrNull { it.score.coerceAtLeast(0f) }?.takeIf { it > 0f } ?: 1f
+        _apps.postValue(all.map { e -> e.copy(rank = (e.score / maxScore).coerceIn(0f, 1f)) })
     }
 
     private fun mockApps(): List<AppEntry> {
