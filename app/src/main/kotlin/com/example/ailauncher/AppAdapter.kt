@@ -83,7 +83,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
         val bg = holder.itemView.background.mutate() as? GradientDrawable
-        bg?.setColor(0x22000000.toInt())
+        bg?.setColor(0x14FFFFFF.toInt()) // ~8% white → subtle dark card visible on black
 
         if (entry.launchCount > 0) {
             val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 0f
