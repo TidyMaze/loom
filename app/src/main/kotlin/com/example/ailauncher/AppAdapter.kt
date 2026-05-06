@@ -82,11 +82,8 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         )
         holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
-        // Card luminosity: 2% (dim) → 28% (bright)
-        val cardAlpha = ((0.02f + relScore * 0.26f) * 255).toInt()
-        val cardColor = (cardAlpha shl 24) or 0x00FFFFFF
         val bg = holder.itemView.background.mutate() as? GradientDrawable
-        bg?.setColor(cardColor)
+        bg?.setColor(0x22000000.toInt())
 
         if (entry.launchCount > 0) {
             val ratio = if (entry.dailyAvg > 0f) entry.todayCount / entry.dailyAvg else 0f
@@ -112,7 +109,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                 setColor(heatColor)
             }
             holder.progressFill.background = fillBg
-            holder.progressFill.alpha = 0.35f
+            holder.progressFill.alpha = 0.55f
             holder.progressFill.scaleX = fillScale
             holder.progressFill.pivotX = 0f
             holder.progressFill.visibility = View.VISIBLE
