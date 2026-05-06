@@ -1,8 +1,11 @@
 package com.example.ailauncher
 
 import android.graphics.Typeface
+import android.graphics.drawable.ClipDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +21,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
     private val iconCache = HashMap<String, Drawable>()
     var showScores = false
+    var accent: Accent = accentForNow()
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.iv_icon)
@@ -83,26 +87,35 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
         val bg = holder.itemView.background.mutate() as? GradientDrawable
-        bg?.setColor(0x14FFFFFF.toInt()) // ~8% white → subtle dark card visible on black
+        bg?.setColor(0xFF0E0E0E.toInt()) // near-black card, lifts off pure black bg
 
         if (entry.launchCount > 0) {
             val fillScale = entry.rank.coerceIn(0.02f, 1f)
-            val r = 14f * holder.progressFill.resources.displayMetrics.density
-            val fillBg = GradientDrawable().apply {
+            val a = accent
+            val dp = holder.progressFill.resources.displayMetrics.density
+            val r = 14f * dp
+            val radii = floatArrayOf(r, r, r, r, r, r, r, r)
+            val bar = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadii = if (fillScale >= 0.98f)
-                    floatArrayOf(r, r, r, r, r, r, r, r)
-                else
-                    floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
-                setColor(0xFFFFFFFF.toInt())
+                cornerRadii = radii
+                orientation = GradientDrawable.Orientation.LEFT_RIGHT
+                colors = intArrayOf(a.barStart, a.barEnd)
             }
-            holder.progressFill.background = fillBg
-            holder.progressFill.alpha = 0.35f
-            holder.progressFill.scaleX = fillScale
-            holder.progressFill.pivotX = 0f
+            val halo = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadii = radii
+                gradientType = GradientDrawable.RADIAL_GRADIENT
+                setGradientCenter(0.07f, 0.5f)
+                gradientRadius = 80f * dp
+                colors = intArrayOf(a.haloCore, a.haloMid, a.haloEdge)
+            }
+            val clip = ClipDrawable(LayerDrawable(arrayOf(bar, halo)), Gravity.START, ClipDrawable.HORIZONTAL)
+            holder.progressFill.background = clip
+            clip.level = (fillScale * 10000).toInt()
+            holder.progressFill.alpha = 1f
+            holder.progressFill.scaleX = 1f
             holder.progressFill.visibility = View.VISIBLE
         } else {
-            holder.progressFill.scaleX = 0f
             holder.progressFill.visibility = View.GONE
         }
 

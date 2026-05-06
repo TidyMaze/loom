@@ -48,13 +48,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         greeting = findViewById(R.id.tv_greeting)
-        greeting.text = greetingText()
 
         search = findViewById(R.id.et_search)
 
         adapter = AppAdapter { entry ->
             viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
         }
+        applyAccent()
 
         recycler = findViewById<RecyclerView>(R.id.recycler).apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (!wasPaused) return
         wasPaused = false
-        greeting.text = greetingText()
+        applyAccent()
         greeting.alpha = 0f
         greeting.animate().alpha(1f).setDuration(350).start()
         hideSearch()
@@ -213,6 +213,14 @@ class MainActivity : AppCompatActivity() {
             }
         })
         helper.attachToRecyclerView(recycler)
+    }
+
+    private fun applyAccent() {
+        val a = accentForNow()
+        greeting.text = greetingText()
+        greeting.setTextColor(a.greeting)
+        adapter.accent = a
+        adapter.notifyDataSetChanged()
     }
 
     private fun greetingText(): String = when (LocalTime.now().hour) {
