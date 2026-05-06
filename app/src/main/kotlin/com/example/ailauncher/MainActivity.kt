@@ -201,13 +201,15 @@ class MainActivity : AppCompatActivity() {
             override fun onChildDraw(c: Canvas, rv: RecyclerView, vh: RecyclerView.ViewHolder,
                 dX: Float, dY: Float, actionState: Int, isActive: Boolean) {
                 val v = vh.itemView
-                val density = v.resources.displayMetrics.density
-                val mH = 14 * density; val mV = 4 * density; val r = 14 * density
-                val rect = RectF(v.left + mH, v.top + mV, v.right - mH, v.bottom - mV)
+                val r = 14 * v.resources.displayMetrics.density
+                val rect = RectF(v.left.toFloat(), v.top.toFloat(), v.right.toFloat(), v.bottom.toFloat())
                 paint.color = 0xFFB71C1C.toInt()
                 c.drawRoundRect(rect, r, r, paint)
-                c.drawText("Reset", rect.right - 16 * density,
-                    rect.centerY() + textPaint.textSize * 0.35f, textPaint)
+                // Center "Reset" in the revealed area (right of the sliding row)
+                val revealedLeft = v.right + dX
+                val revealedCenter = (revealedLeft + v.right) / 2f
+                textPaint.textAlign = Paint.Align.CENTER
+                c.drawText("Reset", revealedCenter, rect.centerY() + textPaint.textSize * 0.35f, textPaint)
                 super.onChildDraw(c, rv, vh, dX, dY, actionState, isActive)
             }
         })
