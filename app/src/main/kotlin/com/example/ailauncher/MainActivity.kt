@@ -82,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                     if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
                     else fullList.filter { it.label.contains(query, ignoreCase = true) }
                 )
-                if (query.isEmpty()) hideSearch()
             }
         })
 
@@ -141,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 val lm = recycler.layoutManager as LinearLayoutManager
-                if (distanceY < -10f && lm.findFirstCompletelyVisibleItemPosition() == 0) showSearch()
+                if (distanceY < -10f && lm.findFirstCompletelyVisibleItemPosition() <= 0) showSearch()
                 if (distanceY > 10f && search.visibility == View.VISIBLE
                     && System.currentTimeMillis() - searchShownAt > 400) hideSearch()
                 return false
