@@ -2,13 +2,14 @@ package com.example.ailauncher
 
 import kotlin.math.abs
 import kotlin.math.exp
-import kotlin.math.pow
+import kotlin.math.ln
 
 object ScoreEngine {
 
     private const val HOUR_SIGMA = 1.5f
     private const val DECAY_HALF_LIFE_DAYS = 7f
     private const val MS_PER_DAY = 86_400_000f
+    private val LN2 = ln(2.0)
 
     fun score(
         events: List<UsageEvent>,
@@ -19,12 +20,13 @@ object ScoreEngine {
         return events
             .groupBy { it.packageName }
             .mapValues { (_, appEvents) ->
-                // score = Σ(hourMatch × w) / Σ(w)^α   where w = dayMatch × decay, α = 0.3
-                // α=0 → raw sum (frequency dominated); α=1 → pure conditional probability.
-                // α=0.3 measured as best trade-off: helps specialized apps without hurting
-                // the overall ranking quality (MRR −0.011 vs α=0 while TeleLoisirs rank −4).
-                var totalWeight = 0.0
-                var hourWeightedSum = 0.0
+                // Naive Bayes: P(hour|app) × P(dayType|app) × P(app)
+                //   = Σ(hourMatch×decay) × Σ(dayMatch×decay) / Σ(decay)
+                // Hour and day conditionals estimated independently — more robust
+                // with sparse data than multiplying both per event (v1 heuristic).
+                var totalDecay = 0.0
+                var hourSum = 0.0
+                var daySum = 0.0
                 for (event in appEvents) {
                     val diff = abs(event.hour - currentHour)
                     val hourDist = if (diff > 12) 24 - diff else diff
@@ -36,12 +38,12 @@ object ScoreEngine {
                         else -> 0.2
                     }
                     val daysAgo = (nowMillis - event.timestampMillis) / MS_PER_DAY
-                    val decay = 0.5f.pow(daysAgo / DECAY_HALF_LIFE_DAYS).toDouble()
-                    val w = dayMatch * decay
-                    totalWeight += w
-                    hourWeightedSum += hourMatch * w
+                    val decay = exp(-(daysAgo / DECAY_HALF_LIFE_DAYS) * LN2).toDouble()
+                    totalDecay += decay
+                    hourSum += hourMatch * decay
+                    daySum += dayMatch * decay
                 }
-                if (totalWeight > 0.0) (hourWeightedSum / totalWeight.pow(0.3)).toFloat()
+                if (totalDecay > 0.0) (hourSum * daySum / totalDecay).toFloat()
                 else 0f
             }
     }

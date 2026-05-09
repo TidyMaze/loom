@@ -73,15 +73,12 @@ def compute_scores(events, now_hour, now_dow, now_ms):
     return scores
 
 
-ALPHA = 0.3  # frequency dampening exponent (0=raw sum, 1=pure conditional prob)
-# α=0.3 measured as best trade-off: TeleLoisirs rank 16→12, overall MRR −0.011 only.
-
 def compute_scores_v2(events, now_hour, now_dow, now_ms):
     """
-    score = Σ(hourMatch × weight) / Σ(weight)^ALPHA
-    where weight = dayMatch × decay.
-    Compared to v1 (ALPHA=0 raw sum): dampens frequency dominance so specialized
-    apps (e.g. TeleLoisirs) can rank higher at their specific usage hours.
+    Naive Bayes: P(hour|app) × P(dayType|app) × P(app)
+      = Σ(hourMatch×decay) × Σ(dayMatch×decay) / Σ(decay)
+    Hour and day patterns estimated independently (separate KDEs), then multiplied.
+    More principled than v1 which correlates them per-event.
     """
     import math
     by_pkg = collections.defaultdict(list)
@@ -89,13 +86,23 @@ def compute_scores_v2(events, now_hour, now_dow, now_ms):
         by_pkg[e["packageName"]].append(e)
     scores = {}
     for pkg, evts in by_pkg.items():
-        total_w = 0.0
-        hour_w  = 0.0
+        total_decay = 0.0
+        hour_sum    = 0.0
+        day_sum     = 0.0
         for e in evts:
-            hm, w = _event_components(e, now_hour, now_dow, now_ms)
-            total_w += w
-            hour_w  += hm * w
-        scores[pkg] = hour_w / (total_w ** ALPHA) if total_w > 0 else 0.0
+            diff = abs(e["hour"] - now_hour)
+            hm = math.exp(-(min(diff, 24 - diff) ** 2) / (2 * HOUR_SIGMA ** 2))
+            d = e.get("dayOfWeek", 0)
+            if d == 0 or d == now_dow:                       dm = 1.0
+            elif is_weekend(d) == is_weekend(now_dow):       dm = 0.6
+            else:                                            dm = 0.2
+            days_ago = (now_ms - e["timestampMillis"]) / 86_400_000
+            decay = 0.5 ** (days_ago / DECAY_HALF_LIFE)
+            total_decay += decay
+            hour_sum    += hm * decay
+            day_sum     += dm * decay
+        # P(h|app)=hour_sum/total_decay, P(d|app)=day_sum/total_decay, P(app)=total_decay
+        scores[pkg] = (hour_sum * day_sum / total_decay) if total_decay > 0 else 0.0
     return scores
 
 # ---------------------------------------------------------------------------
@@ -591,11 +598,11 @@ def main():
     print(f"  v1 MRR={mrr_v1:.4f}  random={random_baseline:.4f}  lift={mrr_v1/random_baseline:.2f}x")
 
     print("Computing MRR v2 (KDE-normalised)…")
-    fig_mrr, mrr_v2, _, _ = chart_mrr(events, compute_scores_v2, label="v2 (KDE normalised)")
+    fig_mrr, mrr_v2, _, _ = chart_mrr(events, compute_scores_v2, label="v2 (Naive Bayes)")
     print(f"  v2 MRR={mrr_v2:.4f}  lift={mrr_v2/random_baseline:.2f}x  delta={mrr_v2-mrr_v1:+.4f}")
 
     figs.append(("c8", fig_mrr))
-    figs.append(("c9", chart_rank_distribution(events, compute_scores_v2, label="v2 (KDE)")))
+    figs.append(("c9", chart_rank_distribution(events, compute_scores_v2, label="v2 (Naive Bayes)")))
     figs.append(("c10", chart_mrr_comparison(events)))
     figs.append(("c11", chart_rank_distribution(events, compute_scores, label="v1 (original)")))
 
