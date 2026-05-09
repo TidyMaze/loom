@@ -1,23 +1,18 @@
 """
-AI Launcher — usage stats report.
-Pull data from device, score it in Python, render 6 diagnostic charts as HTML.
-Usage: uv run --with matplotlib python3 scripts/report.py
+AI Launcher — interactive usage stats report.
+Pull data from device, score it in Python, render 7 interactive Plotly charts.
+Usage: uv run --with plotly python3 scripts/report.py
 """
 
-import base64
 import collections
 import datetime
-import io
 import json
 import subprocess
 import sys
 import time
 import webbrowser
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import numpy as np
+import plotly.graph_objects as go
 
 # ---------------------------------------------------------------------------
 # 1. Pull data from device
@@ -36,13 +31,15 @@ def pull_events():
 # 2. ScoreEngine — Python port of ScoreEngine.kt
 # ---------------------------------------------------------------------------
 
-HOUR_MATCH_WEIGHT = 1.0
-HOUR_MISS_WEIGHT  = 0.15
-HOUR_TOLERANCE    = 1
-DECAY_HALF_LIFE   = 7.0
+HOUR_SIGMA      = 3.0   # Gaussian σ in hours — smooth bell curve instead of hard cutoff
+DECAY_HALF_LIFE = 7.0
 
 def is_weekend(dow):
     return dow >= 6
+
+def hour_match(hour_dist):
+    import math
+    return math.exp(-(hour_dist ** 2) / (2 * HOUR_SIGMA ** 2))
 
 def compute_scores(events, now_hour, now_dow, now_ms):
     by_pkg = collections.defaultdict(list)
@@ -53,8 +50,7 @@ def compute_scores(events, now_hour, now_dow, now_ms):
         total = 0.0
         for e in evts:
             diff = abs(e["hour"] - now_hour)
-            hour_dist = min(diff, 24 - diff)
-            hour_match = HOUR_MATCH_WEIGHT if hour_dist <= HOUR_TOLERANCE else HOUR_MISS_WEIGHT
+            hm = hour_match(min(diff, 24 - diff))
             dow = e.get("dayOfWeek", 0)
             if dow == 0 or dow == now_dow:
                 day_match = 1.0
@@ -64,7 +60,7 @@ def compute_scores(events, now_hour, now_dow, now_ms):
                 day_match = 0.2
             days_ago = (now_ms - e["timestampMillis"]) / 86_400_000
             decay = 0.5 ** (days_ago / DECAY_HALF_LIFE)
-            total += hour_match * day_match * decay
+            total += hm * day_match * decay
         scores[pkg] = total
     return scores
 
@@ -98,28 +94,29 @@ def short_name(pkg):
     parts = pkg.split(".")
     return parts[-1] if parts[-1] not in ("android", "app") else parts[-2]
 
-def fig_to_b64(fig):
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=130, bbox_inches="tight")
-    plt.close(fig)
-    return base64.b64encode(buf.getvalue()).decode()
+PALETTE = [
+    "#4C9BE8",  # blue
+    "#E8834C",  # orange
+    "#4CE87A",  # green
+    "#E84C9B",  # pink
+    "#C8E84C",  # lime
+    "#4CE8D8",  # teal
+    "#E8C84C",  # gold
+    "#9B4CE8",  # purple
+]
 
-DARK_BG   = "#111111"
-ACCENT    = "#DDDDDD"
-GRID      = "#2a2a2a"
-BAR_COLOR = "#888888"
+LAYOUT = dict(
+    paper_bgcolor="#111111",
+    plot_bgcolor="#1a1a1a",
+    font=dict(color="#dddddd", family="system-ui"),
+    xaxis=dict(gridcolor="#222222", zerolinecolor="#222222"),
+    yaxis=dict(gridcolor="#222222", zerolinecolor="#222222"),
+    margin=dict(l=16, r=16, t=44, b=40),
+)
 
-def dark_fig(w=9, h=4.5):
-    fig, ax = plt.subplots(figsize=(w, h), facecolor=DARK_BG)
-    ax.set_facecolor(DARK_BG)
-    for spine in ax.spines.values():
-        spine.set_edgecolor(GRID)
-    ax.tick_params(colors=ACCENT)
-    ax.xaxis.label.set_color(ACCENT)
-    ax.yaxis.label.set_color(ACCENT)
-    ax.title.set_color(ACCENT)
-    ax.grid(color=GRID, linewidth=0.5)
-    return fig, ax
+def apply_layout(fig, **extra):
+    fig.update_layout(**LAYOUT, **extra)
+    return fig
 
 # ---------------------------------------------------------------------------
 # 4. Charts
@@ -127,20 +124,21 @@ def dark_fig(w=9, h=4.5):
 
 def chart_score_ranking(scores):
     max_score = max(scores.values()) or 1
-    ranked = sorted(scores.items(), key=lambda x: -x[1])[:15]
+    ranked = sorted(scores.items(), key=lambda x: x[1])[-15:]
     names  = [short_name(p) for p, _ in ranked]
-    vals   = [s / max_score for _, s in ranked]
+    vals   = [round(s / max_score, 4) for _, s in ranked]
+    # gradient: dim grey → vivid blue as score rises
+    colors = [PALETTE[i % len(PALETTE)] for i in range(len(vals))]
 
-    fig, ax = dark_fig(9, 5)
-    bars = ax.barh(names[::-1], vals[::-1], color=BAR_COLOR, height=0.6)
-    # highlight top 3
-    for bar in bars[-3:]:
-        bar.set_color(ACCENT)
-    ax.set_xlim(0, 1.05)
-    ax.set_xlabel("Normalised score")
-    ax.set_title("Current score ranking (top 15)")
-    ax.axvline(0.5, color=GRID, linewidth=1, linestyle="--")
-    return fig_to_b64(fig)
+    fig = go.Figure(go.Bar(
+        x=vals, y=names, orientation="h",
+        marker=dict(color=colors, line=dict(width=0)),
+        hovertemplate="<b>%{y}</b>: %{x:.3f}<extra></extra>",
+    ))
+    apply_layout(fig, title="Current score ranking (top 15)", xaxis_title="Normalised score")
+    fig.add_vline(x=0.5, line_dash="dash", line_color="#333333",
+                  annotation_text="0.5", annotation_font_color="#555555")
+    return fig
 
 
 def chart_launches_by_hour(events):
@@ -148,81 +146,85 @@ def chart_launches_by_hour(events):
     for e in events:
         hours[e["hour"]] += 1
 
-    fig, ax = dark_fig(10, 4)
-    ax.bar(range(24), hours, color=BAR_COLOR, width=0.8)
     now_h = datetime.datetime.now().hour
-    ax.axvline(now_h, color="#FF6B6B", linewidth=1.5, linestyle="--", label=f"now ({now_h}h)")
-    ax.set_xticks(range(24))
-    ax.set_xlabel("Hour of day")
-    ax.set_ylabel("Launch count")
-    ax.set_title("Launches by hour of day")
-    ax.legend(facecolor=DARK_BG, edgecolor=GRID, labelcolor=ACCENT)
-    return fig_to_b64(fig)
+    peak  = max(hours) or 1
+    bar_colors = [
+        PALETTE[0] if h == now_h else
+        (PALETTE[2] if hours[h] == peak else
+         ("#555555" if hours[h] > peak * 0.5 else "#333333"))
+        for h in range(24)
+    ]
+    fig = go.Figure(go.Bar(
+        x=list(range(24)), y=hours,
+        marker=dict(color=bar_colors, line=dict(width=0)),
+        hovertemplate="<b>%{x}h</b>: %{y} launches<extra></extra>",
+    ))
+    apply_layout(fig, title="Launches by hour of day", xaxis_title="Hour", yaxis_title="Launches")
+    fig.add_vline(x=now_h, line_dash="dash", line_color="#FF6B6B",
+                  annotation_text=f"now ({now_h}h)", annotation_font_color="#FF6B6B")
+    return fig
 
 
 def chart_app_hour_heatmap(events):
-    top_pkgs = [p for p, _ in collections.Counter(e["packageName"] for e in events).most_common(8)]
+    top_pkgs = [p for p, _ in collections.Counter(
+        e["packageName"] for e in events).most_common(8)]
     names = [short_name(p) for p in top_pkgs]
-
-    matrix = np.zeros((len(top_pkgs), 24))
+    matrix = [[0] * 24 for _ in top_pkgs]
     for e in events:
         if e["packageName"] in top_pkgs:
             row = top_pkgs.index(e["packageName"])
             matrix[row][e["hour"]] += 1
 
-    fig, ax = plt.subplots(figsize=(11, 4), facecolor=DARK_BG)
-    ax.set_facecolor(DARK_BG)
-    im = ax.imshow(matrix, aspect="auto", cmap="Blues", interpolation="nearest")
-    ax.set_xticks(range(24))
-    ax.set_xticklabels(range(24), color=ACCENT, fontsize=8)
-    ax.set_yticks(range(len(names)))
-    ax.set_yticklabels(names, color=ACCENT)
-    ax.set_xlabel("Hour of day", color=ACCENT)
-    ax.set_title("App × hour heatmap (top 8 apps)", color=ACCENT)
+    fig = go.Figure(go.Heatmap(
+        z=matrix, x=list(range(24)), y=names,
+        colorscale=[[0, "#1a1a1a"], [0.3, "#1a3a5c"], [0.7, "#2a6aaa"], [1, "#4C9BE8"]],
+        hovertemplate="<b>%{y}</b> at <b>%{x}h</b>: %{z} launches<extra></extra>",
+    ))
     now_h = datetime.datetime.now().hour
-    ax.axvline(now_h - 0.5, color="#FF6B6B", linewidth=1.5, linestyle="--")
-    for spine in ax.spines.values():
-        spine.set_edgecolor(GRID)
-    cb = fig.colorbar(im, ax=ax)
-    cb.ax.tick_params(colors=ACCENT)
-    return fig_to_b64(fig)
+    apply_layout(fig, title="App × hour heatmap (top 8 apps)", xaxis_title="Hour")
+    fig.add_vline(x=now_h, line_dash="dash", line_color="#FF6B6B",
+                  annotation_text=f"now ({now_h}h)", annotation_font_color="#FF6B6B")
+    return fig
 
 
 def chart_decay_curve():
-    days = np.linspace(0, 28, 200)
-    score = 0.5 ** (days / DECAY_HALF_LIFE)
+    xs = [d / 10 for d in range(281)]  # 0..28 days
+    ys = [round(0.5 ** (d / DECAY_HALF_LIFE), 4) for d in xs]
 
-    fig, ax = dark_fig(8, 4)
-    ax.plot(days, score, color=ACCENT, linewidth=2)
-    ax.axhline(0.5, color=GRID, linewidth=1, linestyle="--")
-    ax.axvline(7,   color="#888888", linewidth=1, linestyle=":")
-    ax.axvline(14,  color="#888888", linewidth=1, linestyle=":")
-    ax.text(7.2,  0.05, "7d",  color=ACCENT, fontsize=9)
-    ax.text(14.2, 0.05, "14d", color=ACCENT, fontsize=9)
-    ax.set_xlabel("Days since last launch")
-    ax.set_ylabel("Decay factor")
-    ax.set_title(f"Score decay curve (half-life = {int(DECAY_HALF_LIFE)} days)")
-    ax.set_ylim(0, 1.05)
-    return fig_to_b64(fig)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=xs, y=ys, mode="lines",
+                             line=dict(color=PALETTE[0], width=2.5),
+                             fill="tozeroy", fillcolor="rgba(76,155,232,0.08)",
+                             hovertemplate="Day %{x:.1f}: decay=%{y:.3f}<extra></extra>"))
+    fig.add_hline(y=0.5, line_dash="dash", line_color="#555555")
+    fig.add_vline(x=7,  line_dash="dot", line_color="#666666",
+                  annotation_text="7d", annotation_font_color="#aaaaaa")
+    fig.add_vline(x=14, line_dash="dot", line_color="#666666",
+                  annotation_text="14d", annotation_font_color="#aaaaaa")
+    apply_layout(fig, title=f"Score decay curve (half-life = {int(DECAY_HALF_LIFE)} days)",
+                 xaxis_title="Days since last launch", yaxis_title="Decay factor",
+                 yaxis_range=[0, 1.05])
+    return fig
 
 
 def chart_day_of_week(events):
-    days = [0] * 8  # index 1-7
+    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    vals   = [0] * 7
     for e in events:
         dow = e.get("dayOfWeek", 0)
         if 1 <= dow <= 7:
-            days[dow] += 1
-    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    vals = days[1:8]
+            vals[dow - 1] += 1
 
-    fig, ax = dark_fig(7, 4)
-    colors = [BAR_COLOR] * 5 + ["#555555", "#555555"]
-    ax.bar(labels, vals, color=colors, width=0.6)
     now_dow = datetime.datetime.now().isoweekday()
-    ax.get_children()[now_dow - 1].set_color(ACCENT)
-    ax.set_ylabel("Launch count")
-    ax.set_title("Launches by day of week")
-    return fig_to_b64(fig)
+    colors  = [PALETTE[0] if i + 1 == now_dow else "#444444" for i in range(7)]
+
+    fig = go.Figure(go.Bar(
+        x=labels, y=vals,
+        marker=dict(color=colors, line=dict(width=0)),
+        hovertemplate="<b>%{x}</b>: %{y} launches<extra></extra>",
+    ))
+    apply_layout(fig, title="Launches by day of week", yaxis_title="Launches")
+    return fig
 
 
 def chart_score_vs_recency(scores, events):
@@ -237,88 +239,93 @@ def chart_score_vs_recency(scores, events):
     xs, ys, names = [], [], []
     for pkg, score in scores.items():
         if pkg in last_by_pkg:
-            days_ago = (now_ms - last_by_pkg[pkg]) / 86_400_000
-            xs.append(days_ago)
+            xs.append((now_ms - last_by_pkg[pkg]) / 86_400_000)
             ys.append(score / max_score)
             names.append(short_name(pkg))
 
-    fig, ax = dark_fig(8, 4.5)
-    ax.scatter(xs, ys, color=ACCENT, alpha=0.7, s=60, zorder=3)
-    for x, y, n in zip(xs, ys, names):
-        ax.annotate(n, (x, y), textcoords="offset points", xytext=(4, 3),
-                    color=ACCENT, fontsize=7, alpha=0.8)
-    # reference decay curve
-    ref_x = np.linspace(0, max(xs) + 0.5, 100)
-    ref_y = 0.5 ** (ref_x / DECAY_HALF_LIFE)
-    ax.plot(ref_x, ref_y, color="#FF6B6B", linewidth=1, linestyle="--", label="pure decay ref", zorder=2)
-    ax.set_xlabel("Days since last launch")
-    ax.set_ylabel("Normalised score")
-    ax.set_title("Score vs recency (confirms decay)")
-    ax.legend(facecolor=DARK_BG, edgecolor=GRID, labelcolor=ACCENT)
-    ax.set_ylim(0, 1.05)
-    return fig_to_b64(fig)
+    ref_x = [d / 10 for d in range(int(max(xs, default=0) * 10) + 20)]
+    ref_y = [round(0.5 ** (d / DECAY_HALF_LIFE), 4) for d in ref_x]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=ref_x, y=ref_y, mode="lines", name="pure decay ref",
+        line=dict(color="#FF6B6B", dash="dash", width=1),
+        hovertemplate="Day %{x:.1f}: ref=%{y:.3f}<extra></extra>",
+    ))
+    fig.add_trace(go.Scatter(
+        x=xs, y=ys, mode="markers+text", name="apps",
+        text=names, textposition="top right",
+        textfont=dict(size=10, color="#aaaaaa"),
+        marker=dict(color="#dddddd", size=8),
+        hovertemplate="%{text}<br>Days ago: %{x:.2f}<br>Score: %{y:.3f}<extra></extra>",
+    ))
+    apply_layout(fig, title="Score vs recency (confirms decay)",
+                 xaxis_title="Days since last launch", yaxis_title="Normalised score",
+                 yaxis_range=[0, 1.05])
+    return fig
+
 
 def chart_score_forecast(events):
-    """
-    Simulate score for each top-5 app at every hour over the next 7 days.
-    Uses the exact ScoreEngine formula with real events; only 'now' advances.
-    """
-    now_ms = int(time.time() * 1000)
-    counts = collections.Counter(e["packageName"] for e in events)
-    top_pkgs = [p for p, _ in counts.most_common(5)]
+    now_ms  = int(time.time() * 1000)
+    top_pkgs = [p for p, _ in collections.Counter(
+        e["packageName"] for e in events).most_common(5)]
     by_pkg = {pkg: [e for e in events if e["packageName"] == pkg] for pkg in top_pkgs}
 
-    # one data point per hour over 7 days = 168 points
+    # one point per hour over 7 days
     hours_ahead = list(range(7 * 24 + 1))
-    xs = [h / 24 for h in hours_ahead]  # x axis in days
+    future_times = [
+        datetime.datetime.fromtimestamp((now_ms + h * 3_600_000) / 1000)
+        for h in hours_ahead
+    ]
 
+    max_score = 1.0  # will be updated after first pass
     series = {}
     for pkg, evts in by_pkg.items():
         ys = []
-        for h in hours_ahead:
+        for h, ft in zip(hours_ahead, future_times):
             future_ms  = now_ms + h * 3_600_000
-            future_dt  = datetime.datetime.fromtimestamp(future_ms / 1000)
-            future_h   = future_dt.hour
-            future_dow = future_dt.isoweekday()
             total = 0.0
             for e in evts:
-                diff = abs(e["hour"] - future_h)
-                hour_dist  = min(diff, 24 - diff)
-                hour_match = HOUR_MATCH_WEIGHT if hour_dist <= HOUR_TOLERANCE else HOUR_MISS_WEIGHT
+                diff = abs(e["hour"] - ft.hour)
+                hm  = hour_match(min(diff, 24 - diff))
                 dow = e.get("dayOfWeek", 0)
-                if dow == 0 or dow == future_dow:
+                fdow = ft.isoweekday()
+                if dow == 0 or dow == fdow:
                     day_match = 1.0
-                elif is_weekend(dow) == is_weekend(future_dow):
+                elif is_weekend(dow) == is_weekend(fdow):
                     day_match = 0.6
                 else:
                     day_match = 0.2
                 days_ago = (future_ms - e["timestampMillis"]) / 86_400_000
                 decay = 0.5 ** (days_ago / DECAY_HALF_LIFE)
-                total += hour_match * day_match * decay
+                total += hm * day_match * decay
             ys.append(total)
         series[pkg] = ys
+        if ys[0] > max_score:
+            max_score = ys[0]
 
-    # normalise by current max score so y-axis is comparable to ranking chart
-    max_score = max(v[0] for v in series.values()) or 1
+    fig = go.Figure()
+    for (pkg, ys), color in zip(series.items(), PALETTE):
+        norm_ys = [round(y / max_score, 4) for y in ys]
+        fig.add_trace(go.Scatter(
+            x=future_times, y=norm_ys,
+            mode="lines", name=short_name(pkg),
+            line=dict(color=color, width=1.5),
+            hovertemplate="%{x|%a %H:%M}: %{y:.3f}<extra>" + short_name(pkg) + "</extra>",
+        ))
 
-    fig, ax = dark_fig(12, 5)
-    colors = ["#FFFFFF", "#AAAAAA", "#888888", "#555555", "#333333"]
-    for (pkg, ys), color in zip(series.items(), colors):
-        norm_ys = [y / max_score for y in ys]
-        ax.plot(xs, norm_ys, label=short_name(pkg), color=color, linewidth=1.5)
-
-    # day grid lines
+    # day separators
     for d in range(1, 8):
-        ax.axvline(d, color=GRID, linewidth=0.8, linestyle=":")
-        ax.text(d + 0.03, 0.02, f"day {d}", color="#444", fontsize=7)
+        sep = datetime.datetime.fromtimestamp((now_ms + d * 86_400_000) / 1000)
+        fig.add_vline(x=sep.timestamp() * 1000, line_dash="dot", line_color="#2a2a2a")
 
-    ax.set_xlabel("Days from now")
-    ax.set_ylabel("Normalised score")
-    ax.set_title("Score forecast — top 5 apps over next 7 days (hourly, real events + real formula)")
-    ax.legend(facecolor=DARK_BG, edgecolor=GRID, labelcolor=ACCENT, fontsize=9)
-    ax.set_xlim(0, 7)
-    ax.set_ylim(0)
-    return fig_to_b64(fig)
+    apply_layout(fig,
+        title="Score forecast — top 5 apps, next 7 days (hourly, real events + real formula)",
+        xaxis_title="Time", yaxis_title="Normalised score",
+        yaxis_range=[0, None],
+        legend=dict(bgcolor="#1a1a1a", bordercolor="#333333"),
+    )
+    return fig
 
 # ---------------------------------------------------------------------------
 # 5. HTML report
@@ -329,86 +336,97 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <title>AI Launcher — Usage Report</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
   body {{ background:#111; color:#ddd; font-family:system-ui,sans-serif; margin:0; padding:24px; }}
   h1 {{ font-size:1.4rem; font-weight:500; margin-bottom:4px; }}
   .meta {{ color:#666; font-size:.85rem; margin-bottom:32px; }}
   .grid {{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }}
   .card {{ background:#1a1a1a; border-radius:12px; padding:16px; }}
-  .card img {{ width:100%; border-radius:6px; }}
   .caption {{ font-size:.78rem; color:#666; margin-top:8px; }}
+  .wide {{ grid-column:1/-1; }}
   @media(max-width:900px) {{ .grid {{ grid-template-columns:1fr; }} }}
 </style>
 </head>
 <body>
 <h1>AI Launcher — Usage Report</h1>
-<div class="meta">Generated {ts} · {n_events} events · {n_apps} apps · {span_days:.1f} day span</div>
+<div class="meta">Generated {ts} &nbsp;·&nbsp; {n_events} events &nbsp;·&nbsp; {n_apps} apps &nbsp;·&nbsp; {span_days:.1f} day span</div>
 <div class="grid">
-  <div class="card">
-    <img src="data:image/png;base64,{c1}">
-    <div class="caption">Chart 1 — Score ranking: proves scoring produces meaningful differentiation between apps.</div>
-  </div>
-  <div class="card">
-    <img src="data:image/png;base64,{c2}">
-    <div class="caption">Chart 2 — Launches by hour: confirms hour field is captured correctly across the day.</div>
-  </div>
-  <div class="card" style="grid-column:1/-1">
-    <img src="data:image/png;base64,{c3}">
-    <div class="caption">Chart 3 — App × hour heatmap: each app has a distinct peak hour, giving the hour-match signal real value.</div>
-  </div>
-  <div class="card">
-    <img src="data:image/png;base64,{c4}">
-    <div class="caption">Chart 4 — Decay curve: shows the 7-day half-life used by ScoreEngine. Score at day 7 = 0.5, day 14 = 0.25.</div>
-  </div>
-  <div class="card">
-    <img src="data:image/png;base64,{c5}">
-    <div class="caption">Chart 5 — Day-of-week distribution: confirms dayOfWeek field is populated. Current day highlighted.</div>
-  </div>
-  <div class="card" style="grid-column:1/-1">
-    <img src="data:image/png;base64,{c6}">
-    <div class="caption">Chart 6 — Score vs recency: points should cluster near the decay reference curve, confirming decay drives ranking.</div>
-  </div>
-  <div class="card" style="grid-column:1/-1">
-    <img src="data:image/png;base64,{c7}">
-    <div class="caption">Chart 7 — Score forecast (next 7 days, hourly): oscillations from hour/day matching, envelope declining due to decay. Top app should stay above others at matching hours.</div>
-  </div>
+  <div class="card"><div id="c1" style="height:420px"></div>
+    <div class="caption">Score ranking — proves scoring produces meaningful differentiation.</div></div>
+  <div class="card"><div id="c2" style="height:420px"></div>
+    <div class="caption">Launches by hour — confirms hour field is captured across the day. Red = now.</div></div>
+  <div class="card wide"><div id="c3" style="height:340px"></div>
+    <div class="caption">App × hour heatmap — each app has a distinct peak hour, giving hour-match real signal.</div></div>
+  <div class="card"><div id="c4" style="height:360px"></div>
+    <div class="caption">Decay curve — 7-day half-life. Score at day 7 = 0.5, day 14 = 0.25.</div></div>
+  <div class="card"><div id="c5" style="height:360px"></div>
+    <div class="caption">Day-of-week distribution — confirms dayOfWeek field is populated. Current day highlighted.</div></div>
+  <div class="card wide"><div id="c6" style="height:420px"></div>
+    <div class="caption">Score vs recency — points should cluster near the red decay reference, confirming decay drives ranking.</div></div>
+  <div class="card wide"><div id="c7" style="height:480px"></div>
+    <div class="caption">Score forecast (next 7 days, hourly) — oscillations from hour/day matching riding on decay envelope. Hover for exact values.</div></div>
 </div>
+<script>
+{scripts}
+</script>
 </body>
 </html>
 """
+
+def fig_to_js(fig, div_id):
+    return (
+        f"Plotly.newPlot('{div_id}', "
+        f"{fig.to_json()[::-1].replace('}', '', 1)[::-1].replace('{', '', 1)}"  # strip outer {}
+    )
+    # simpler: use fig.to_json() and parse in JS
+
+def figs_to_scripts(figs):
+    lines = []
+    for div_id, fig in figs:
+        data   = fig.to_json()
+        lines.append(
+            f"(function(){{ var d=JSON.parse({json.dumps(data)});"
+            f"Plotly.newPlot('{div_id}',d.data,d.layout,{{responsive:true}}); }})();"
+        )
+    return "\n".join(lines)
+
+# ---------------------------------------------------------------------------
+# 6. Main
+# ---------------------------------------------------------------------------
 
 def main():
     print("Pulling usage_log.json from device…")
     events = pull_events()
     print(f"  {len(events)} events loaded")
 
-    now = datetime.datetime.now()
-    now_ms  = int(time.time() * 1000)
-    now_h   = now.hour
-    now_dow = now.isoweekday()
+    now    = datetime.datetime.now()
+    now_ms = int(time.time() * 1000)
 
-    scores = compute_scores(events, now_h, now_dow, now_ms)
+    scores = compute_scores(events, now.hour, now.isoweekday(), now_ms)
 
     pkgs = set(e["packageName"] for e in events)
     ts_vals = [e["timestampMillis"] for e in events]
     span_days = (max(ts_vals) - min(ts_vals)) / 86_400_000 if len(ts_vals) > 1 else 0
 
     print("Generating charts…")
-    c1 = chart_score_ranking(scores)
-    c2 = chart_launches_by_hour(events)
-    c3 = chart_app_hour_heatmap(events)
-    c4 = chart_decay_curve()
-    c5 = chart_day_of_week(events)
-    c6 = chart_score_vs_recency(scores, events)
-    print("Generating 7-day forecast (168 time steps × top 5 apps)…")
-    c7 = chart_score_forecast(events)
+    figs = [
+        ("c1", chart_score_ranking(scores)),
+        ("c2", chart_launches_by_hour(events)),
+        ("c3", chart_app_hour_heatmap(events)),
+        ("c4", chart_decay_curve()),
+        ("c5", chart_day_of_week(events)),
+        ("c6", chart_score_vs_recency(scores, events)),
+    ]
+    print("Generating 7-day forecast…")
+    figs.append(("c7", chart_score_forecast(events)))
 
     html = HTML_TEMPLATE.format(
         ts=now.strftime("%Y-%m-%d %H:%M"),
         n_events=len(events),
         n_apps=len(pkgs),
         span_days=span_days,
-        c1=c1, c2=c2, c3=c3, c4=c4, c5=c5, c6=c6, c7=c7,
+        scripts=figs_to_scripts(figs),
     )
 
     out = "/tmp/ai_launcher_report.html"
