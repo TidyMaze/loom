@@ -71,9 +71,7 @@ def compute_scores(events, now_hour, now_dow, now_ms):
 PINNED_PKGS = ["fr.playsoft.teleloisirs"]
 
 def short_name(pkg):
-    parts = pkg.split(".")
-    seg = parts[-1] if parts[-1] not in ("android", "app", "mobile", "clients") else parts[-2]
-    return seg.replace("_", " ").title()
+    return pkg
 
 PALETTE = [
     "#4C9BE8",  # blue
