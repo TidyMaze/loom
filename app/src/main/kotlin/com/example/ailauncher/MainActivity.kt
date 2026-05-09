@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
     private var searchShownAt = 0L
     private var needsRefresh = false
 
+    private fun filteredList(query: String) =
+        if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
+        else fullList.filter { it.label.contains(query, ignoreCase = true) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -77,11 +81,7 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(s: Editable?) {
-                val query = s?.toString()?.trim().orEmpty()
-                adapter.submitList(
-                    if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
-                    else fullList.filter { it.label.contains(query, ignoreCase = true) }
-                )
+                adapter.submitList(filteredList(s?.toString()?.trim().orEmpty()))
             }
         })
 
@@ -89,11 +89,9 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.apps.observe(this) { apps ->
             fullList = apps
-            val query = search.text?.toString()?.trim().orEmpty()
-            adapter.submitList(
-                if (query.isEmpty()) apps.filter { it.launchCount > 0 }
-                else apps.filter { it.label.contains(query, ignoreCase = true) }
-            ) { recycler.scrollToPosition(0) }
+            adapter.submitList(filteredList(search.text?.toString()?.trim().orEmpty())) {
+                recycler.scrollToPosition(0)
+            }
         }
     }
 
@@ -187,8 +185,9 @@ class MainActivity : AppCompatActivity() {
             textSize = 13f * resources.displayMetrics.density
             textAlign = Paint.Align.RIGHT
         }
+        val swipeThreshold = 0.7f
         val helper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder) = 0.7f
+            override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder) = swipeThreshold
             override fun getSwipeEscapeVelocity(defaultValue: Float) = defaultValue * 4f
             override fun getSwipeVelocityThreshold(defaultValue: Float) = defaultValue * 4f
             override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
@@ -203,7 +202,7 @@ class MainActivity : AppCompatActivity() {
                 val v = vh.itemView
                 val r = 14 * v.resources.displayMetrics.density
                 val rect = RectF(v.left.toFloat(), v.top.toFloat(), v.right.toFloat(), v.bottom.toFloat())
-                val triggered = dX < -v.width * 0.7f
+                val triggered = dX < -v.width * swipeThreshold
                 paint.color = if (triggered) 0xFFE53935.toInt() else 0xFF8B0000.toInt()
                 c.drawRoundRect(rect, r, r, paint)
                 // Center "Reset" in the revealed area (right of the sliding row)

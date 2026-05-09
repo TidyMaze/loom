@@ -28,7 +28,6 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val label: TextView = view.findViewById(R.id.tv_label)
         val stats: TextView = view.findViewById(R.id.tv_stats)
         val progressFill: View = view.findViewById(R.id.v_progress_fill)
-        val row: android.widget.LinearLayout = view.findViewById(R.id.ll_row)
     }
 
     init { setHasStableIds(true) }
@@ -42,12 +41,6 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         return ViewHolder(view)
     }
 
-    override fun submitList(list: List<AppEntry>?) = submitList(list, null)
-
-    override fun submitList(list: List<AppEntry>?, commitCallback: Runnable?) {
-        super.submitList(list, commitCallback)
-    }
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val entry = getItem(position)
         val pm = holder.itemView.context.packageManager
@@ -56,6 +49,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
 
         // Use pre-computed rank so filtered lists (search) keep original sizes
         val relScore = entry.rank
+        val prominence = 0.35f + (relScore * 0.65f)
         holder.label.typeface = when {
             relScore > 0.85f -> Typeface.create("sans-serif-black", Typeface.NORMAL)
             relScore > 0.6f  -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
@@ -67,7 +61,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
             relScore > 0.5f  -> 18f
             else             -> 16f
         }
-        holder.label.alpha = 0.35f + (relScore * 0.65f)
+        holder.label.alpha = prominence
 
         val dp = holder.itemView.resources.displayMetrics.density
 
@@ -82,21 +76,20 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                     .getOrDefault(pm.defaultActivityIcon)
             }
         )
-        holder.icon.alpha = 0.35f + (relScore * 0.65f)
+        holder.icon.alpha = prominence
 
         val bg = holder.itemView.background.mutate() as? GradientDrawable
         bg?.setColor(0xFF0E0E0E.toInt())
 
         if (entry.launchCount > 0) {
             val fillScale = entry.rank.coerceIn(0.02f, 1f)
-            val a = accent
             val r = 14f * dp
             val radii = floatArrayOf(r, r, r, r, r, r, r, r)
             val bar = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadii = radii
                 orientation = GradientDrawable.Orientation.LEFT_RIGHT
-                colors = intArrayOf(a.barStart, a.barEnd)
+                colors = intArrayOf(accent.barStart, accent.barEnd)
             }
             val halo = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
@@ -104,13 +97,12 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                 gradientType = GradientDrawable.RADIAL_GRADIENT
                 setGradientCenter(0.07f, 0.5f)
                 gradientRadius = 80f * dp
-                colors = intArrayOf(a.haloCore, a.haloMid, a.haloEdge)
+                colors = intArrayOf(accent.haloCore, accent.haloMid, accent.haloEdge)
             }
             val clip = ClipDrawable(LayerDrawable(arrayOf(bar, halo)), Gravity.START, ClipDrawable.HORIZONTAL)
             holder.progressFill.background = clip
             clip.level = (fillScale * 10000).toInt()
             holder.progressFill.alpha = 1f
-            holder.progressFill.scaleX = 1f
             holder.progressFill.visibility = View.VISIBLE
         } else {
             holder.progressFill.visibility = View.GONE
