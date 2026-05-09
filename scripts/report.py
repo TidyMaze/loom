@@ -72,7 +72,29 @@ def compute_scores(events, now_hour, now_dow, now_ms):
 # 3. Helpers
 # ---------------------------------------------------------------------------
 
+_PKG_ALIASES = {
+    "com.google.android.apps.dynamite": "Chat",
+    "com.google.android.apps.messaging": "Messages",
+    "com.google.android.apps.photos": "Photos",
+    "com.google.android.apps.maps": "Maps",
+    "com.google.android.gm": "Gmail",
+    "com.google.android.youtube": "YouTube",
+    "com.android.chrome": "Chrome",
+    "com.facebook.orca": "Messenger",
+    "com.facebook.katana": "Facebook",
+    "com.whatsapp": "WhatsApp",
+    "com.instagram.android": "Instagram",
+    "com.twitter.android": "Twitter",
+    "com.spotify.music": "Spotify",
+    "com.google.android.calendar": "Calendar",
+    "com.google.android.contacts": "Contacts",
+    "com.google.android.deskclock": "Clock",
+    "com.android.settings": "Settings",
+}
+
 def short_name(pkg):
+    if pkg in _PKG_ALIASES:
+        return _PKG_ALIASES[pkg]
     parts = pkg.split(".")
     return parts[-1] if parts[-1] not in ("android", "app") else parts[-2]
 
