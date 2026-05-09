@@ -126,7 +126,6 @@ def dark_fig(w=9, h=4.5):
 # ---------------------------------------------------------------------------
 
 def chart_score_ranking(scores, events):
-    counts = collections.Counter(e["packageName"] for e in events)
     max_score = max(scores.values()) or 1
     ranked = sorted(scores.items(), key=lambda x: -x[1])[:15]
     names  = [short_name(p) for p, _ in ranked]
