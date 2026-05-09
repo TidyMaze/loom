@@ -68,34 +68,12 @@ def compute_scores(events, now_hour, now_dow, now_ms):
 # 3. Helpers
 # ---------------------------------------------------------------------------
 
-_PKG_ALIASES = {
-    "com.google.android.apps.dynamite": "Chat",
-    "com.google.android.apps.messaging": "Messages",
-    "com.google.android.apps.photos": "Photos",
-    "com.google.android.apps.maps": "Maps",
-    "com.google.android.gm": "Gmail",
-    "com.google.android.youtube": "YouTube",
-    "com.android.chrome": "Chrome",
-    "com.facebook.orca": "Messenger",
-    "com.facebook.katana": "Facebook",
-    "com.whatsapp": "WhatsApp",
-    "com.instagram.android": "Instagram",
-    "com.twitter.android": "Twitter",
-    "com.spotify.music": "Spotify",
-    "com.google.android.calendar": "Calendar",
-    "com.google.android.contacts": "Contacts",
-    "com.google.android.deskclock": "Clock",
-    "com.android.settings": "Settings",
-    "fr.playsoft.teleloisirs": "Tele Loisirs",
-}
-
 PINNED_PKGS = ["fr.playsoft.teleloisirs"]
 
 def short_name(pkg):
-    if pkg in _PKG_ALIASES:
-        return _PKG_ALIASES[pkg]
     parts = pkg.split(".")
-    return parts[-1] if parts[-1] not in ("android", "app") else parts[-2]
+    seg = parts[-1] if parts[-1] not in ("android", "app", "mobile", "clients") else parts[-2]
+    return seg.replace("_", " ").title()
 
 PALETTE = [
     "#4C9BE8",  # blue
@@ -127,7 +105,7 @@ def apply_layout(fig, **extra):
 
 def chart_score_ranking(scores):
     max_score = max(scores.values()) or 1
-    ranked = sorted(scores.items(), key=lambda x: x[1])[-15:]
+    ranked = sorted(scores.items(), key=lambda x: x[1])
     names  = [short_name(p) for p, _ in ranked]
     vals   = [round(s / max_score, 4) for _, s in ranked]
     # gradient: dim grey → vivid blue as score rises
@@ -138,7 +116,7 @@ def chart_score_ranking(scores):
         marker=dict(color=colors, line=dict(width=0)),
         hovertemplate="<b>%{y}</b>: %{x:.3f}<extra></extra>",
     ))
-    apply_layout(fig, title="Current score ranking (top 15)", xaxis_title="Normalised score")
+    apply_layout(fig, title="Current score ranking", xaxis_title="Normalised score")
     fig.add_vline(x=0.5, line_dash="dash", line_color="#333333",
                   annotation_text="0.5", annotation_font_color="#555555")
     return fig
@@ -168,13 +146,13 @@ def chart_launches_by_hour(events):
     return fig
 
 
-def top_pkgs_with_pinned(events, n):
+def all_pkgs_with_pinned(events):
     counts = collections.Counter(e["packageName"] for e in events)
-    top = [p for p, _ in counts.most_common(n + len(PINNED_PKGS)) if p not in PINNED_PKGS][:n]
-    return top + [p for p in PINNED_PKGS if p in counts]
+    ranked = [p for p, _ in counts.most_common() if p not in PINNED_PKGS]
+    return ranked + [p for p in PINNED_PKGS if p in counts]
 
 def chart_app_hour_heatmap(events):
-    top_pkgs = top_pkgs_with_pinned(events, 8)
+    top_pkgs = all_pkgs_with_pinned(events)
     names = [short_name(p) for p in top_pkgs]
     matrix = [[0] * 24 for _ in top_pkgs]
     for e in events:
@@ -274,7 +252,7 @@ def chart_score_vs_recency(scores, events):
 
 def chart_score_forecast(events):
     now_ms  = int(time.time() * 1000)
-    top_pkgs = top_pkgs_with_pinned(events, 5)
+    top_pkgs = all_pkgs_with_pinned(events)
     by_pkg = {pkg: [e for e in events if e["packageName"] == pkg] for pkg in top_pkgs}
 
     # one point per hour over 7 days
@@ -311,7 +289,8 @@ def chart_score_forecast(events):
             max_score = ys[0]
 
     fig = go.Figure()
-    for (pkg, ys), color in zip(series.items(), PALETTE):
+    palette = PALETTE * (len(series) // len(PALETTE) + 1)
+    for (pkg, ys), color in zip(series.items(), palette):
         norm_ys = [round(y / max_score, 4) for y in ys]
         fig.add_trace(go.Scatter(
             x=future_times, y=norm_ys,
