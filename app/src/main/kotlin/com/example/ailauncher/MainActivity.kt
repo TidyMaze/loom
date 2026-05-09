@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
             val entry = adapter.currentList.getOrNull(i) ?: continue
             vh.stats.animate().alpha(1f).setDuration(180).withEndAction {
                 if (visible) {
-                    vh.stats.text = "%.2f".format(entry.score)
+                    vh.stats.text = if (entry.score > 0f) "%.1f%%".format(entry.score * 100f) else "—"
                     vh.stats.setTextColor(0xFFFFFFFF.toInt())
                 } else {
                     vh.stats.text = adapter.buildStats(entry)

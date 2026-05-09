@@ -23,7 +23,8 @@ class AppRepository(private val context: Context) {
             .map { it.activityInfo.packageName }.distinct()
 
         val events = usageStore.load()
-        val scores = ScoreEngine.score(events)
+        val rawScores = ScoreEngine.score(events)
+        val totalScore = rawScores.values.filter { it > 0f }.sum().coerceAtLeast(1f)
         val stats = computeStats(events)
 
         return installedApps
@@ -32,10 +33,11 @@ class AppRepository(private val context: Context) {
                     pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
                 }.getOrDefault(pkg)
                 val count = stats.countByPkg[pkg] ?: 0
+                val raw = rawScores[pkg]
                 AppEntry(
                     packageName = pkg,
                     label = label,
-                    score = scores[pkg] ?: (-index.toFloat()),
+                    score = if (raw != null && raw > 0f) raw / totalScore else (-index.toFloat()),
                     launchCount = count,
                     lastLaunchedMillis = stats.lastByPkg[pkg],
                     todayCount = stats.todayByPkg[pkg] ?: 0,
