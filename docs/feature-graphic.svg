@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <rect width="1024" height="500" fill="#000000"/>
+
+  <!-- Weave icon (3×2 plain weave, scaled up, centered left ~250,250) -->
+  <!-- V bars: w=28, gap=28. V1=155-183, V2=211-239, V3=267-295 -->
+  <!-- H bars: h=28, gap=28. H1=181-209, H2=237-265 -->
+  <!-- gap at crossings: g=5 -->
+
+  <!-- V1 (x=155-183): over H1, under H2 -->
+  <rect x="155" y="100" width="28" height="136" fill="#FFFFFF"/>
+  <rect x="155" y="270" width="28" height="130" fill="#FFFFFF"/>
+
+  <!-- V2 (x=211-239): under H1, over H2 -->
+  <rect x="211" y="100" width="28" height="76" fill="#FFFFFF"/>
+  <rect x="211" y="214" width="28" height="186" fill="#FFFFFF"/>
+
+  <!-- V3 (x=267-295): over H1, under H2 -->
+  <rect x="267" y="100" width="28" height="136" fill="#FFFFFF"/>
+  <rect x="267" y="270" width="28" height="130" fill="#FFFFFF"/>
+
+  <!-- H1 (y=181-209): over V2, under V1 & V3 -->
+  <rect x="100" y="181" width="50" height="28" fill="#FFFFFF"/>
+  <rect x="188" y="181" width="134" height="28" fill="#FFFFFF"/>
+  <rect x="300" y="181" width="50" height="28" fill="#FFFFFF"/>
+
+  <!-- H2 (y=237-265): over V1 & V3, under V2 -->
+  <rect x="100" y="237" width="106" height="28" fill="#FFFFFF"/>
+  <rect x="244" y="237" width="106" height="28" fill="#FFFFFF"/>
+
+  <!-- App name -->
+  <text
+    x="390" y="278"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="120"
+    font-weight="400"
+    letter-spacing="-2"
+    fill="#FFFFFF">Loom</text>
+
+  <!-- Tagline -->
+  <text
+    x="392" y="330"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="28"
+    font-weight="300"
+    letter-spacing="4"
+    fill="#888888">YOUR LAUNCHER THAT LEARNS</text>
+</svg>
