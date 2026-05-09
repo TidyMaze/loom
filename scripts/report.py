@@ -125,7 +125,7 @@ def dark_fig(w=9, h=4.5):
 # 4. Charts
 # ---------------------------------------------------------------------------
 
-def chart_score_ranking(scores, events):
+def chart_score_ranking(scores):
     max_score = max(scores.values()) or 1
     ranked = sorted(scores.items(), key=lambda x: -x[1])[:15]
     names  = [short_name(p) for p, _ in ranked]
@@ -394,7 +394,7 @@ def main():
     span_days = (max(ts_vals) - min(ts_vals)) / 86_400_000 if len(ts_vals) > 1 else 0
 
     print("Generating charts…")
-    c1 = chart_score_ranking(scores, events)
+    c1 = chart_score_ranking(scores)
     c2 = chart_launches_by_hour(events)
     c3 = chart_app_hour_heatmap(events)
     c4 = chart_decay_curve()
