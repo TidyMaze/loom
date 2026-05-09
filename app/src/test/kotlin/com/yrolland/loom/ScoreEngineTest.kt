@@ -1,4 +1,4 @@
-package com.example.ailauncher
+package com.yrolland.loom
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

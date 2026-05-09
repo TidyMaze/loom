@@ -1,4 +1,4 @@
-package com.example.ailauncher
+package com.yrolland.loom
 
 import android.graphics.Typeface
 import android.graphics.drawable.ClipDrawable

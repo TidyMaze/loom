@@ -1,4 +1,4 @@
-package com.example.ailauncher
+package com.yrolland.loom
 
 data class Accent(
     val greeting: Int,

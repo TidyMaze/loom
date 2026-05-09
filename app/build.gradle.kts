@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ailauncher"
+    namespace = "com.yrolland.loom"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.ailauncher"
+        applicationId = "com.yrolland.loom"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

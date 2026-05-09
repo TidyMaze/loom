@@ -1,4 +1,4 @@
-package com.example.ailauncher
+package com.yrolland.loom
 
 import kotlin.math.abs
 import kotlin.math.exp

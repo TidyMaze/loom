@@ -1,4 +1,4 @@
-package com.example.ailauncher
+package com.yrolland.loom
 
 import android.graphics.Canvas
 import android.graphics.Color
