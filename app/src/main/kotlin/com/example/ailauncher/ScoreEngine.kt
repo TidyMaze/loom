@@ -8,7 +8,7 @@ object ScoreEngine {
 
     // Gaussian σ in hours: smooth bell curve instead of a binary match/miss step.
     // σ=3 means half-peak at ~2.5h away; no hard cutoff, so score transitions are gradual.
-    private const val HOUR_SIGMA = 3f
+    private const val HOUR_SIGMA = 2f
     private const val DECAY_HALF_LIFE_DAYS = 7f
     private const val MS_PER_DAY = 86_400_000f
 
