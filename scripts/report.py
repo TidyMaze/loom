@@ -311,7 +311,114 @@ def chart_score_forecast(events):
     return fig
 
 # ---------------------------------------------------------------------------
-# 5. HTML report
+# 5. MRR evaluation
+# ---------------------------------------------------------------------------
+
+def compute_mrr(events):
+    """
+    For each launch event i, replay history up to (but not including) i,
+    compute scores at the hour of launch, rank all known apps, and record
+    the rank of the launched app. MRR = mean(1/rank).
+    Random baseline on N apps ≈ (ln N + 0.577) / N.
+    """
+    # sort by time
+    events = sorted(events, key=lambda e: e["timestampMillis"])
+    all_pkgs = list({e["packageName"] for e in events})
+    n = len(all_pkgs)
+
+    reciprocal_ranks = []
+    per_app = collections.defaultdict(list)
+
+    for i, target in enumerate(events):
+        history = events[:i]
+        if not history:
+            continue
+        pkg    = target["packageName"]
+        ts     = target["timestampMillis"]
+        hour   = target["hour"]
+        dow    = target.get("dayOfWeek", 0) or datetime.datetime.fromtimestamp(ts / 1000).isoweekday()
+        scores = compute_scores(history, hour, dow, ts)
+        # apps with no history get score 0
+        ranked = sorted(all_pkgs, key=lambda p: scores.get(p, 0.0), reverse=True)
+        rank   = ranked.index(pkg) + 1
+        rr     = 1.0 / rank
+        reciprocal_ranks.append(rr)
+        per_app[pkg].append(rr)
+
+    mrr     = sum(reciprocal_ranks) / len(reciprocal_ranks) if reciprocal_ranks else 0
+    random  = sum(1 / r for r in range(1, n + 1)) / n  # harmonic mean = random baseline
+
+    # per-app MRR (only apps with ≥3 launches for reliability)
+    app_mrr = {
+        pkg: sum(rrs) / len(rrs)
+        for pkg, rrs in per_app.items()
+        if len(rrs) >= 3
+    }
+    return mrr, random, app_mrr, reciprocal_ranks
+
+
+def chart_mrr(events):
+    mrr, random_baseline, app_mrr, rrs = compute_mrr(events)
+
+    # Chart 1: per-app MRR bar
+    sorted_apps = sorted(app_mrr.items(), key=lambda x: x[1])
+    names  = [short_name(p) for p, _ in sorted_apps]
+    vals   = [v for _, v in sorted_apps]
+    colors = [PALETTE[0] if v > mrr else "#444444" for v in vals]
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=vals, y=names, orientation="h",
+        marker=dict(color=colors, line=dict(width=0)),
+        hovertemplate="<b>%{y}</b>: MRR=%{x:.3f}<extra></extra>",
+        name="per-app MRR",
+    ))
+    fig.add_vline(x=mrr, line_dash="dash", line_color="#dddddd",
+                  annotation_text=f"overall {mrr:.3f}", annotation_font_color="#dddddd")
+    fig.add_vline(x=random_baseline, line_dash="dot", line_color="#FF6B6B",
+                  annotation_text=f"random {random_baseline:.3f}", annotation_font_color="#FF6B6B")
+    apply_layout(fig,
+        title=f"Mean Reciprocal Rank per app  (overall MRR={mrr:.3f}, random={random_baseline:.3f})",
+        xaxis_title="MRR  (higher = better predicted)",
+    )
+    return fig, mrr, random_baseline
+
+
+def chart_rank_distribution(events):
+    _, _, _, rrs = compute_mrr(events)
+    # histogram of ranks (1/rr = rank)
+    ranks = [round(1 / r) for r in rrs]
+    max_rank = min(max(ranks), 15)
+    counts = collections.Counter(ranks)
+    xs = list(range(1, max_rank + 1))
+    ys = [counts.get(x, 0) for x in xs]
+    total = sum(ys)
+    pcts  = [y / total * 100 for y in ys]
+
+    fig = go.Figure(go.Bar(
+        x=xs, y=pcts,
+        marker=dict(
+            color=[PALETTE[0] if x <= 3 else "#444444" for x in xs],
+            line=dict(width=0),
+        ),
+        hovertemplate="Rank %{x}: %{y:.1f}%<extra></extra>",
+    ))
+    apply_layout(fig,
+        title="Rank of launched app at launch time (top-15 shown)",
+        xaxis_title="Rank", yaxis_title="% of launches",
+    )
+    cumulative = sum(pcts[:3])
+    fig.add_annotation(
+        x=3, y=max(pcts[:3]),
+        text=f"Top-3: {cumulative:.0f}% of launches",
+        showarrow=False, font=dict(color="#dddddd", size=11),
+        xanchor="left", yanchor="bottom",
+    )
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# 6. HTML report
 # ---------------------------------------------------------------------------
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -349,6 +456,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="caption">Score vs recency — points should cluster near the red decay reference, confirming decay drives ranking.</div></div>
   <div class="card wide"><div id="c7" style="height:480px"></div>
     <div class="caption">Score forecast (next 7 days, hourly) — oscillations from hour/day matching riding on decay envelope. Hover for exact values.</div></div>
+  <div class="card wide"><div id="c8" style="height:460px"></div>
+    <div class="caption">MRR per app — for each recorded launch, we replay history up to that moment and check what rank the launched app had. Blue = above overall average. Red line = random baseline ({n_apps} apps → {random_baseline}).</div></div>
+  <div class="card wide"><div id="c9" style="height:380px"></div>
+    <div class="caption">Rank distribution — how often the launched app was rank 1, 2, 3… at launch time. More weight on the left = better learning.</div></div>
 </div>
 <script>
 {scripts}
@@ -404,11 +515,17 @@ def main():
     print("Generating 7-day forecast…")
     figs.append(("c7", chart_score_forecast(events)))
 
+    print("Computing MRR (replaying history per launch)…")
+    fig_mrr, mrr, random_baseline = chart_mrr(events)
+    figs.append(("c8", fig_mrr))
+    figs.append(("c9", chart_rank_distribution(events)))
+
     html = HTML_TEMPLATE.format(
         ts=now.strftime("%Y-%m-%d %H:%M"),
         n_events=len(events),
         n_apps=len(pkgs),
         span_days=span_days,
+        random_baseline=f"{random_baseline:.3f}",
         scripts=figs_to_scripts(figs),
     )
 
