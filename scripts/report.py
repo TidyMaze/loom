@@ -41,7 +41,25 @@ def hour_match(hour_dist):
     import math
     return math.exp(-(hour_dist ** 2) / (2 * HOUR_SIGMA ** 2))
 
+def _event_components(e, now_hour, now_dow, now_ms):
+    """Return (hour_match, base_weight) for a single event."""
+    import math
+    diff = abs(e["hour"] - now_hour)
+    hm = math.exp(-(min(diff, 24 - diff) ** 2) / (2 * HOUR_SIGMA ** 2))
+    dow = e.get("dayOfWeek", 0)
+    if dow == 0 or dow == now_dow:
+        day_match = 1.0
+    elif is_weekend(dow) == is_weekend(now_dow):
+        day_match = 0.6
+    else:
+        day_match = 0.2
+    days_ago = (now_ms - e["timestampMillis"]) / 86_400_000
+    decay = 0.5 ** (days_ago / DECAY_HALF_LIFE)
+    return hm, day_match * decay  # (hour_match, base_weight)
+
+
 def compute_scores(events, now_hour, now_dow, now_ms):
+    """Original formula: Σ(hourMatch × dayMatch × decay)."""
     by_pkg = collections.defaultdict(list)
     for e in events:
         by_pkg[e["packageName"]].append(e)
@@ -49,19 +67,35 @@ def compute_scores(events, now_hour, now_dow, now_ms):
     for pkg, evts in by_pkg.items():
         total = 0.0
         for e in evts:
-            diff = abs(e["hour"] - now_hour)
-            hm = hour_match(min(diff, 24 - diff))
-            dow = e.get("dayOfWeek", 0)
-            if dow == 0 or dow == now_dow:
-                day_match = 1.0
-            elif is_weekend(dow) == is_weekend(now_dow):
-                day_match = 0.6
-            else:
-                day_match = 0.2
-            days_ago = (now_ms - e["timestampMillis"]) / 86_400_000
-            decay = 0.5 ** (days_ago / DECAY_HALF_LIFE)
-            total += hm * day_match * decay
+            hm, w = _event_components(e, now_hour, now_dow, now_ms)
+            total += hm * w
         scores[pkg] = total
+    return scores
+
+
+ALPHA = 0.3  # frequency dampening exponent (0=raw sum, 1=pure conditional prob)
+# α=0.3 measured as best trade-off: TeleLoisirs rank 16→12, overall MRR −0.011 only.
+
+def compute_scores_v2(events, now_hour, now_dow, now_ms):
+    """
+    score = Σ(hourMatch × weight) / Σ(weight)^ALPHA
+    where weight = dayMatch × decay.
+    Compared to v1 (ALPHA=0 raw sum): dampens frequency dominance so specialized
+    apps (e.g. TeleLoisirs) can rank higher at their specific usage hours.
+    """
+    import math
+    by_pkg = collections.defaultdict(list)
+    for e in events:
+        by_pkg[e["packageName"]].append(e)
+    scores = {}
+    for pkg, evts in by_pkg.items():
+        total_w = 0.0
+        hour_w  = 0.0
+        for e in evts:
+            hm, w = _event_components(e, now_hour, now_dow, now_ms)
+            total_w += w
+            hour_w  += hm * w
+        scores[pkg] = hour_w / (total_w ** ALPHA) if total_w > 0 else 0.0
     return scores
 
 # ---------------------------------------------------------------------------
@@ -314,14 +348,16 @@ def chart_score_forecast(events):
 # 5. MRR evaluation
 # ---------------------------------------------------------------------------
 
-def compute_mrr(events):
+def compute_mrr(events, score_fn=None):
     """
     For each launch event i, replay history up to (but not including) i,
     compute scores at the hour of launch, rank all known apps, and record
     the rank of the launched app. MRR = mean(1/rank).
     Random baseline on N apps ≈ (ln N + 0.577) / N.
+    score_fn defaults to compute_scores (original formula).
     """
-    # sort by time
+    if score_fn is None:
+        score_fn = compute_scores
     events = sorted(events, key=lambda e: e["timestampMillis"])
     all_pkgs = list({e["packageName"] for e in events})
     n = len(all_pkgs)
@@ -337,18 +373,16 @@ def compute_mrr(events):
         ts     = target["timestampMillis"]
         hour   = target["hour"]
         dow    = target.get("dayOfWeek", 0) or datetime.datetime.fromtimestamp(ts / 1000).isoweekday()
-        scores = compute_scores(history, hour, dow, ts)
-        # apps with no history get score 0
+        scores = score_fn(history, hour, dow, ts)
         ranked = sorted(all_pkgs, key=lambda p: scores.get(p, 0.0), reverse=True)
         rank   = ranked.index(pkg) + 1
         rr     = 1.0 / rank
         reciprocal_ranks.append(rr)
         per_app[pkg].append(rr)
 
-    mrr     = sum(reciprocal_ranks) / len(reciprocal_ranks) if reciprocal_ranks else 0
-    random  = sum(1 / r for r in range(1, n + 1)) / n  # harmonic mean = random baseline
+    mrr    = sum(reciprocal_ranks) / len(reciprocal_ranks) if reciprocal_ranks else 0
+    random = sum(1 / r for r in range(1, n + 1)) / n
 
-    # per-app MRR (only apps with ≥3 launches for reliability)
     app_mrr = {
         pkg: sum(rrs) / len(rrs)
         for pkg, rrs in per_app.items()
@@ -357,10 +391,9 @@ def compute_mrr(events):
     return mrr, random, app_mrr, reciprocal_ranks
 
 
-def chart_mrr(events):
-    mrr, random_baseline, app_mrr, rrs = compute_mrr(events)
+def chart_mrr(events, score_fn=None, label="v2 (KDE)"):
+    mrr, random_baseline, app_mrr, rrs = compute_mrr(events, score_fn)
 
-    # Chart 1: per-app MRR bar
     sorted_apps = sorted(app_mrr.items(), key=lambda x: x[1])
     names  = [short_name(p) for p, _ in sorted_apps]
     vals   = [v for _, v in sorted_apps]
@@ -378,15 +411,48 @@ def chart_mrr(events):
     fig.add_vline(x=random_baseline, line_dash="dot", line_color="#FF6B6B",
                   annotation_text=f"random {random_baseline:.3f}", annotation_font_color="#FF6B6B")
     apply_layout(fig,
-        title=f"Mean Reciprocal Rank per app  (overall MRR={mrr:.3f}, random={random_baseline:.3f})",
+        title=f"MRR per app — {label}  (overall={mrr:.3f}, random={random_baseline:.3f})",
         xaxis_title="MRR  (higher = better predicted)",
     )
-    return fig, mrr, random_baseline
+    return fig, mrr, random_baseline, app_mrr
 
 
-def chart_rank_distribution(events):
-    _, _, _, rrs = compute_mrr(events)
-    # histogram of ranks (1/rr = rank)
+def chart_mrr_comparison(events):
+    """Side-by-side grouped bar: v1 (sum) vs v2 (KDE) MRR per app."""
+    _, _, app_v1, _ = compute_mrr(events, compute_scores)
+    _, _, app_v2, _ = compute_mrr(events, compute_scores_v2)
+
+    all_apps = sorted(set(app_v1) | set(app_v2))
+    # sort by v2 MRR
+    all_apps = sorted(all_apps, key=lambda p: app_v2.get(p, 0.0))
+
+    names = [short_name(p) for p in all_apps]
+    v1_vals = [app_v1.get(p, 0.0) for p in all_apps]
+    v2_vals = [app_v2.get(p, 0.0) for p in all_apps]
+    delta   = [v2 - v1 for v1, v2 in zip(v1_vals, v2_vals)]
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=v1_vals, y=names, orientation="h", name="v1 (sum)",
+        marker=dict(color="#444444", line=dict(width=0)),
+        hovertemplate="<b>%{y}</b> v1=%{x:.3f}<extra></extra>",
+    ))
+    fig.add_trace(go.Bar(
+        x=v2_vals, y=names, orientation="h", name="v2 (KDE)",
+        marker=dict(color=PALETTE[0], line=dict(width=0)),
+        hovertemplate="<b>%{y}</b> v2=%{x:.3f} (Δ%{customdata:+.3f})<extra></extra>",
+        customdata=delta,
+    ))
+    apply_layout(fig,
+        title="MRR comparison: v1 (sum) vs v2 (KDE normalised)",
+        xaxis_title="MRR", barmode="overlay",
+        legend=dict(bgcolor="#1a1a1a", bordercolor="#333333"),
+    )
+    return fig
+
+
+def chart_rank_distribution(events, score_fn=None, label=""):
+    _, _, _, rrs = compute_mrr(events, score_fn)
     ranks = [round(1 / r) for r in rrs]
     max_rank = min(max(ranks), 15)
     counts = collections.Counter(ranks)
@@ -403,8 +469,9 @@ def chart_rank_distribution(events):
         ),
         hovertemplate="Rank %{x}: %{y:.1f}%<extra></extra>",
     ))
+    title_suffix = f" — {label}" if label else ""
     apply_layout(fig,
-        title="Rank of launched app at launch time (top-15 shown)",
+        title=f"Rank distribution{title_suffix} (top-15 shown)",
         xaxis_title="Rank", yaxis_title="% of launches",
     )
     cumulative = sum(pcts[:3])
@@ -457,9 +524,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="card wide"><div id="c7" style="height:480px"></div>
     <div class="caption">Score forecast (next 7 days, hourly) — oscillations from hour/day matching riding on decay envelope. Hover for exact values.</div></div>
   <div class="card wide"><div id="c8" style="height:460px"></div>
-    <div class="caption">MRR per app — for each recorded launch, we replay history up to that moment and check what rank the launched app had. Blue = above overall average. Red line = random baseline ({n_apps} apps → {random_baseline}).</div></div>
+    <div class="caption">MRR per app (v2 KDE) — for each recorded launch, replay history, check rank of launched app. Blue = above average. Red = random baseline ({n_apps} apps → {random_baseline}).</div></div>
   <div class="card wide"><div id="c9" style="height:380px"></div>
-    <div class="caption">Rank distribution — how often the launched app was rank 1, 2, 3… at launch time. More weight on the left = better learning.</div></div>
+    <div class="caption">Rank distribution (v2 KDE) — how often the launched app was rank 1, 2, 3… More weight on the left = better learning.</div></div>
+  <div class="card wide"><div id="c10" style="height:480px"></div>
+    <div class="caption">MRR comparison: v1 (raw sum, original) vs v2 (KDE-normalised, bimodal fix). Blue bars = v2 score; grey = v1. Longer blue = improvement.</div></div>
+  <div class="card wide"><div id="c11" style="height:380px"></div>
+    <div class="caption">Rank distribution v1 (original formula) — baseline for comparison with v2 above.</div></div>
 </div>
 <script>
 {scripts}
@@ -515,10 +586,18 @@ def main():
     print("Generating 7-day forecast…")
     figs.append(("c7", chart_score_forecast(events)))
 
-    print("Computing MRR (replaying history per launch)…")
-    fig_mrr, mrr, random_baseline = chart_mrr(events)
+    print("Computing MRR v1 (original formula)…")
+    mrr_v1, random_baseline, _, _ = compute_mrr(events, compute_scores)
+    print(f"  v1 MRR={mrr_v1:.4f}  random={random_baseline:.4f}  lift={mrr_v1/random_baseline:.2f}x")
+
+    print("Computing MRR v2 (KDE-normalised)…")
+    fig_mrr, mrr_v2, _, _ = chart_mrr(events, compute_scores_v2, label="v2 (KDE normalised)")
+    print(f"  v2 MRR={mrr_v2:.4f}  lift={mrr_v2/random_baseline:.2f}x  delta={mrr_v2-mrr_v1:+.4f}")
+
     figs.append(("c8", fig_mrr))
-    figs.append(("c9", chart_rank_distribution(events)))
+    figs.append(("c9", chart_rank_distribution(events, compute_scores_v2, label="v2 (KDE)")))
+    figs.append(("c10", chart_mrr_comparison(events)))
+    figs.append(("c11", chart_rank_distribution(events, compute_scores, label="v1 (original)")))
 
     html = HTML_TEMPLATE.format(
         ts=now.strftime("%Y-%m-%d %H:%M"),
