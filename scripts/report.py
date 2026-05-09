@@ -253,22 +253,23 @@ def chart_score_forecast(events):
     top_pkgs = all_pkgs_with_pinned(events)
     by_pkg = {pkg: [e for e in events if e["packageName"] == pkg] for pkg in top_pkgs}
 
-    # one point per hour over 7 days
-    hours_ahead = list(range(7 * 24 + 1))
+    # one point per minute over 7 days; fractional hour keeps Gaussian smooth across boundaries
+    minutes_ahead = list(range(7 * 24 * 60 + 1))
     future_times = [
-        datetime.datetime.fromtimestamp((now_ms + h * 3_600_000) / 1000)
-        for h in hours_ahead
+        datetime.datetime.fromtimestamp((now_ms + m * 60_000) / 1000)
+        for m in minutes_ahead
     ]
 
     max_score = 1.0  # will be updated after first pass
     series = {}
     for pkg, evts in by_pkg.items():
         ys = []
-        for h, ft in zip(hours_ahead, future_times):
-            future_ms  = now_ms + h * 3_600_000
+        for m, ft in zip(minutes_ahead, future_times):
+            future_ms  = now_ms + m * 60_000
+            frac_hour  = ft.hour + ft.minute / 60
             total = 0.0
             for e in evts:
-                diff = abs(e["hour"] - ft.hour)
+                diff = abs(e["hour"] - frac_hour)
                 hm  = hour_match(min(diff, 24 - diff))
                 dow = e.get("dayOfWeek", 0)
                 fdow = ft.isoweekday()
@@ -303,7 +304,7 @@ def chart_score_forecast(events):
         fig.add_vline(x=sep.timestamp() * 1000, line_dash="dot", line_color="#2a2a2a")
 
     apply_layout(fig,
-        title="Score forecast — top 5 apps, next 7 days (hourly, real events + real formula)",
+        title="Score forecast — all apps, next 7 days (per minute, real events + real formula)",
         xaxis_title="Time", yaxis_title="Normalised score",
         yaxis_range=[0, None],
         legend=dict(bgcolor="#1a1a1a", bordercolor="#333333"),
@@ -401,7 +402,7 @@ def main():
         ("c5", chart_day_of_week(events)),
         ("c6", chart_score_vs_recency(scores, events)),
     ]
-    print("Generating 7-day forecast…")
+    print("Generating 7-day forecast (per minute, this may take a moment)…")
     figs.append(("c7", chart_score_forecast(events)))
 
     html = HTML_TEMPLATE.format(
