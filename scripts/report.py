@@ -86,7 +86,10 @@ _PKG_ALIASES = {
     "com.google.android.contacts": "Contacts",
     "com.google.android.deskclock": "Clock",
     "com.android.settings": "Settings",
+    "fr.playsoft.teleloisirs": "Tele Loisirs",
 }
+
+PINNED_PKGS = ["fr.playsoft.teleloisirs"]
 
 def short_name(pkg):
     if pkg in _PKG_ALIASES:
@@ -165,9 +168,13 @@ def chart_launches_by_hour(events):
     return fig
 
 
+def top_pkgs_with_pinned(events, n):
+    counts = collections.Counter(e["packageName"] for e in events)
+    top = [p for p, _ in counts.most_common(n + len(PINNED_PKGS)) if p not in PINNED_PKGS][:n]
+    return top + [p for p in PINNED_PKGS if p in counts]
+
 def chart_app_hour_heatmap(events):
-    top_pkgs = [p for p, _ in collections.Counter(
-        e["packageName"] for e in events).most_common(8)]
+    top_pkgs = top_pkgs_with_pinned(events, 8)
     names = [short_name(p) for p in top_pkgs]
     matrix = [[0] * 24 for _ in top_pkgs]
     for e in events:
@@ -267,8 +274,7 @@ def chart_score_vs_recency(scores, events):
 
 def chart_score_forecast(events):
     now_ms  = int(time.time() * 1000)
-    top_pkgs = [p for p, _ in collections.Counter(
-        e["packageName"] for e in events).most_common(5)]
+    top_pkgs = top_pkgs_with_pinned(events, 5)
     by_pkg = {pkg: [e for e in events if e["packageName"] == pkg] for pkg in top_pkgs}
 
     # one point per hour over 7 days
