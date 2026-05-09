@@ -31,7 +31,7 @@ def pull_events():
 # 2. ScoreEngine — Python port of ScoreEngine.kt
 # ---------------------------------------------------------------------------
 
-HOUR_SIGMA      = 2.0   # Gaussian σ in hours — smooth bell curve instead of hard cutoff
+HOUR_SIGMA      = 1.5   # Gaussian σ in hours — smooth bell curve instead of hard cutoff
 DECAY_HALF_LIFE = 7.0
 
 def is_weekend(dow):
