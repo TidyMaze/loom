@@ -74,9 +74,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val statsText = buildStats(entry)
         holder.stats.text = statsText
         holder.stats.alpha = if (showScores) 1f else 0.75f
-        holder.stats.setTextColor(
-            if (statsText == "now") 0xFFFFFFFF.toInt() else 0xFF888888.toInt()
-        )
+        holder.stats.setTextColor(statsColor(statsText))
 
         holder.icon.setImageDrawable(
             iconCache.getOrPut(entry.packageName) {
@@ -87,12 +85,11 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         holder.icon.alpha = 0.35f + (relScore * 0.65f)
 
         val bg = holder.itemView.background.mutate() as? GradientDrawable
-        bg?.setColor(0xFF0E0E0E.toInt()) // near-black card, lifts off pure black bg
+        bg?.setColor(0xFF0E0E0E.toInt())
 
         if (entry.launchCount > 0) {
             val fillScale = entry.rank.coerceIn(0.02f, 1f)
             val a = accent
-            val dp = holder.progressFill.resources.displayMetrics.density
             val r = 14f * dp
             val radii = floatArrayOf(r, r, r, r, r, r, r, r)
             val bar = GradientDrawable().apply {
@@ -130,9 +127,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         }
     }
 
-    fun buildStatsPublic(entry: AppEntry) = buildStats(entry)
-
-    private fun buildStats(entry: AppEntry): String {
+    fun buildStats(entry: AppEntry): String {
         if (entry.launchCount == 0) return "never"
         val lastMillis = entry.lastLaunchedMillis ?: return ""
         val diffMs = System.currentTimeMillis() - lastMillis
@@ -151,6 +146,9 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
     }
 
     companion object {
+        fun statsColor(text: String): Int =
+            if (text == "now") 0xFFFFFFFF.toInt() else 0xFF888888.toInt()
+
         private val DIFF = object : DiffUtil.ItemCallback<AppEntry>() {
             override fun areItemsTheSame(a: AppEntry, b: AppEntry) = a.packageName == b.packageName
             override fun areContentsTheSame(a: AppEntry, b: AppEntry) = a == b

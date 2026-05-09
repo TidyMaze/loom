@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
@@ -25,11 +24,7 @@ class AppRepository(private val context: Context) {
         val installedApps = resolveInfos.map { it.activityInfo.packageName }.distinct()
 
         val events = usageStore.load()
-        val scores = ScoreEngine.score(
-            events,
-            currentHour = LocalTime.now().hour,
-            currentDayOfWeek = LocalDate.now().dayOfWeek.value
-        )
+        val scores = ScoreEngine.score(events)
         val countByPkg = events.groupingBy { it.packageName }.eachCount()
         val lastByPkg = events.groupBy { it.packageName }.mapValues { (_, e) -> e.maxOf { it.timestampMillis } }
 

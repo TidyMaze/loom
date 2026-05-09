@@ -6,6 +6,13 @@ import java.time.ZoneId
 data class UsageEvent(
     val packageName: String,
     val timestampMillis: Long,
-    val hour: Int = Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault()).hour,
-    val dayOfWeek: Int = Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault()).dayOfWeek.value // 1=Mon … 7=Sun; 0 = legacy
-)
+    val hour: Int,
+    val dayOfWeek: Int
+) {
+    companion object {
+        operator fun invoke(packageName: String, timestampMillis: Long): UsageEvent {
+            val zdt = Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault())
+            return UsageEvent(packageName, timestampMillis, zdt.hour, zdt.dayOfWeek.value)
+        }
+    }
+}

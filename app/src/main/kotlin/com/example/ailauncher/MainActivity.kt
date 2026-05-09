@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var greeting: TextView
     private var fullList: List<AppEntry> = emptyList()
     private var searchShownAt = 0L
-    private var wasPaused = false
+    private var needsRefresh = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        wasPaused = true // treat first launch as coming from outside
+        needsRefresh = true // treat first launch as coming from outside
 
         viewModel.apps.observe(this) { apps ->
             fullList = apps
@@ -99,13 +99,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        wasPaused = true
+        needsRefresh = true
     }
 
     override fun onResume() {
         super.onResume()
-        if (!wasPaused) return
-        wasPaused = false
+        if (!needsRefresh) return
+        needsRefresh = false
         applyAccent()
         greeting.alpha = 0f
         greeting.animate().alpha(1f).setDuration(350).start()
@@ -172,10 +172,8 @@ class MainActivity : AppCompatActivity() {
                     vh.stats.text = "%.2f".format(entry.score)
                     vh.stats.setTextColor(0xFFFFFFFF.toInt())
                 } else {
-                    vh.stats.text = adapter.buildStatsPublic(entry)
-                    vh.stats.setTextColor(
-                        if (vh.stats.text == "now") 0xFFFFFFFF.toInt() else 0xFF888888.toInt()
-                    )
+                    vh.stats.text = adapter.buildStats(entry)
+                    vh.stats.setTextColor(AppAdapter.statsColor(vh.stats.text.toString()))
                     vh.stats.animate().alpha(0.6f).setDuration(180).start()
                 }
             }.start()
@@ -190,6 +188,9 @@ class MainActivity : AppCompatActivity() {
             textAlign = Paint.Align.RIGHT
         }
         val helper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder) = 0.7f
+            override fun getSwipeEscapeVelocity(defaultValue: Float) = defaultValue * 4f
+            override fun getSwipeVelocityThreshold(defaultValue: Float) = defaultValue * 4f
             override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
 
             override fun onSwiped(vh: RecyclerView.ViewHolder, direction: Int) {
@@ -202,7 +203,8 @@ class MainActivity : AppCompatActivity() {
                 val v = vh.itemView
                 val r = 14 * v.resources.displayMetrics.density
                 val rect = RectF(v.left.toFloat(), v.top.toFloat(), v.right.toFloat(), v.bottom.toFloat())
-                paint.color = 0xFFB71C1C.toInt()
+                val triggered = dX < -v.width * 0.7f
+                paint.color = if (triggered) 0xFFE53935.toInt() else 0xFF8B0000.toInt()
                 c.drawRoundRect(rect, r, r, paint)
                 // Center "Reset" in the revealed area (right of the sliding row)
                 val revealedLeft = v.right + dX
