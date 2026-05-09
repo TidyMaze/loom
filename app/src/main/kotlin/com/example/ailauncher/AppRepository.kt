@@ -57,7 +57,7 @@ class AppRepository(private val context: Context) {
     private fun computeStats(events: List<UsageEvent>): UsageStats {
         val countByPkg = events.groupingBy { it.packageName }.eachCount()
         val lastByPkg = events.groupBy { it.packageName }.mapValues { (_, e) -> e.maxOf { it.timestampMillis } }
-        val todayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val todayStart = System.currentTimeMillis() - 86_400_000L
         val todayByPkg = events.filter { it.timestampMillis >= todayStart }
             .groupingBy { it.packageName }.eachCount()
         val spanDays = if (events.isEmpty()) 1f else {
