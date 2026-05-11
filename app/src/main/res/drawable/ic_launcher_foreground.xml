@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  3×2 plain weave pattern on 108×108 canvas (safe zone 18–90).
+  Bars: 3 vertical (w=12, x=24-36, 48-60, 72-84), 2 horizontal (h=12, y=39-51, 63-75).
+  Gap g=2 at each under-crossing to show the over/under illusion.
+
+  Weave:  V1↑H1  V2↓H1  V3↑H1
+           V1↓H2  V2↑H2  V3↓H2
+  (↑=V over H, ↓=H over V)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- V1 (x=24-36): over H1, under H2 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M24,18 L36,18 L36,61 L24,61 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M24,77 L36,77 L36,90 L24,90 Z"/>
+
+    <!-- V2 (x=48-60): under H1, over H2 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M48,18 L60,18 L60,37 L48,37 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M48,53 L60,53 L60,90 L48,90 Z"/>
+
+    <!-- V3 (x=72-84): over H1, under H2 (mirrors V1) -->
+    <path android:fillColor="#FFFFFF" android:pathData="M72,18 L84,18 L84,61 L72,61 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M72,77 L84,77 L84,90 L72,90 Z"/>
+
+    <!-- H1 (y=39-51): over V2, under V1 & V3 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M18,39 L22,39 L22,51 L18,51 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M38,39 L70,39 L70,51 L38,51 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M86,39 L90,39 L90,51 L86,51 Z"/>
+
+    <!-- H2 (y=63-75): over V1 & V3, under V2 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M18,63 L46,63 L46,75 L18,75 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M62,63 L90,63 L90,75 L62,75 Z"/>
+
+</vector>
