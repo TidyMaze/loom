@@ -24,6 +24,34 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun setPinned(packageName: String, pinned: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.setPinned(packageName, pinned)
+            fetchAndPost()
+        }
+    }
+
+    fun setHidden(packageName: String, hidden: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.setHidden(packageName, hidden)
+            fetchAndPost()
+        }
+    }
+
+    fun clearUsage() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.clearUsage()
+            fetchAndPost()
+        }
+    }
+
+    fun clearAll() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.clearAll()
+            fetchAndPost()
+        }
+    }
+
     private fun fetchAndPost() {
         val all = repository.getRankedApps()
         val maxScore = all.maxOfOrNull { it.score.coerceAtLeast(0f) }?.takeIf { it > 0f } ?: 1f

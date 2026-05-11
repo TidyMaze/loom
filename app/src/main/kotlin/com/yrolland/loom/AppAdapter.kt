@@ -5,6 +5,7 @@ import android.graphics.drawable.ClipDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.util.LruCache
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +15,19 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
-class AppAdapter(private val onClick: (AppEntry) -> Unit) :
-    ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
+class AppAdapter(
+    private val scope: CoroutineScope,
+    private val onClick: (AppEntry) -> Unit,
+    private val onLongClickItem: (AppEntry) -> Unit = {}
+) : ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
 
-    private val iconCache = HashMap<String, Drawable>()
+    private val iconCache = LruCache<String, Drawable>(150)
     var showScores = false
     var accent: Accent = accentForNow()
 
@@ -28,6 +36,7 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         val label: TextView = view.findViewById(R.id.tv_label)
         val stats: TextView = view.findViewById(R.id.tv_stats)
         val progressFill: View = view.findViewById(R.id.v_progress_fill)
+        val pin: TextView = view.findViewById(R.id.tv_pin)
     }
 
     init { setHasStableIds(true) }
@@ -70,12 +79,26 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
         holder.stats.alpha = if (showScores) 1f else 0.75f
         holder.stats.setTextColor(statsColor(statsText))
 
-        holder.icon.setImageDrawable(
-            iconCache.getOrPut(entry.packageName) {
-                runCatching { pm.getApplicationIcon(entry.packageName) }
-                    .getOrDefault(pm.defaultActivityIcon)
+        holder.pin.visibility = if (entry.isPinned) View.VISIBLE else View.GONE
+
+        // Icon: cache hit = sync set; miss = placeholder + async load
+        holder.icon.tag = entry.packageName
+        val cached = iconCache[entry.packageName]
+        if (cached != null) {
+            holder.icon.setImageDrawable(cached)
+        } else {
+            holder.icon.setImageDrawable(pm.defaultActivityIcon)
+            scope.launch {
+                val icon = withContext(Dispatchers.Default) {
+                    runCatching { pm.getApplicationIcon(entry.packageName) }
+                        .getOrDefault(pm.defaultActivityIcon)
+                }
+                iconCache.put(entry.packageName, icon)
+                if (holder.icon.tag == entry.packageName) {
+                    holder.icon.setImageDrawable(icon)
+                }
             }
-        )
+        }
         holder.icon.alpha = prominence
 
         val bg = holder.itemView.background.mutate() as? GradientDrawable
@@ -116,6 +139,10 @@ class AppAdapter(private val onClick: (AppEntry) -> Unit) :
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
                     onClick(entry)
                 }.start()
+        }
+        holder.itemView.setOnLongClickListener {
+            onLongClickItem(entry)
+            true
         }
     }
 

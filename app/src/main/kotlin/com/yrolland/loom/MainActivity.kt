@@ -18,6 +18,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -55,9 +56,13 @@ class MainActivity : AppCompatActivity() {
 
         search = findViewById(R.id.et_search)
 
-        adapter = AppAdapter { entry ->
-            viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
-        }
+        adapter = AppAdapter(
+            scope = lifecycleScope,
+            onClick = { entry ->
+                viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
+            },
+            onLongClickItem = { entry -> showItemSheet(entry) }
+        )
         applyAccent()
 
         recycler = findViewById<RecyclerView>(R.id.recycler).apply {
@@ -134,8 +139,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun attachGestures() {
         val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onLongPress(e: MotionEvent) = setDetailsVisible(true)
-
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 val lm = recycler.layoutManager as LinearLayoutManager
                 if (distanceY < -10f && lm.findFirstCompletelyVisibleItemPosition() <= 0) showSearch()
@@ -148,14 +151,43 @@ class MainActivity : AppCompatActivity() {
         recycler.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                 detector.onTouchEvent(e)
-                if (e.action == MotionEvent.ACTION_UP || e.action == MotionEvent.ACTION_CANCEL) {
-                    setDetailsVisible(false)
-                }
                 return false
             }
             override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) = Unit
             override fun onRequestDisallowInterceptTouchEvent(b: Boolean) = Unit
         })
+
+        // Tap greeting → open settings (long-press intercepted by system gesture zone)
+        greeting.setOnClickListener {
+            startActivity(android.content.Intent(this, SettingsActivity::class.java))
+        }
+    }
+
+    private fun showItemSheet(entry: AppEntry) {
+        val ctx = this
+        val view = layoutInflater.inflate(R.layout.sheet_item, null)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(ctx, android.R.style.Theme_DeviceDefault_Dialog)
+            .setView(view).create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        view.findViewById<TextView>(R.id.sheet_title).text = entry.label
+        view.findViewById<TextView>(R.id.sheet_pin).apply {
+            text = if (entry.isPinned) "Unpin" else "Pin to top"
+            setOnClickListener {
+                viewModel.setPinned(entry.packageName, !entry.isPinned)
+                dialog.dismiss()
+            }
+        }
+        view.findViewById<TextView>(R.id.sheet_hide).setOnClickListener {
+            viewModel.setHidden(entry.packageName, true)
+            dialog.dismiss()
+        }
+        view.findViewById<TextView>(R.id.sheet_info).setOnClickListener {
+            val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(android.net.Uri.parse("package:${entry.packageName}"))
+            startActivity(intent)
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 
     private fun setDetailsVisible(visible: Boolean) {

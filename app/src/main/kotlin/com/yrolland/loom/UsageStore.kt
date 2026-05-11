@@ -26,6 +26,10 @@ class UsageStore(context: Context) {
         file.writeText(gson.toJson(load().filter { it.packageName != packageName }))
     }
 
+    fun clear() {
+        if (file.exists()) file.delete()
+    }
+
     fun load(): List<UsageEvent> {
         if (!file.exists()) return emptyList()
         return runCatching {

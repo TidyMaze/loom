@@ -54,6 +54,17 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/tv_pin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="◆"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:alpha="0.6"
+            android:paddingEnd="6dp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/tv_stats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

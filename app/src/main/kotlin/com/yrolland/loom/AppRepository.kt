@@ -11,16 +11,29 @@ import java.time.temporal.ChronoUnit
 class AppRepository(private val context: Context) {
 
     private val usageStore = UsageStore(context)
+    private val pinStore = PinStore(context)
+    private val hiddenStore = HiddenStore(context)
 
     fun recordLaunch(packageName: String) {
         usageStore.record(packageName)
     }
 
+    fun setPinned(pkg: String, pinned: Boolean) = pinStore.setPinned(pkg, pinned)
+    fun setHidden(pkg: String, hidden: Boolean) = hiddenStore.setHidden(pkg, hidden)
+    fun pinnedPackages(): Set<String> = pinStore.all()
+    fun hiddenPackages(): Set<String> = hiddenStore.all()
+    fun clearUsage() = usageStore.clear()
+    fun clearAll() { usageStore.clear(); pinStore.clear(); hiddenStore.clear() }
+
     fun getRankedApps(): List<AppEntry> {
         val pm = context.packageManager
         val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val hidden = hiddenStore.all()
+        val pinned = pinStore.all()
         val installedApps = pm.queryIntentActivities(launchIntent, PackageManager.GET_META_DATA)
-            .map { it.activityInfo.packageName }.distinct()
+            .map { it.activityInfo.packageName }
+            .distinct()
+            .filter { it !in hidden }
 
         val events = usageStore.load()
         val rawScores = ScoreEngine.score(events)
@@ -41,10 +54,34 @@ class AppRepository(private val context: Context) {
                     launchCount = count,
                     lastLaunchedMillis = stats.lastByPkg[pkg],
                     todayCount = stats.todayByPkg[pkg] ?: 0,
-                    dailyAvg = count / stats.spanDays
+                    dailyAvg = count / stats.spanDays,
+                    isPinned = pkg in pinned
                 )
             }
-            .sortedWith(compareByDescending<AppEntry> { it.score }.thenByDescending { it.lastLaunchedMillis }.thenBy { it.label })
+            .sortedWith(
+                compareByDescending<AppEntry> { it.isPinned }
+                    .thenByDescending { it.score }
+                    .thenByDescending { it.lastLaunchedMillis }
+                    .thenBy { it.label }
+            )
+    }
+
+    /** Apps installed but currently hidden — for the Settings unhide list. */
+    fun getHiddenApps(): List<AppEntry> {
+        val pm = context.packageManager
+        val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val hidden = hiddenStore.all()
+        return pm.queryIntentActivities(launchIntent, PackageManager.GET_META_DATA)
+            .map { it.activityInfo.packageName }
+            .distinct()
+            .filter { it in hidden }
+            .map { pkg ->
+                val label = runCatching {
+                    pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
+                }.getOrDefault(pkg)
+                AppEntry(pkg, label, 0f, 0, null)
+            }
+            .sortedBy { it.label.lowercase() }
     }
 
     private data class UsageStats(
