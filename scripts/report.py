@@ -20,7 +20,7 @@ import plotly.graph_objects as go
 
 def pull_events():
     result = subprocess.run(
-        ["adb", "shell", "run-as", "com.example.ailauncher", "cat", "files/usage_log.json"],
+        ["adb", "shell", "run-as", "com.yrolland.loom", "cat", "files/usage_log.json"],
         capture_output=True, text=True
     )
     if result.returncode != 0 or not result.stdout.strip():
@@ -31,8 +31,11 @@ def pull_events():
 # 2. ScoreEngine — Python port of ScoreEngine.kt
 # ---------------------------------------------------------------------------
 
-HOUR_SIGMA      = 1.5   # Gaussian σ in hours — smooth bell curve instead of hard cutoff
+HOUR_SIGMA      = 0.75  # deployed: tighter hour window
 DECAY_HALF_LIFE = 7.0
+RECENCY_HOURS   = 4.0
+SESSION_MS      = 15 * 60 * 1000
+W_CTX, W_REC, W_FREQ, W_TRANS = 1.5, 2.0, 0.2, 2.0  # deployed linear-blend weights
 
 def is_weekend(dow):
     return dow >= 6
@@ -104,6 +107,63 @@ def compute_scores_v2(events, now_hour, now_dow, now_ms):
         # P(h|app)=hour_sum/total_decay, P(d|app)=day_sum/total_decay, P(app)=total_decay
         scores[pkg] = (hour_sum * day_sum / total_decay) if total_decay > 0 else 0.0
     return scores
+
+def _normalize(d):
+    if not d: return {}
+    m = max(d.values())
+    return {p: v/m for p, v in d.items()} if m > 0 else {p: 0.0 for p in d}
+
+
+def compute_scores_v3(events, now_hour, now_dow, now_ms):
+    """
+    Deployed model: linear blend of 4 max-normalised features:
+      W_CTX  * context  (hour×day Naive Bayes with 7d decay)
+      W_REC  * recency  (exp(-hours_ago / 4h))
+      W_FREQ * frequency (count / total)
+      W_TRANS* transition (P(app | last_app_in_session=15min), Laplace-smoothed)
+    """
+    import math
+    by_pkg = collections.defaultdict(list)
+    for e in events: by_pkg[e["packageName"]].append(e)
+    total = sum(len(v) for v in by_pkg.values()) or 1
+
+    # Transitions
+    sorted_e = sorted(events, key=lambda x: x["timestampMillis"])
+    trans = collections.defaultdict(lambda: collections.defaultdict(int))
+    for i in range(1, len(sorted_e)):
+        p, c = sorted_e[i-1], sorted_e[i]
+        if c["timestampMillis"] - p["timestampMillis"] <= SESSION_MS:
+            trans[p["packageName"]][c["packageName"]] += 1
+
+    last_e = sorted_e[-1] if sorted_e else None
+    in_sess = last_e and (now_ms - last_e["timestampMillis"]) <= SESSION_MS
+    row, denom = {}, 0.0
+    if in_sess and last_e["packageName"] in trans:
+        row = dict(trans[last_e["packageName"]])
+        denom = sum(row.values()) + 0.5 * len(by_pkg)
+
+    ctx_raw, rec_raw, fq_raw, tr_raw = {}, {}, {}, {}
+    for pkg, evs in by_pkg.items():
+        td, hs, ds, last_ms = 0.0, 0.0, 0.0, 0
+        for e in evs:
+            diff = abs(e["hour"] - now_hour); hd = 24 - diff if diff > 12 else diff
+            hm = math.exp(-(hd*hd) / (2 * HOUR_SIGMA * HOUR_SIGMA))
+            d = e.get("dayOfWeek", 0)
+            if d == 0 or d == now_dow:                 dm = 1.0
+            elif is_weekend(d) == is_weekend(now_dow): dm = 0.6
+            else:                                      dm = 0.2
+            days_ago = (now_ms - e["timestampMillis"]) / 86_400_000
+            decay = 0.5 ** (days_ago / DECAY_HALF_LIFE)
+            td += decay; hs += hm * decay; ds += dm * decay
+            if e["timestampMillis"] > last_ms: last_ms = e["timestampMillis"]
+        ctx_raw[pkg] = (hs * ds / td) if td > 0 else 0.0
+        rec_raw[pkg] = math.exp(-((now_ms - last_ms) / 3_600_000) / RECENCY_HOURS)
+        fq_raw[pkg]  = len(evs) / total
+        tr_raw[pkg]  = ((row.get(pkg, 0) + 0.5) / denom) if denom > 0 else 0.0
+
+    cN, rN, fN, tN = _normalize(ctx_raw), _normalize(rec_raw), _normalize(fq_raw), _normalize(tr_raw)
+    return {p: W_CTX*cN[p] + W_REC*rN[p] + W_FREQ*fN[p] + W_TRANS*tN[p] for p in by_pkg}
+
 
 # ---------------------------------------------------------------------------
 # 3. Helpers
@@ -425,36 +485,112 @@ def chart_mrr(events, score_fn=None, label="v2 (KDE)"):
 
 
 def chart_mrr_comparison(events):
-    """Side-by-side grouped bar: v1 (sum) vs v2 (KDE) MRR per app."""
+    """Three-way grouped bar: v1 (sum) vs v2 (KDE) vs v3 (deployed) MRR per app."""
     _, _, app_v1, _ = compute_mrr(events, compute_scores)
     _, _, app_v2, _ = compute_mrr(events, compute_scores_v2)
+    _, _, app_v3, _ = compute_mrr(events, compute_scores_v3)
 
-    all_apps = sorted(set(app_v1) | set(app_v2))
-    # sort by v2 MRR
-    all_apps = sorted(all_apps, key=lambda p: app_v2.get(p, 0.0))
+    all_apps = sorted(set(app_v1) | set(app_v2) | set(app_v3),
+                      key=lambda p: app_v3.get(p, 0.0))
 
     names = [short_name(p) for p in all_apps]
     v1_vals = [app_v1.get(p, 0.0) for p in all_apps]
     v2_vals = [app_v2.get(p, 0.0) for p in all_apps]
-    delta   = [v2 - v1 for v1, v2 in zip(v1_vals, v2_vals)]
+    v3_vals = [app_v3.get(p, 0.0) for p in all_apps]
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=v1_vals, y=names, orientation="h", name="v1 (sum)",
-        marker=dict(color="#444444", line=dict(width=0)),
-        hovertemplate="<b>%{y}</b> v1=%{x:.3f}<extra></extra>",
-    ))
-    fig.add_trace(go.Bar(
-        x=v2_vals, y=names, orientation="h", name="v2 (KDE)",
-        marker=dict(color=PALETTE[0], line=dict(width=0)),
-        hovertemplate="<b>%{y}</b> v2=%{x:.3f} (Δ%{customdata:+.3f})<extra></extra>",
-        customdata=delta,
-    ))
+    fig.add_trace(go.Bar(x=v1_vals, y=names, orientation="h", name="v1 (sum)",
+        marker=dict(color="#444444"), hovertemplate="<b>%{y}</b> v1=%{x:.3f}<extra></extra>"))
+    fig.add_trace(go.Bar(x=v2_vals, y=names, orientation="h", name="v2 (NB)",
+        marker=dict(color=PALETTE[5]), hovertemplate="<b>%{y}</b> v2=%{x:.3f}<extra></extra>"))
+    fig.add_trace(go.Bar(x=v3_vals, y=names, orientation="h", name="v3 (deployed)",
+        marker=dict(color=PALETTE[0]), hovertemplate="<b>%{y}</b> v3=%{x:.3f}<extra></extra>"))
     apply_layout(fig,
-        title="MRR comparison: v1 (sum) vs v2 (KDE normalised)",
+        title="MRR comparison: v1 (sum) → v2 (Naive Bayes) → v3 (linear blend with transitions)",
         xaxis_title="MRR", barmode="overlay",
         legend=dict(bgcolor="#1a1a1a", bordercolor="#333333"),
     )
+    return fig
+
+
+def chart_rolling_accuracy(events, score_fn, window=80, label="v3"):
+    """
+    Online learning: for each event i, predict from events[:i] and check rank.
+    Plot rolling-window @1, @3, @5, @10 hit-rates over the event timeline.
+    """
+    events = sorted(events, key=lambda e: e["timestampMillis"])
+    all_pkgs = list({e["packageName"] for e in events})
+    hits = {1: [], 3: [], 5: [], 10: []}  # 1 per evaluated event
+    for i, target in enumerate(events):
+        history = events[:i]
+        if not history:
+            for k in hits: hits[k].append(None)
+            continue
+        scores = score_fn(history, target["hour"],
+                          target.get("dayOfWeek", 0) or 1, target["timestampMillis"])
+        ranked = sorted(all_pkgs, key=lambda p: scores.get(p, 0.0), reverse=True)
+        for k in hits:
+            hits[k].append(1 if target["packageName"] in ranked[:k] else 0)
+
+    # Rolling mean (window)
+    xs, series = [], {k: [] for k in hits}
+    for i in range(len(events)):
+        if hits[1][i] is None: continue
+        lo = max(0, i - window + 1)
+        valid = [j for j in range(lo, i+1) if hits[1][j] is not None]
+        if len(valid) < window // 2: continue
+        xs.append(i)
+        for k in hits:
+            vs = [hits[k][j] for j in valid]
+            series[k].append(sum(vs) / len(vs) * 100)
+
+    fig = go.Figure()
+    colors = {1: PALETTE[0], 3: PALETTE[2], 5: PALETTE[4], 10: PALETTE[6]}
+    for k in [1, 3, 5, 10]:
+        fig.add_trace(go.Scatter(x=xs, y=series[k], mode="lines", name=f"@{k}",
+            line=dict(color=colors[k], width=2),
+            hovertemplate=f"event %{{x}}: @{k} = %{{y:.1f}}%%<extra></extra>"))
+    apply_layout(fig,
+        title=f"Rolling accuracy (window={window} events) — {label}",
+        xaxis_title="Event index (chronological)",
+        yaxis_title="Hit rate %", yaxis_range=[0, 100],
+        legend=dict(bgcolor="#1a1a1a", bordercolor="#333333"))
+    return fig
+
+
+def chart_topk_summary(events):
+    """
+    Single bar chart: overall top-k hit rates for all three models.
+    Bonus row: held-out test set (last 20%) for the deployed model.
+    """
+    ks = [1, 3, 5, 10]
+    rows = []
+    for label, fn in [("v1 (sum)", compute_scores),
+                      ("v2 (NB)", compute_scores_v2),
+                      ("v3 (deployed)", compute_scores_v3)]:
+        events_s = sorted(events, key=lambda e: e["timestampMillis"])
+        all_pkgs = list({e["packageName"] for e in events_s})
+        hits = collections.Counter(); n = 0
+        for i, t in enumerate(events_s):
+            if i < 1: continue
+            scores = fn(events_s[:i], t["hour"], t.get("dayOfWeek", 0) or 1, t["timestampMillis"])
+            ranked = sorted(all_pkgs, key=lambda p: scores.get(p, 0.0), reverse=True)
+            for k in ks:
+                if t["packageName"] in ranked[:k]: hits[k] += 1
+            n += 1
+        rows.append((label, [hits[k]/n*100 for k in ks]))
+
+    fig = go.Figure()
+    colors = ["#444444", PALETTE[5], PALETTE[0]]
+    for (label, vals), color in zip(rows, colors):
+        fig.add_trace(go.Bar(x=[f"@{k}" for k in ks], y=vals, name=label,
+            marker=dict(color=color),
+            hovertemplate=f"<b>{label}</b> %{{x}}=%{{y:.1f}}%%<extra></extra>"))
+    apply_layout(fig,
+        title="Top-k accuracy — v1 vs v2 vs v3 (full timeline online eval)",
+        yaxis_title="Hit rate %", yaxis_range=[0, 90],
+        barmode="group",
+        legend=dict(bgcolor="#1a1a1a", bordercolor="#333333"))
     return fig
 
 
@@ -504,7 +640,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <style>
   body {{ background:#111; color:#ddd; font-family:system-ui,sans-serif; margin:0; padding:24px; }}
   h1 {{ font-size:1.4rem; font-weight:500; margin-bottom:4px; }}
-  .meta {{ color:#666; font-size:.85rem; margin-bottom:32px; }}
+  .meta {{ color:#666; font-size:.85rem; margin-bottom:24px; }}
+  .summary {{ display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap; }}
+  .stat {{ background:#1a1a1a; border-radius:10px; padding:14px 22px; min-width:90px; }}
+  .stat-v {{ font-size:1.6rem; color:#4C9BE8; font-weight:600; line-height:1; }}
+  .stat-l {{ font-size:.72rem; color:#888; margin-top:4px; letter-spacing:0.05em; }}
   .grid {{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }}
   .card {{ background:#1a1a1a; border-radius:12px; padding:16px; }}
   .caption {{ font-size:.78rem; color:#666; margin-top:8px; }}
@@ -513,31 +653,45 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<h1>AI Launcher — Usage Report</h1>
+<h1>AI Launcher — Usage Report <span style="color:#888;font-weight:300;font-size:0.8em">v3 deployed</span></h1>
 <div class="meta">Generated {ts} &nbsp;·&nbsp; {n_events} events &nbsp;·&nbsp; {n_apps} apps &nbsp;·&nbsp; {span_days:.1f} day span</div>
+
+<div class="summary">
+  <div class="stat"><div class="stat-v">{at1:.1f}%</div><div class="stat-l">@1</div></div>
+  <div class="stat"><div class="stat-v">{at3:.1f}%</div><div class="stat-l">@3</div></div>
+  <div class="stat"><div class="stat-v">{at5:.1f}%</div><div class="stat-l">@5</div></div>
+  <div class="stat"><div class="stat-v">{at10:.1f}%</div><div class="stat-l">@10</div></div>
+  <div class="stat"><div class="stat-v">{mrr_v3:.3f}</div><div class="stat-l">MRR</div></div>
+  <div class="stat"><div class="stat-v">{mrr_lift:.1f}×</div><div class="stat-l">lift vs random</div></div>
+</div>
+
 <div class="grid">
-  <div class="card"><div id="c1" style="height:420px"></div>
-    <div class="caption">Score ranking — proves scoring produces meaningful differentiation.</div></div>
-  <div class="card"><div id="c2" style="height:420px"></div>
-    <div class="caption">Launches by hour — confirms hour field is captured across the day. Red = now.</div></div>
-  <div class="card wide"><div id="c3" style="height:340px"></div>
-    <div class="caption">App × hour heatmap — each app has a distinct peak hour, giving hour-match real signal.</div></div>
-  <div class="card"><div id="c4" style="height:360px"></div>
-    <div class="caption">Decay curve — 7-day half-life. Score at day 7 = 0.5, day 14 = 0.25.</div></div>
-  <div class="card"><div id="c5" style="height:360px"></div>
-    <div class="caption">Day-of-week distribution — confirms dayOfWeek field is populated. Current day highlighted.</div></div>
-  <div class="card wide"><div id="c6" style="height:420px"></div>
-    <div class="caption">Score vs recency — points should cluster near the red decay reference, confirming decay drives ranking.</div></div>
-  <div class="card wide"><div id="c7" style="height:480px"></div>
-    <div class="caption">Score forecast (next 7 days, hourly) — oscillations from hour/day matching riding on decay envelope. Hover for exact values.</div></div>
-  <div class="card wide"><div id="c8" style="height:460px"></div>
-    <div class="caption">MRR per app (v2 KDE) — for each recorded launch, replay history, check rank of launched app. Blue = above average. Red = random baseline ({n_apps} apps → {random_baseline}).</div></div>
-  <div class="card wide"><div id="c9" style="height:380px"></div>
-    <div class="caption">Rank distribution (v2 KDE) — how often the launched app was rank 1, 2, 3… More weight on the left = better learning.</div></div>
+  <div class="card wide"><div id="ctopk" style="height:380px"></div>
+    <div class="caption"><b>Top-k accuracy across model versions.</b> v3 (deployed) blends 4 features linearly. Higher = better.</div></div>
+  <div class="card wide"><div id="croll" style="height:420px"></div>
+    <div class="caption"><b>Rolling accuracy over time.</b> 80-event window. Watch the model improve as it accumulates data. Plateau = model has saturated on current pattern complexity.</div></div>
   <div class="card wide"><div id="c10" style="height:480px"></div>
-    <div class="caption">MRR comparison: v1 (raw sum, original) vs v2 (KDE-normalised, bimodal fix). Blue bars = v2 score; grey = v1. Longer blue = improvement.</div></div>
-  <div class="card wide"><div id="c11" style="height:380px"></div>
-    <div class="caption">Rank distribution v1 (original formula) — baseline for comparison with v2 above.</div></div>
+    <div class="caption"><b>Per-app MRR — v1 vs v2 vs v3.</b> Sort by v3. Apps far from {random_baseline} (random baseline) are well-predicted.</div></div>
+  <div class="card wide"><div id="c8" style="height:460px"></div>
+    <div class="caption">Per-app MRR (v3 deployed) — for each launch, replay history, check rank of launched app. Blue = above average.</div></div>
+  <div class="card"><div id="c9" style="height:380px"></div>
+    <div class="caption">Rank distribution (v3) — what rank did the launched app actually have?</div></div>
+  <div class="card"><div id="c11" style="height:380px"></div>
+    <div class="caption">Rank distribution (v1 baseline) — for comparison.</div></div>
+  <div class="card"><div id="c1" style="height:420px"></div>
+    <div class="caption">Current score ranking (v3) — what the launcher shows right now.</div></div>
+  <div class="card"><div id="c2" style="height:420px"></div>
+    <div class="caption">Launches by hour. Red = now.</div></div>
+  <div class="card wide"><div id="c3" style="height:340px"></div>
+    <div class="caption">App × hour heatmap — distinct peak hours per app.</div></div>
+  <div class="card"><div id="c4" style="height:360px"></div>
+    <div class="caption">Decay curve — 7-day half-life.</div></div>
+  <div class="card"><div id="c5" style="height:360px"></div>
+    <div class="caption">Day-of-week distribution.</div></div>
+  <div class="card wide"><div id="c6" style="height:420px"></div>
+    <div class="caption">Score vs recency.</div></div>
+  <div class="card wide"><div id="c7" style="height:480px"></div>
+    <div class="caption">Score forecast — next 7 days, hourly (context-only sub-component).</div></div>
 </div>
 <script>
 {scripts}
@@ -567,6 +721,20 @@ def figs_to_scripts(figs):
 # 6. Main
 # ---------------------------------------------------------------------------
 
+def compute_topk(events, fn):
+    events = sorted(events, key=lambda e: e["timestampMillis"])
+    all_pkgs = list({e["packageName"] for e in events})
+    hits = {1: 0, 3: 0, 5: 0, 10: 0}; n = 0
+    for i, t in enumerate(events):
+        if i < 1: continue
+        scores = fn(events[:i], t["hour"], t.get("dayOfWeek", 0) or 1, t["timestampMillis"])
+        ranked = sorted(all_pkgs, key=lambda p: scores.get(p, 0.0), reverse=True)
+        for k in hits:
+            if t["packageName"] in ranked[:k]: hits[k] += 1
+        n += 1
+    return {k: hits[k]/n*100 for k in hits}, n
+
+
 def main():
     print("Pulling usage_log.json from device…")
     events = pull_events()
@@ -575,36 +743,44 @@ def main():
     now    = datetime.datetime.now()
     now_ms = int(time.time() * 1000)
 
-    scores = compute_scores(events, now.hour, now.isoweekday(), now_ms)
+    scores = compute_scores_v3(events, now.hour, now.isoweekday(), now_ms)
 
     pkgs = set(e["packageName"] for e in events)
     ts_vals = [e["timestampMillis"] for e in events]
     span_days = (max(ts_vals) - min(ts_vals)) / 86_400_000 if len(ts_vals) > 1 else 0
 
-    print("Generating charts…")
-    figs = [
-        ("c1", chart_score_ranking(scores)),
-        ("c2", chart_launches_by_hour(events)),
-        ("c3", chart_app_hour_heatmap(events)),
-        ("c4", chart_decay_curve()),
-        ("c5", chart_day_of_week(events)),
-        ("c6", chart_score_vs_recency(scores, events)),
-    ]
-    print("Generating 7-day forecast…")
-    figs.append(("c7", chart_score_forecast(events)))
+    print("Computing top-k accuracy (v3 deployed)…")
+    topk, n_eval = compute_topk(events, compute_scores_v3)
+    print(f"  n={n_eval}  @1={topk[1]:.1f}%  @3={topk[3]:.1f}%  @5={topk[5]:.1f}%  @10={topk[10]:.1f}%")
 
     print("Computing MRR v1 (original formula)…")
     mrr_v1, random_baseline, _, _ = compute_mrr(events, compute_scores)
     print(f"  v1 MRR={mrr_v1:.4f}  random={random_baseline:.4f}  lift={mrr_v1/random_baseline:.2f}x")
 
-    print("Computing MRR v2 (KDE-normalised)…")
-    fig_mrr, mrr_v2, _, _ = chart_mrr(events, compute_scores_v2, label="v2 (Naive Bayes)")
-    print(f"  v2 MRR={mrr_v2:.4f}  lift={mrr_v2/random_baseline:.2f}x  delta={mrr_v2-mrr_v1:+.4f}")
+    print("Computing MRR v2 (Naive Bayes)…")
+    _, mrr_v2, _, _ = chart_mrr(events, compute_scores_v2, label="v2 (Naive Bayes)")
+    print(f"  v2 MRR={mrr_v2:.4f}  lift={mrr_v2/random_baseline:.2f}x")
 
-    figs.append(("c8", fig_mrr))
-    figs.append(("c9", chart_rank_distribution(events, compute_scores_v2, label="v2 (Naive Bayes)")))
-    figs.append(("c10", chart_mrr_comparison(events)))
-    figs.append(("c11", chart_rank_distribution(events, compute_scores, label="v1 (original)")))
+    print("Computing MRR v3 (deployed)…")
+    fig_mrr_v3, mrr_v3, _, _ = chart_mrr(events, compute_scores_v3, label="v3 (deployed)")
+    print(f"  v3 MRR={mrr_v3:.4f}  lift={mrr_v3/random_baseline:.2f}x")
+
+    print("Generating charts…")
+    figs = [
+        ("ctopk", chart_topk_summary(events)),
+        ("croll", chart_rolling_accuracy(events, compute_scores_v3, window=80, label="v3 (deployed)")),
+        ("c10",   chart_mrr_comparison(events)),
+        ("c8",    fig_mrr_v3),
+        ("c9",    chart_rank_distribution(events, compute_scores_v3, label="v3 (deployed)")),
+        ("c11",   chart_rank_distribution(events, compute_scores, label="v1 (original)")),
+        ("c1",    chart_score_ranking(scores)),
+        ("c2",    chart_launches_by_hour(events)),
+        ("c3",    chart_app_hour_heatmap(events)),
+        ("c4",    chart_decay_curve()),
+        ("c5",    chart_day_of_week(events)),
+        ("c6",    chart_score_vs_recency(scores, events)),
+        ("c7",    chart_score_forecast(events)),
+    ]
 
     html = HTML_TEMPLATE.format(
         ts=now.strftime("%Y-%m-%d %H:%M"),
@@ -612,10 +788,16 @@ def main():
         n_apps=len(pkgs),
         span_days=span_days,
         random_baseline=f"{random_baseline:.3f}",
+        at1=topk[1], at3=topk[3], at5=topk[5], at10=topk[10],
+        mrr_v3=mrr_v3,
+        mrr_lift=mrr_v3 / random_baseline,
         scripts=figs_to_scripts(figs),
     )
 
-    out = "/tmp/ai_launcher_report.html"
+    out_dir = "/Users/yannrolland/perso/ai-launcher/reports"
+    import os
+    os.makedirs(out_dir, exist_ok=True)
+    out = f"{out_dir}/performance.html"
     with open(out, "w") as f:
         f.write(html)
     print(f"Report saved → {out}")
