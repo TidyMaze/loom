@@ -6,8 +6,8 @@ import kotlin.math.ln
 
 object ScoreEngine {
 
-    private const val HOUR_SIGMA = 1.5f
-    private const val DECAY_HALF_LIFE_DAYS = 7f
+    private const val HOUR_SIGMA = 0.75f
+    private const val DECAY_HALF_LIFE_DAYS = 5.0f
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
 
