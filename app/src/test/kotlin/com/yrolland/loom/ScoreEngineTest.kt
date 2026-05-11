@@ -49,58 +49,71 @@ class ScoreEngineTest {
     }
 
     @Test
-    fun `scores sum across multiple events for same app`() {
+    fun `app with more launches outranks app with single launch`() {
+        // Need >1 app for normalized blend to produce meaningful comparison
         val events = listOf(
-            event("com.app", timestampMillis = FIXED_NOW),
-            event("com.app", timestampMillis = FIXED_NOW),
-            event("com.app", timestampMillis = FIXED_NOW)
+            event("com.heavy", timestampMillis = FIXED_NOW),
+            event("com.heavy", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(1)),
+            event("com.heavy", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(2)),
+            event("com.light", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(1))
         )
-        val singleEvents = listOf(event("com.app", timestampMillis = FIXED_NOW))
+        val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
-        val multiScore = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)["com.app"]!!
-        val singleScore = ScoreEngine.score(singleEvents, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)["com.app"]!!
-
-        assertEquals("Triple usage should result in triple score", 3 * singleScore, multiScore, 0.001f)
+        assertTrue("Heavy app should outrank light app", scores["com.heavy"]!! > scores["com.light"]!!)
     }
 
     @Test
-    fun `score decreases as event becomes older within the same day`() {
-        val recentEvent = event("com.app", timestampMillis = FIXED_NOW)
-        val olderEvent = event("com.app", timestampMillis = oneHourAgo)
+    fun `recent app outranks older app at same hour`() {
+        val events = listOf(
+            event("com.recent", timestampMillis = FIXED_NOW),
+            event("com.older", timestampMillis = oneHourAgo)
+        )
+        val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
-        val recentScore = ScoreEngine.score(listOf(recentEvent), currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)["com.app"]!!
-        val olderScore = ScoreEngine.score(listOf(olderEvent), currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)["com.app"]!!
-
-
-        assertTrue("Score for older event ($olderScore) should be less than recent ($recentScore)", 
-            olderScore < recentScore)
+        assertTrue("Recent (now) should outrank older (1h ago)", scores["com.recent"]!! > scores["com.older"]!!)
     }
 
     @Test
     fun `hour matching handles midnight wrap-around`() {
-        // 23:00 and 00:00 are 1 hour apart
-        val event23 = event("com.app", timestampMillis = 1714863600000L) // May 4, 23:00 UTC
-        
-        // currentHour is 0 (midnight), currentDay is 6 (Saturday) to match event
-        val score = ScoreEngine.score(listOf(event23), currentHour = 0, currentDayOfWeek = 6, nowMillis = 1714867200000L)["com.app"]!!
-        
-        // Should get HOUR_MATCH_WEIGHT (1.0) and dayMatch (1.0)
-        assertTrue("Event at 23:00 should match current hour 00:00", score >= 0.9f)
+        // Two-app baseline so normalization is meaningful
+        val match23 = event("com.match", timestampMillis = 1714863600000L) // May 4, 23:00 UTC
+        val mismatchNoon = event("com.mismatch", timestampMillis = 1714824000000L) // May 4, 12:00 UTC
+        // currentHour=0 (midnight) → 23h should match (diff=1), noon shouldn't (diff=12)
+        val scores = ScoreEngine.score(listOf(match23, mismatchNoon),
+            currentHour = 0, currentDayOfWeek = 6, nowMillis = 1714867200000L)
+
+        assertTrue("23:00 event should outrank 12:00 event when now is 00:00",
+            scores["com.match"]!! > scores["com.mismatch"]!!)
     }
 
     @Test
-    fun `thirty day old events score much lower than today`() {
-        val todayScore = ScoreEngine.score(
-            listOf(event("com.app", timestampMillis = FIXED_NOW)),
-            currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW
-        )["com.app"]!!
+    fun `thirty day old app ranks below recent app`() {
+        val events = listOf(
+            event("com.today", timestampMillis = FIXED_NOW),
+            event("com.old", timestampMillis = thirtyDaysAgo)
+        )
+        val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
-        val oldScore = ScoreEngine.score(
-            listOf(event("com.app", timestampMillis = thirtyDaysAgo)),
-            currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW
-        )["com.app"]!!
+        assertTrue("30-day-old app should rank below today's app", scores["com.today"]!! > scores["com.old"]!!)
+    }
 
-        assertTrue("Old score ($oldScore) should be < 20% of today ($todayScore)", oldScore < todayScore * 0.2f)
+    @Test
+    fun `transition feature boosts likely next app within session`() {
+        // History: A → B sequence repeated, then a recent A. B should rank above C (never-followed app).
+        val sessionGap = TimeUnit.MINUTES.toMillis(5)
+        val events = mutableListOf<UsageEvent>()
+        var t = FIXED_NOW - TimeUnit.DAYS.toMillis(2)
+        repeat(5) {
+            events += event("com.a", timestampMillis = t)
+            events += event("com.b", timestampMillis = t + sessionGap)
+            events += event("com.c", timestampMillis = t + TimeUnit.HOURS.toMillis(3))
+            t += TimeUnit.DAYS.toMillis(1) / 5
+        }
+        // Recent A launch — "now" is just after, so we're in-session
+        events += event("com.a", timestampMillis = FIXED_NOW - TimeUnit.MINUTES.toMillis(2))
+
+        val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
+        assertTrue("B (followed A 5x) should outrank C", scores["com.b"]!! > scores["com.c"]!!)
     }
 
     @Test
