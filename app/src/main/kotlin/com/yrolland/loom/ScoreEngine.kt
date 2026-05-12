@@ -9,15 +9,17 @@ object ScoreEngine {
     // Tuned via time-series cross-validation on collected usage data.
     private const val HOUR_SIGMA = 0.75f
     private const val DECAY_HALF_LIFE_DAYS = 7.0f
-    private const val RECENCY_HOURS = 4.0f
-    private const val SESSION_MS = 15 * 60 * 1000L     // ≤15min between launches = same session
-    private const val TRANSITION_SMOOTH = 0.5f          // Laplace smoothing for sparse transitions
+    private const val RECENCY_HOURS = 2.5f             // 2.5h half-life (tuned from 4.0)
+    private const val TRANSITION_DECAY_DAYS = 14.0f    // separate decay for transition weights
+    private const val SESSION_MS = 15 * 60 * 1000L
+    private const val TRANSITION_SMOOTH = 0.5f
 
-    // Linear blend weights (applied to per-feature max-normalised scores)
-    private const val W_CONTEXT = 1.5f      // hour×day match
-    private const val W_RECENCY = 2.0f      // recently opened
-    private const val W_FREQUENCY = 0.2f    // overall launch frequency
-    private const val W_TRANSITION = 2.0f   // Markov: P(app | last app in session)
+    // Linear blend weights — tuned by grid search on device data (683 events, 38 apps)
+    // Objective: maximise @1 + @5 jointly. Freq dropped to 0: pure noise on this dataset.
+    private const val W_CONTEXT = 1.0f
+    private const val W_RECENCY = 2.5f
+    private const val W_FREQUENCY = 0.0f
+    private const val W_TRANSITION = 2.0f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
@@ -33,23 +35,24 @@ object ScoreEngine {
         val byPkg = events.groupBy { it.packageName }
         val totalLaunches = events.size.toFloat()
 
-        // Build session-transition table from chronologically-ordered events
+        // Build session-transition table (decay-weighted: recent transitions count more)
         val sorted = events.sortedBy { it.timestampMillis }
-        val transitionCounts = HashMap<String, HashMap<String, Int>>()
+        val transitionWeights = HashMap<String, HashMap<String, Float>>()
         for (i in 1 until sorted.size) {
             val prev = sorted[i - 1]
             val curr = sorted[i]
             if (curr.timestampMillis - prev.timestampMillis <= SESSION_MS) {
-                val row = transitionCounts.getOrPut(prev.packageName) { HashMap() }
-                row[curr.packageName] = (row[curr.packageName] ?: 0) + 1
+                val daysAgo = (nowMillis - prev.timestampMillis) / MS_PER_DAY
+                val w = exp(-(daysAgo / TRANSITION_DECAY_DAYS) * LN2).toFloat()
+                val row = transitionWeights.getOrPut(prev.packageName) { HashMap() }
+                row[curr.packageName] = (row[curr.packageName] ?: 0f) + w
             }
         }
 
-        // Are we currently in a session? If yes, use last app's transition row.
         val lastEvent = sorted.last()
         val inSession = (nowMillis - lastEvent.timestampMillis) <= SESSION_MS
-        val transitionRow: Map<String, Int> =
-            if (inSession) transitionCounts[lastEvent.packageName] ?: emptyMap() else emptyMap()
+        val transitionRow: Map<String, Float> =
+            if (inSession) transitionWeights[lastEvent.packageName] ?: emptyMap() else emptyMap()
         val transitionDenom: Float =
             if (transitionRow.isNotEmpty()) transitionRow.values.sum() + TRANSITION_SMOOTH * byPkg.size
             else 0f
@@ -86,7 +89,7 @@ object ScoreEngine {
             recRaw[pkg] = exp(-((nowMillis - lastMs) / 3_600_000f) / RECENCY_HOURS).toFloat()
             freqRaw[pkg] = appEvents.size / totalLaunches
             transRaw[pkg] = if (transitionDenom > 0f) {
-                ((transitionRow[pkg] ?: 0) + TRANSITION_SMOOTH) / transitionDenom
+                ((transitionRow[pkg] ?: 0f) + TRANSITION_SMOOTH) / transitionDenom
             } else 0f
         }
 

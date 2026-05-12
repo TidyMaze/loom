@@ -31,11 +31,11 @@ def pull_events():
 # 2. ScoreEngine — Python port of ScoreEngine.kt
 # ---------------------------------------------------------------------------
 
-HOUR_SIGMA      = 0.75  # deployed: tighter hour window
+HOUR_SIGMA      = 0.75
 DECAY_HALF_LIFE = 7.0
-RECENCY_HOURS   = 4.0
+RECENCY_HOURS   = 2.5   # tuned: 2.5h half-life
 SESSION_MS      = 15 * 60 * 1000
-W_CTX, W_REC, W_FREQ, W_TRANS = 1.5, 2.0, 0.2, 2.0  # deployed linear-blend weights
+W_CTX, W_REC, W_FREQ, W_TRANS = 1.0, 2.5, 0.0, 2.0  # v4 tuned weights
 
 def is_weekend(dow):
     return dow >= 6
