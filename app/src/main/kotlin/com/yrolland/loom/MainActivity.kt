@@ -170,13 +170,6 @@ class MainActivity : AppCompatActivity() {
             .setView(view).create()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         view.findViewById<TextView>(R.id.sheet_title).text = entry.label
-        view.findViewById<TextView>(R.id.sheet_pin).apply {
-            text = if (entry.isPinned) "Unpin" else "Pin to top"
-            setOnClickListener {
-                viewModel.setPinned(entry.packageName, !entry.isPinned)
-                dialog.dismiss()
-            }
-        }
         view.findViewById<TextView>(R.id.sheet_hide).setOnClickListener {
             viewModel.setHidden(entry.packageName, true)
             dialog.dismiss()

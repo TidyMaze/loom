@@ -34,23 +34,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun render() {
-        val repo = AppRepository(this)
-        val pinned = repo.pinnedPackages()
-        val hidden = repo.getHiddenApps()
-        val all = viewModel.apps.value.orEmpty()
-
-        val pinnedSection = findViewById<LinearLayout>(R.id.section_pinned)
-        pinnedSection.removeAllViews()
-        val pinnedEntries = all.filter { it.packageName in pinned }.sortedBy { it.label.lowercase() }
-        if (pinnedEntries.isEmpty()) {
-            pinnedSection.addView(emptyText("No pinned apps. Long-press an app to pin it."))
-        } else {
-            pinnedEntries.forEach { entry ->
-                pinnedSection.addView(actionRow(entry.label, "Unpin") {
-                    viewModel.setPinned(entry.packageName, false)
-                })
-            }
-        }
+        val hidden = AppRepository(this).getHiddenApps()
 
         val hiddenSection = findViewById<LinearLayout>(R.id.section_hidden)
         hiddenSection.removeAllViews()
@@ -66,7 +50,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun actionRow(label: String, action: String, onClick: () -> Unit): View {
-        val row = LayoutInflater.from(this).inflate(R.layout.row_setting, findViewById(R.id.section_pinned), false)
+        val row = LayoutInflater.from(this).inflate(R.layout.row_setting, findViewById(R.id.section_hidden), false)
         row.findViewById<TextView>(R.id.row_label).text = label
         row.findViewById<TextView>(R.id.row_action).text = action
         row.setOnClickListener { onClick() }
@@ -88,7 +72,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun confirmClearUsage() {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
             .setTitle("Clear usage data?")
-            .setMessage("Removes all launch history. Pins and hidden apps stay.")
+            .setMessage("Removes all launch history. Hidden apps stay.")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Clear") { _, _ -> viewModel.clearUsage() }
             .show()
@@ -97,7 +81,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun confirmResetAll() {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
             .setTitle("Reset everything?")
-            .setMessage("Clears usage data, pins, and hidden apps.")
+            .setMessage("Clears usage data and hidden apps.")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Reset") { _, _ -> viewModel.clearAll() }
             .show()

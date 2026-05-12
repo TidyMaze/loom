@@ -11,25 +11,21 @@ import java.time.temporal.ChronoUnit
 class AppRepository(private val context: Context) {
 
     private val usageStore = UsageStore(context)
-    private val pinStore = PinStore(context)
     private val hiddenStore = HiddenStore(context)
 
     fun recordLaunch(packageName: String) {
         usageStore.record(packageName)
     }
 
-    fun setPinned(pkg: String, pinned: Boolean) = pinStore.setPinned(pkg, pinned)
     fun setHidden(pkg: String, hidden: Boolean) = hiddenStore.setHidden(pkg, hidden)
-    fun pinnedPackages(): Set<String> = pinStore.all()
     fun hiddenPackages(): Set<String> = hiddenStore.all()
     fun clearUsage() = usageStore.clear()
-    fun clearAll() { usageStore.clear(); pinStore.clear(); hiddenStore.clear() }
+    fun clearAll() { usageStore.clear(); hiddenStore.clear() }
 
     fun getRankedApps(): List<AppEntry> {
         val pm = context.packageManager
         val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         val hidden = hiddenStore.all()
-        val pinned = pinStore.all()
         val installedApps = pm.queryIntentActivities(launchIntent, PackageManager.GET_META_DATA)
             .map { it.activityInfo.packageName }
             .distinct()
@@ -54,13 +50,11 @@ class AppRepository(private val context: Context) {
                     launchCount = count,
                     lastLaunchedMillis = stats.lastByPkg[pkg],
                     todayCount = stats.todayByPkg[pkg] ?: 0,
-                    dailyAvg = count / stats.spanDays,
-                    isPinned = pkg in pinned
+                    dailyAvg = count / stats.spanDays
                 )
             }
             .sortedWith(
-                compareByDescending<AppEntry> { it.isPinned }
-                    .thenByDescending { it.score }
+                compareByDescending<AppEntry> { it.score }
                     .thenByDescending { it.lastLaunchedMillis }
                     .thenBy { it.label }
             )

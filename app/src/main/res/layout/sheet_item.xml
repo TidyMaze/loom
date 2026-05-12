@@ -20,15 +20,6 @@
         android:paddingBottom="16dp" />
 
     <TextView
-        android:id="@+id/sheet_pin"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:gravity="center_vertical"
-        android:textSize="16sp"
-        android:textColor="#FFFFFF"
-        android:background="?attr/selectableItemBackground" />
-
-    <TextView
         android:id="@+id/sheet_hide"
         android:layout_width="match_parent"
         android:layout_height="48dp"

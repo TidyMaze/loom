@@ -24,13 +24,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun setPinned(packageName: String, pinned: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.setPinned(packageName, pinned)
-            fetchAndPost()
-        }
-    }
-
     fun setHidden(packageName: String, hidden: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.setHidden(packageName, hidden)

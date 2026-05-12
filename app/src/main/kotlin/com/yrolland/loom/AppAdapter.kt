@@ -36,7 +36,6 @@ class AppAdapter(
         val label: TextView = view.findViewById(R.id.tv_label)
         val stats: TextView = view.findViewById(R.id.tv_stats)
         val progressFill: View = view.findViewById(R.id.v_progress_fill)
-        val pin: TextView = view.findViewById(R.id.tv_pin)
     }
 
     init { setHasStableIds(true) }
@@ -78,8 +77,6 @@ class AppAdapter(
         holder.stats.text = statsText
         holder.stats.alpha = if (showScores) 1f else 0.75f
         holder.stats.setTextColor(statsColor(statsText))
-
-        holder.pin.visibility = if (entry.isPinned) View.VISIBLE else View.GONE
 
         // Icon: cache hit = sync set; miss = placeholder + async load
         holder.icon.tag = entry.packageName
