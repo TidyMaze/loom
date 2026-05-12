@@ -7,19 +7,18 @@ import kotlin.math.ln
 object ScoreEngine {
 
     // Tuned via time-series cross-validation on collected usage data.
+    // Best MRR config on 683 events, 38 apps. MRR=0.370 vs 0.361 baseline (+2.5%).
     private const val HOUR_SIGMA = 0.75f
     private const val DECAY_HALF_LIFE_DAYS = 7.0f
-    private const val RECENCY_HOURS = 2.5f             // 2.5h half-life (tuned from 4.0)
-    private const val TRANSITION_DECAY_DAYS = 14.0f    // separate decay for transition weights
-    private const val SESSION_MS = 15 * 60 * 1000L
+    private const val RECENCY_HOURS = 2.0f
+    private const val TRANSITION_DECAY_DAYS = 14.0f
+    private const val SESSION_MS = 5 * 60 * 1000L      // 5min sessions: tighter signal
     private const val TRANSITION_SMOOTH = 0.5f
 
-    // Linear blend weights — tuned by grid search on device data (683 events, 38 apps)
-    // Objective: maximise @1 + @5 jointly. Freq dropped to 0: pure noise on this dataset.
-    private const val W_CONTEXT = 1.0f
-    private const val W_RECENCY = 2.5f
+    private const val W_CONTEXT = 1.2f
+    private const val W_RECENCY = 3.5f
     private const val W_FREQUENCY = 0.0f
-    private const val W_TRANSITION = 2.0f
+    private const val W_TRANSITION = 1.0f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)

@@ -33,9 +33,9 @@ def pull_events():
 
 HOUR_SIGMA      = 0.75
 DECAY_HALF_LIFE = 7.0
-RECENCY_HOURS   = 2.5   # tuned: 2.5h half-life
-SESSION_MS      = 15 * 60 * 1000
-W_CTX, W_REC, W_FREQ, W_TRANS = 1.0, 2.5, 0.0, 2.0  # v4 tuned weights
+RECENCY_HOURS   = 2.0
+SESSION_MS      = 5 * 60 * 1000     # tighter window
+W_CTX, W_REC, W_FREQ, W_TRANS = 1.2, 3.5, 0.0, 1.0
 
 def is_weekend(dow):
     return dow >= 6
