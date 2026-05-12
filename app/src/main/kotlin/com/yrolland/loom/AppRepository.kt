@@ -13,8 +13,8 @@ class AppRepository(private val context: Context) {
     private val usageStore = UsageStore(context)
     private val hiddenStore = HiddenStore(context)
 
-    fun recordLaunch(packageName: String) {
-        usageStore.record(packageName)
+    fun recordLaunch(packageName: String, ctx: LaunchContext.Capture? = null) {
+        usageStore.record(packageName, ctx)
     }
 
     fun setHidden(pkg: String, hidden: Boolean) = hiddenStore.setHidden(pkg, hidden)

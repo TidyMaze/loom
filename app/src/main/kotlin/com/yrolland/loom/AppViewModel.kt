@@ -51,8 +51,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _apps.postValue(all.map { e -> e.copy(rank = (e.score / maxScore).coerceIn(0f, 1f)) })
     }
 
-    fun recordLaunchAndGetIntent(packageName: String) = run {
-        viewModelScope.launch(Dispatchers.IO) { repository.recordLaunch(packageName) }
+    fun recordLaunchAndGetIntent(packageName: String, ctx: LaunchContext.Capture? = null) = run {
+        viewModelScope.launch(Dispatchers.IO) { repository.recordLaunch(packageName, ctx) }
         repository.getLaunchIntent(packageName)
     }
 }

@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var fullList: List<AppEntry> = emptyList()
     private var searchShownAt = 0L
     private var needsRefresh = false
+    private var launcherResumeMs = System.currentTimeMillis()
 
     private fun filteredList(query: String) =
         if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
@@ -59,7 +60,8 @@ class MainActivity : AppCompatActivity() {
         adapter = AppAdapter(
             scope = lifecycleScope,
             onClick = { entry ->
-                viewModel.recordLaunchAndGetIntent(entry.packageName)?.let { startActivity(it) }
+                val ctx = LaunchContext.capture(this, launcherResumeMs)
+                viewModel.recordLaunchAndGetIntent(entry.packageName, ctx)?.let { startActivity(it) }
             },
             onLongClickItem = { entry -> showItemSheet(entry) }
         )
@@ -107,6 +109,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        launcherResumeMs = System.currentTimeMillis()
         if (!needsRefresh) return
         needsRefresh = false
         applyAccent()
