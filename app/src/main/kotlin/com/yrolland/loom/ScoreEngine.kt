@@ -6,19 +6,19 @@ import kotlin.math.ln
 
 object ScoreEngine {
 
-    // Tuned via Optuna (TPE, 500 trials, 150 random warmup) on 787 events (9 days).
-    // @1=21.16% MRR=0.3866 vs deployed (@1=20.73% MRR=0.3819): +0.43pp @1, +1.2% MRR.
-    private const val HOUR_SIGMA = 0.71f
-    private const val DECAY_HALF_LIFE_DAYS = 19.7f
-    private const val RECENCY_HOURS = 1.51f
-    private const val TRANSITION_DECAY_DAYS = 20.9f
-    private const val SESSION_MS = 437 * 1000L
-    private const val TRANSITION_SMOOTH = 0.33f
+    // Tuned via Optuna (200 random + 300 TPE) on 787 events (9 days).
+    // @1=21.44% MRR=0.3873 vs prev (@1=21.16% MRR=0.3861): +0.28pp @1, +0.3% MRR.
+    private const val HOUR_SIGMA = 0.81f
+    private const val DECAY_HALF_LIFE_DAYS = 28.0f
+    private const val RECENCY_HOURS = 2.83f
+    private const val TRANSITION_DECAY_DAYS = 11.7f
+    private const val SESSION_MS = 441 * 1000L
+    private const val TRANSITION_SMOOTH = 0.83f
 
-    private const val W_CONTEXT = 3.26f
-    private const val W_RECENCY = 4.11f
+    private const val W_CONTEXT = 1.10f
+    private const val W_RECENCY = 2.30f
     private const val W_FREQUENCY = 0.0f
-    private const val W_TRANSITION = 3.90f
+    private const val W_TRANSITION = 4.00f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
