@@ -6,26 +6,33 @@ import kotlin.math.ln
 
 object ScoreEngine {
 
-    // Tuned via Optuna (200 random + 400 TPE) on 1000 events (9 days, 397 with phase-1 ctx).
-    // @1=22.50% MRR=0.3977 vs prev (@1=19.78% MRR=0.3826): +2.72pp @1, +3.92% MRR.
-    private const val HOUR_SIGMA = 0.74f
-    private const val DECAY_HALF_LIFE_DAYS = 21.7f
-    private const val RECENCY_HOURS = 1.02f
-    private const val TRANSITION_DECAY_DAYS = 13.8f
-    private const val SESSION_MS = 444 * 1000L
-    private const val TRANSITION_SMOOTH = 0.43f
+    // Tuned via Optuna (250 rand + 400 TPE) on 1000 events.
+    // @1=22.93% MRR=0.3997 vs prev (@1=22.50% MRR=0.3977): +0.43pp @1, +0.50% MRR.
+    // Adds: 2-gram session transitions (P(C|A→B)) and self-loop penalty
+    // (subtract from just-launched app when in-session — user rarely re-opens same app).
+    private const val HOUR_SIGMA = 1.41f
+    private const val DECAY_HALF_LIFE_DAYS = 27.3f
+    private const val RECENCY_HOURS = 1.73f
+    private const val TRANSITION_DECAY_DAYS = 16.9f
+    private const val SESSION_MS = 496 * 1000L
+    private const val TRANSITION_SMOOTH = 0.86f
 
-    private const val W_CONTEXT = 1.54f
-    private const val W_RECENCY = 3.71f
-    private const val W_TRANSITION = 2.42f
+    private const val W_CONTEXT = 2.93f
+    private const val W_RECENCY = 3.57f
+    private const val W_TRANSITION = 3.68f
+    private const val W_TRANSITION_2 = 1.80f      // 2-gram (a,b) → c
+
+    // Self-loop penalty: when in-session, subtract from last-launched pkg's score.
+    private const val SELF_PENALTY = 0.17f
+    private const val SELF_PENALTY_HL_MIN = 7.67f
 
     // Phase-1 ctx features (decay-weighted conditional P(ctx|pkg), add-k smoothed).
-    private const val W_AUDIO = 1.07f
-    private const val W_DEVICE = 1.99f
-    private const val W_CHARGING = 0.46f
-    private const val W_SR = 1.11f
-    private const val SR_HALF_LIFE_SECS = 509f
-    private const val PHASE1_SMOOTH = 0.63f
+    private const val W_AUDIO = 1.71f
+    private const val W_DEVICE = 2.58f
+    private const val W_CHARGING = 1.39f
+    private const val W_SR = 0.31f
+    private const val SR_HALF_LIFE_SECS = 117f
+    private const val PHASE1_SMOOTH = 3.57f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
@@ -40,29 +47,50 @@ object ScoreEngine {
         if (events.isEmpty()) return emptyMap()
 
         val byPkg = events.groupBy { it.packageName }
-
         val sorted = events.sortedBy { it.timestampMillis }
+        val nApps = byPkg.size
+
+        // Build 1-gram and 2-gram transition tables.
         val transitionWeights = HashMap<String, HashMap<String, Float>>()
+        val transition2Weights = HashMap<Pair<String, String>, HashMap<String, Float>>()
         for (i in 1 until sorted.size) {
             val prev = sorted[i - 1]
             val curr = sorted[i]
             if (curr.timestampMillis - prev.timestampMillis <= SESSION_MS) {
                 val daysAgo = (nowMillis - prev.timestampMillis) / MS_PER_DAY
                 val w = exp(-(daysAgo / TRANSITION_DECAY_DAYS) * LN2).toFloat()
-                val row = transitionWeights.getOrPut(prev.packageName) { HashMap() }
-                row[curr.packageName] = (row[curr.packageName] ?: 0f) + w
+                transitionWeights.getOrPut(prev.packageName) { HashMap() }
+                    .merge(curr.packageName, w) { a, b -> a + b }
+            }
+            if (i >= 2) {
+                val prevPrev = sorted[i - 2]
+                if (prev.timestampMillis - prevPrev.timestampMillis <= SESSION_MS &&
+                    curr.timestampMillis - prev.timestampMillis <= SESSION_MS) {
+                    val daysAgo = (nowMillis - prevPrev.timestampMillis) / MS_PER_DAY
+                    val w = exp(-(daysAgo / TRANSITION_DECAY_DAYS) * LN2).toFloat()
+                    transition2Weights.getOrPut(prevPrev.packageName to prev.packageName) { HashMap() }
+                        .merge(curr.packageName, w) { a, b -> a + b }
+                }
             }
         }
 
         val lastEvent = sorted.last()
         val inSession = (nowMillis - lastEvent.timestampMillis) <= SESSION_MS
+
         val transitionRow: Map<String, Float> =
             if (inSession) transitionWeights[lastEvent.packageName] ?: emptyMap() else emptyMap()
         val transitionDenom: Float =
-            if (transitionRow.isNotEmpty()) transitionRow.values.sum() + TRANSITION_SMOOTH * byPkg.size
-            else 0f
+            if (transitionRow.isNotEmpty()) transitionRow.values.sum() + TRANSITION_SMOOTH * nApps else 0f
 
-        // Effective current ctx: passed value, else fall back to most recent event with ctx.
+        val transition2Row: Map<String, Float> = if (inSession && sorted.size >= 2) {
+            val penultimate = sorted[sorted.size - 2]
+            val gap = lastEvent.timestampMillis - penultimate.timestampMillis
+            if (gap <= SESSION_MS) transition2Weights[penultimate.packageName to lastEvent.packageName] ?: emptyMap()
+            else emptyMap()
+        } else emptyMap()
+        val transition2Denom: Float =
+            if (transition2Row.isNotEmpty()) transition2Row.values.sum() + TRANSITION_SMOOTH * nApps else 0f
+
         val effCtx = currentCtx ?: sorted.asReversed().firstOrNull { it.audioActive != null }?.let {
             LaunchContext.Capture(
                 secsSinceResume = it.secsSinceResume ?: 0,
@@ -72,9 +100,12 @@ object ScoreEngine {
             )
         }
 
+        val gapMin = (nowMillis - lastEvent.timestampMillis) / 60_000f
+
         val ctxRaw = HashMap<String, Float>(byPkg.size)
         val recRaw = HashMap<String, Float>(byPkg.size)
         val transRaw = HashMap<String, Float>(byPkg.size)
+        val trans2Raw = HashMap<String, Float>(byPkg.size)
         val audRaw = HashMap<String, Float>(byPkg.size)
         val devRaw = HashMap<String, Float>(byPkg.size)
         val chgRaw = HashMap<String, Float>(byPkg.size)
@@ -119,9 +150,10 @@ object ScoreEngine {
             }
             ctxRaw[pkg] = if (totalDecay > 0.0) (hourSum * daySum / totalDecay).toFloat() else 0f
             recRaw[pkg] = exp(-((nowMillis - lastMs) / 3_600_000f) / RECENCY_HOURS).toFloat()
-            transRaw[pkg] = if (transitionDenom > 0f) {
-                ((transitionRow[pkg] ?: 0f) + TRANSITION_SMOOTH) / transitionDenom
-            } else 0f
+            transRaw[pkg] = if (transitionDenom > 0f)
+                ((transitionRow[pkg] ?: 0f) + TRANSITION_SMOOTH) / transitionDenom else 0f
+            trans2Raw[pkg] = if (transition2Denom > 0f)
+                ((transition2Row[pkg] ?: 0f) + TRANSITION_SMOOTH) / transition2Denom else 0f
 
             audRaw[pkg] = ((audMatch + PHASE1_SMOOTH) / (audTotal + 2 * PHASE1_SMOOTH)).toFloat()
             devRaw[pkg] = ((devMatch + PHASE1_SMOOTH) / (devTotal + 2 * PHASE1_SMOOTH)).toFloat()
@@ -132,22 +164,29 @@ object ScoreEngine {
         val mC = ctxRaw.values.max().coerceAtLeast(1e-9f)
         val mR = recRaw.values.max().coerceAtLeast(1e-9f)
         val mT = transRaw.values.max().coerceAtLeast(1e-9f)
+        val mT2 = trans2Raw.values.max().coerceAtLeast(1e-9f)
         val mA = audRaw.values.max().coerceAtLeast(1e-9f)
         val mD = devRaw.values.max().coerceAtLeast(1e-9f)
         val mCh = chgRaw.values.max().coerceAtLeast(1e-9f)
         val mSr = srRaw.values.max().coerceAtLeast(1e-9f)
 
         val useCtxFeats = effCtx != null
+        val penaltyDecay = if (inSession && SELF_PENALTY > 0)
+            exp(-(gapMin / SELF_PENALTY_HL_MIN) * LN2).toFloat() else 0f
+
         return byPkg.keys.associateWith { pkg ->
-            W_CONTEXT * (ctxRaw[pkg] ?: 0f) / mC +
-            W_RECENCY * (recRaw[pkg] ?: 0f) / mR +
-            W_TRANSITION * (transRaw[pkg] ?: 0f) / mT +
+            var s = W_CONTEXT * (ctxRaw[pkg] ?: 0f) / mC +
+                    W_RECENCY * (recRaw[pkg] ?: 0f) / mR +
+                    W_TRANSITION * (transRaw[pkg] ?: 0f) / mT +
+                    W_TRANSITION_2 * (trans2Raw[pkg] ?: 0f) / mT2
             if (useCtxFeats) {
-                W_AUDIO * (audRaw[pkg] ?: 0f) / mA +
-                W_DEVICE * (devRaw[pkg] ?: 0f) / mD +
-                W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh +
-                W_SR * (srRaw[pkg] ?: 0f) / mSr
-            } else 0f
+                s += W_AUDIO * (audRaw[pkg] ?: 0f) / mA +
+                     W_DEVICE * (devRaw[pkg] ?: 0f) / mD +
+                     W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh +
+                     W_SR * (srRaw[pkg] ?: 0f) / mSr
+            }
+            if (inSession && pkg == lastEvent.packageName) s -= SELF_PENALTY * penaltyDecay
+            s
         }
     }
 

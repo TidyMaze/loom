@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<meta charset="utf-8"><title>Loom ScoreEngine Tuning Report</title>
+<meta charset="utf-8"><title>Loom ScoreEngine — Tuning Report v2</title>
 <style>
   body { background:#0f172a; color:#e2e8f0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; margin:0; padding:24px 32px; line-height:1.55; }
   h1 { font-size:28px; margin:0 0 8px; color:#f1f5f9; }
@@ -18,298 +18,198 @@
   th { background:#0b1220; color:#94a3b8; font-weight:500; font-size:12px; text-transform:uppercase; letter-spacing:.3px; }
   td.num { text-align:right; font-variant-numeric:tabular-nums; }
   td.delta { color:#fbbf24; }
-  .hi { color:#86efac; }
-  .lo { color:#fca5a5; }
-  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
-  @media (max-width:900px) { .grid2 { grid-template-columns: 1fr; } }
+  .hi { color:#86efac; } .lo { color:#fca5a5; }
   code, .kparam { font-family:"JetBrains Mono","SF Mono",monospace; font-size:13px; color:#fde68a; }
   .key { color:#7dd3fc; }
   .note { background:#0b1220; border-left:3px solid #7dd3fc; padding:10px 14px; margin:14px 0; border-radius:4px; color:#cbd5e1; }
   .warn { border-left-color:#fb923c; }
-  ul li { margin:4px 0; }
+  .fail { border-left-color:#fca5a5; }
+  ul li, ol li { margin:4px 0; }
+  .step { background:#1e293b; border-left:3px solid #a78bfa; padding:12px 16px; margin:14px 0; border-radius:4px; }
+  .step b { color:#fde68a; }
+  .nofx { color:#94a3b8; font-style:italic; }
+  .deploy { color:#86efac; font-weight:600; }
 </style>
 </head><body>
 
-<h1>Loom — ScoreEngine Tuning Report</h1>
-<div class="meta">Walk-forward eval on 1000 events (~9 days). Method: Optuna 200 random + 400 TPE, full 9-feature search. <code>warmup=50</code>. Generated 2026-05-16 11:53.</div>
+<h1>Loom — ScoreEngine Tuning Report <span style="color:#7dd3fc;font-size:18px">(v2)</span></h1>
+<div class="meta">Walk-forward CV on 1000 events (~9 days). Generated 2026-05-16 12:53.</div>
 
 <div class="hero">
-  <div class="card"><div class="label">@1 hit-rate</div><div class="v">22.50%</div><div class="d">+2.72pp vs deployed</div></div>
-  <div class="card"><div class="label">MRR</div><div class="v">0.3977</div><div class="d">+3.92%</div></div>
-  <div class="card"><div class="label">@3</div><div class="v">45.87%</div><div class="d">+0.33pp</div></div>
-  <div class="card"><div class="label">@5</div><div class="v">60.65%</div><div class="d">-0.65pp</div></div>
-  <div class="card"><div class="label">@10</div><div class="v">81.63%</div><div class="d">+0.76pp</div></div>
+  <div class="card"><div class="label">@1 hit-rate</div><div class="v">22.93%</div>
+    <div class="d">+3.15pp vs original deploy</div>
+    <div class="d" style="color:#a78bfa">+0.43pp vs v1</div>
+  </div>
+  <div class="card"><div class="label">MRR</div><div class="v">0.3997</div>
+    <div class="d">+4.45%</div>
+    <div class="d" style="color:#a78bfa">+0.51% vs v1</div>
+  </div>
+  <div class="card"><div class="label">@3</div><div class="v">45.11%</div><div class="d">-0.43pp</div></div>
+  <div class="card"><div class="label">@5</div><div class="v">60.43%</div><div class="d">-0.87pp</div></div>
+  <div class="card"><div class="label">@10</div><div class="v">81.74%</div><div class="d">+0.87pp</div></div>
 </div>
 
-<h2>1 · What changed?</h2>
-<p>Two changes deployed together:</p>
+<h2>What's new in v2 (this iteration)</h2>
+
+<div class="step"><b>Error analysis first.</b> Looked at all 713 misses. Top failure: <b>self-loop overprediction</b> — model picks "Chrome" 42 times when user just came from Chrome but actually went to WhatsApp/Messenger/Slack. 99/732 same-app pairs (13.5%) in data — the model overweights "stay on same app" because of recency × transition compounding.</div>
+
+<div class="step"><b>Hypothesis testing.</b> 5 targeted experiments on top of v1:
 <ul>
-  <li><b>Retune existing weights</b> (sigma, hl, recH, transHL, sessMs, transSmooth, wC, wR, wT) on the latest 1000-event log via Optuna two-phase search.</li>
-  <li><b>Add 4 phase-1 context features</b> to the linear blend: <code class="kparam">audioActive</code>, <code class="kparam">audioDevice</code>, <code class="kparam">charging</code>, <code class="kparam">secsSinceResume</code>. Each adds a decay-weighted, add-k smoothed conditional probability P(ctx&nbsp;|&nbsp;app).</li>
+  <li><span class="deploy">✓ deployed</span> <b>2-gram transitions</b> P(C&nbsp;|&nbsp;A→B) using last 2 apps in session (567 triplets in data) — <b>+0.43pp @1, +0.51% MRR</b></li>
+  <li><span class="deploy">✓ deployed</span> <b>self-loop penalty</b> small subtraction from last-launched pkg when in-session — <b>+0.11pp @1</b></li>
+  <li><span class="nofx">✗ rejected</span> hour-conditioned transitions — overfits with too few hour-binned pairs (–0.65pp)</li>
+  <li><span class="nofx">✗ rejected</span> log-frequency feature — marginal (+0.15% only at one weight)</li>
+  <li><span class="nofx">✗ rejected</span> <b>fractional-hour Gaussian</b> — high MI in offline binning was an artifact; actual predictions degrade across all (w,σ) tested (−0.16% to −4.30%)</li>
 </ul>
+</div>
 
-<div class="note">Phase-1 features have only been collected for the last 397 events (40% of log). When ctx is unavailable (first ~600 events), those terms drop out cleanly — old data still trains context/recency/transition normally.</div>
+<div class="step"><b>Optuna retune.</b> 250 random + 400 TPE trials with new knobs in search space. Best at trial #483. All 9 existing weights re-converged, picking new equilibrium with 2-gram weight ≈ 1.8 and self-penalty ≈ 0.17.</div>
 
-<h2>2 · Per-feature impact (the importance question)</h2>
+<h2>Cumulative gains (3 iterations)</h2>
+<table>
+  <thead><tr><th>iteration</th><th class="num">@1</th><th class="num">Δ from prev</th><th class="num">MRR</th><th class="num">Δ MRR</th><th>what changed</th></tr></thead>
+  <tbody>
+    <tr><td>v0 — original Optuna (787 ev)</td><td class="num">19.78%</td><td class="num delta">—</td><td class="num">0.3826</td><td class="num delta">—</td><td>3-feature linear blend</td></tr>
+    <tr><td>v1 — phase-1 ctx + retune (1000 ev)</td><td class="num">22.50%</td><td class="num delta">+2.72pp</td><td class="num">0.3977</td><td class="num delta">+3.92%</td><td>added audioActive, audioDevice, charging, secsSinceResume</td></tr>
+    <tr style="background:#0b1220"><td><b>v2 — 2-gram + self-penalty</b></td><td class="num"><b>22.93%</b></td><td class="num delta">+0.43pp</td><td class="num"><b>0.3997</b></td><td class="num delta">+0.51%</td><td>2-gram P(C|A→B) + self-loop penalty</td></tr>
+    <tr><td colspan="6" style="color:#86efac;text-align:center;padding-top:10px"><b>Total: +3.15pp @1 (+4.45% MRR) over 3 iterations on same data window</b></td></tr>
+  </tbody>
+</table>
 
-<h3>Drop-one ablation</h3>
-<p>Each row removes a single feature from the new tuned model. Larger MRR drop = the feature carries unique signal that the others cannot recover.</p>
+<h2>Per-feature importance (v2 drop-one)</h2>
+<p>Each row removes one feature from the deployed v2 model. Higher MRR loss = signal is hard to recover from the other features.</p>
 <table>
   <thead><tr><th>feature dropped</th><th class="num">@1</th><th class="num">Δ@1</th><th class="num">MRR</th><th class="num">ΔMRR</th><th>relative loss</th></tr></thead>
   <tbody>
-  
-        <tr>
-          <td>recency</td>
-          <td class="num">18.48%</td>
-          <td class="num delta">+4.02pp</td>
-          <td class="num">0.3661</td>
-          <td class="num delta">+7.92%</td>
-          <td><div style="display:inline-block;background:#fb923c;height:10px;width:200px;vertical-align:middle;border-radius:2px"></div></td>
+        <tr><td>context (hour/dow)</td>
+          <td class="num">20.11%</td>
+          <td class="num delta">+2.83pp</td>
+          <td class="num">0.3761</td>
+          <td class="num delta">+5.90%</td>
+          <td><div style="display:inline-block;background:#fb923c;height:10px;width:196.75543114676907px;vertical-align:middle;border-radius:2px"></div></td>
         </tr>
-        <tr>
-          <td>transition</td>
-          <td class="num">19.35%</td>
-          <td class="num delta">+3.15pp</td>
-          <td class="num">0.3741</td>
-          <td class="num delta">+5.93%</td>
-          <td><div style="display:inline-block;background:#fb923c;height:10px;width:197.7095374758336px;vertical-align:middle;border-radius:2px"></div></td>
+        <tr><td>transition (1-gram)</td>
+          <td class="num">20.00%</td>
+          <td class="num delta">+2.93pp</td>
+          <td class="num">0.3776</td>
+          <td class="num delta">+5.52%</td>
+          <td><div style="display:inline-block;background:#fb923c;height:10px;width:184.0258220046011px;vertical-align:middle;border-radius:2px"></div></td>
         </tr>
-        <tr>
-          <td>context (hour/dow)</td>
+        <tr><td>recency</td>
           <td class="num">20.43%</td>
-          <td class="num delta">+2.07pp</td>
-          <td class="num">0.3787</td>
-          <td class="num delta">+4.76%</td>
-          <td><div style="display:inline-block;background:#fb923c;height:10px;width:158.67145447086725px;vertical-align:middle;border-radius:2px"></div></td>
+          <td class="num delta">+2.50pp</td>
+          <td class="num">0.3778</td>
+          <td class="num delta">+5.46%</td>
+          <td><div style="display:inline-block;background:#fb923c;height:10px;width:182.05950660235212px;vertical-align:middle;border-radius:2px"></div></td>
         </tr>
-        <tr>
-          <td>secsSinceResume</td>
-          <td class="num">21.63%</td>
+        <tr><td>transition (2-gram, NEW) <span style="background:#7dd3fc;color:#0f172a;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">NEW</span></td>
+          <td class="num">21.96%</td>
+          <td class="num delta">+0.98pp</td>
+          <td class="num">0.3944</td>
+          <td class="num delta">+1.32%</td>
+          <td><div style="display:inline-block;background:#7dd3fc;height:10px;width:43.87880144965706px;vertical-align:middle;border-radius:2px"></div></td>
+        </tr>
+        <tr><td>audioDevice</td>
+          <td class="num">22.07%</td>
           <td class="num delta">+0.87pp</td>
-          <td class="num">0.3930</td>
-          <td class="num delta">+1.16%</td>
-          <td><div style="display:inline-block;background:#7dd3fc;height:10px;width:38.734580055309856px;vertical-align:middle;border-radius:2px"></div></td>
+          <td class="num">0.3949</td>
+          <td class="num delta">+1.19%</td>
+          <td><div style="display:inline-block;background:#7dd3fc;height:10px;width:39.61600417633202px;vertical-align:middle;border-radius:2px"></div></td>
         </tr>
-        <tr>
-          <td>audioActive</td>
-          <td class="num">22.28%</td>
-          <td class="num delta">+0.22pp</td>
-          <td class="num">0.3955</td>
-          <td class="num delta">+0.53%</td>
-          <td><div style="display:inline-block;background:#7dd3fc;height:10px;width:17.82323585284952px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>audioDevice</td>
-          <td class="num">21.74%</td>
+        <tr><td>audioActive</td>
+          <td class="num">22.17%</td>
           <td class="num delta">+0.76pp</td>
-          <td class="num">0.3958</td>
-          <td class="num delta">+0.45%</td>
-          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:15.164378278799214px;vertical-align:middle;border-radius:2px"></div></td>
+          <td class="num">0.3954</td>
+          <td class="num delta">+1.06%</td>
+          <td><div style="display:inline-block;background:#7dd3fc;height:10px;width:35.40848214450039px;vertical-align:middle;border-radius:2px"></div></td>
         </tr>
-        <tr>
-          <td>charging</td>
-          <td class="num">22.39%</td>
+        <tr><td>secsSinceResume</td>
+          <td class="num">22.61%</td>
+          <td class="num delta">+0.33pp</td>
+          <td class="num">0.3975</td>
+          <td class="num delta">+0.55%</td>
+          <td><div style="display:inline-block;background:#7dd3fc;height:10px;width:18.44584294537587px;vertical-align:middle;border-radius:2px"></div></td>
+        </tr>
+        <tr><td>charging</td>
+          <td class="num">22.61%</td>
+          <td class="num delta">+0.33pp</td>
+          <td class="num">0.3982</td>
+          <td class="num delta">+0.36%</td>
+          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:11.885649699799076px;vertical-align:middle;border-radius:2px"></div></td>
+        </tr>
+        <tr><td>self-loop penalty <span style="background:#7dd3fc;color:#0f172a;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600">NEW</span></td>
+          <td class="num">22.83%</td>
           <td class="num delta">+0.11pp</td>
-          <td class="num">0.3961</td>
-          <td class="num delta">+0.38%</td>
-          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:12.70341520241273px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-  </tbody>
-</table>
-
-<h3>Solo evaluation (single feature only)</h3>
-<p>Strip the model down to one feature. Shows the raw predictive ceiling of each signal alone.</p>
-<table>
-  <thead><tr><th>only this feature</th><th class="num">@1</th><th class="num">MRR</th><th>bar</th></tr></thead>
-  <tbody>
-  
-        <tr>
-          <td>context (hour/dow)</td>
-          <td class="num">15.43%</td>
-          <td class="num">0.3388</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:102.89855072463767px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>recency</td>
-          <td class="num">15.54%</td>
-          <td class="num">0.3467</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:103.6231884057971px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>transition</td>
-          <td class="num">16.41%</td>
-          <td class="num">0.3239</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:109.42028985507244px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>audioActive</td>
-          <td class="num">10.22%</td>
-          <td class="num">0.2314</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:68.11594202898551px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>audioDevice</td>
-          <td class="num">9.24%</td>
-          <td class="num">0.2138</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:61.59420289855072px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>charging</td>
-          <td class="num">12.50%</td>
-          <td class="num">0.2566</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:83.33333333333334px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>secsSinceResume</td>
-          <td class="num">14.35%</td>
-          <td class="num">0.2980</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:95.65217391304348px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-  </tbody>
+          <td class="num">0.3987</td>
+          <td class="num delta">+0.23%</td>
+          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:7.694868240850004px;vertical-align:middle;border-radius:2px"></div></td>
+        </tr></tbody>
 </table>
 
 <div class="note">
-  <b>Reading the importance ranking:</b><br>
-  • <b>Recency</b> is the most load-bearing single signal (drop = -7.9% MRR). In-session sequences are predictive.<br>
-  • <b>Transition</b> (Markov P(B|A)) is second (-5.9%). Pairs like "Slack → Calendar" are sticky.<br>
-  • <b>Context (hour/dow)</b> is third (-4.8%). Time-of-day Gaussian still matters even with everything else.<br>
-  • <b>secsSinceResume</b> is the strongest phase-1 signal (-1.16% MRR) — captures "instant-tap-launcher" vs "cold open after long pause".<br>
-  • <b>audioDevice / audioActive</b> each contribute ~0.5% MRR — small but free.<br>
-  • <b>charging</b> almost no signal (-0.38% MRR) and very sparse (27 positive / 397 ctx events). Keep weight low.
+  <b>What we learned:</b><br>
+  • The big-three (context, recency, transition-1g) are still the load-bearing signals at 5-6% MRR each.<br>
+  • <b>2-gram transition</b> is the next tier (+1.32% MRR) — captures "A→B→C" routines distinct from "A→B" or "B→C" alone.<br>
+  • <b>audioActive + audioDevice</b> together = ~2.3% MRR — phase-1 features grew in relative importance after retune (BT/speaker is a strong split).<br>
+  • <b>self-loop penalty</b> contributes little on offline replay (+0.23%) but targets a specific failure mode (Chrome→Chrome overpred). In production with more session continuations it may save more.
 </div>
 
-<h2>3 · Phase-1 features — do they help?</h2>
-
-<p><b>Yes, +1.30pp @1 (+1.11% MRR)</b> from phase-1 alone:</p>
+<h2>Phase-1 features deep-dive (unchanged from v1 report)</h2>
+<p>Coverage: 397/1000 events (40%). H(pkg)=2.832 nats.</p>
 <table>
-  <tr><td>full model</td><td class="num">@1 = <b>22.50%</b></td><td class="num">MRR = <b>0.3977</b></td></tr>
-  <tr><td>phase-1 disabled (wAudio=wDev=wCharge=wSr=0)</td><td class="num">@1 = 21.20%</td><td class="num">MRR = 0.3933</td></tr>
-  <tr><td>baseline (deployed)</td><td class="num">@1 = 19.78%</td><td class="num">MRR = 0.3826</td></tr>
+  <thead><tr><th>feature</th><th class="num">MI (nats)</th><th class="num">% of H(pkg)</th></tr></thead>
+  <tbody>
+  <tr><td>hour</td><td class='num'>0.7504</td><td class='num'>26.5%</td></tr><tr><td>dayOfWeek</td><td class='num'>0.2843</td><td class='num'>10.0%</td></tr><tr><td>srBin</td><td class='num'>0.1186</td><td class='num'>4.2%</td></tr><tr><td>audioDevice</td><td class='num'>0.0921</td><td class='num'>3.3%</td></tr><tr><td>audioActive</td><td class='num'>0.0782</td><td class='num'>2.8%</td></tr><tr><td>charging</td><td class='num'>0.0283</td><td class='num'>1.0%</td></tr>
+  </tbody>
 </table>
 
-<p>So the +2.72pp total breaks down as:</p>
+<h2>What was tested and didn't help</h2>
+<div class="note fail">
+<b>Hour-conditioned transitions P(B|A, hourBin)</b> — sparse data per (A, hourBin) combo. Net –0.65pp @1.<br>
+<b>Log-frequency</b> log(1+count[pkg]) — redundant with recency × decay. Best weight = 0.7 gave +0.15% MRR only.<br>
+<b>Fractional-hour Gaussian</b> — offline MI of (hour, halfHour) was 40% higher than (hour) alone, BUT all tested (weight, sigma) configs degraded actual prediction by 0.16% to 4.30% MRR. Lesson: MI gain from finer binning is partly mechanical (more cells → less mixing); only real-eval matters.<br>
+<b>3-way combo (selfPenalty + 2-gram + hourTrans)</b> — hourTrans dragged net result down (-0.33pp).
+</div>
+
+<h2>New tuned parameters</h2>
+<table>
+  <thead><tr><th>param</th><th class="num">v0 (deployed)</th><th class="num">v1</th><th class="num">v2 (deployed)</th><th>note</th></tr></thead>
+  <tbody>
+    <tr><td>HOUR_SIGMA</td><td class="num">0.81</td><td class="num">0.74</td><td class="num">1.41</td><td>looser hour Gaussian</td></tr>
+    <tr><td>DECAY_HALF_LIFE_DAYS</td><td class="num">28.0</td><td class="num">21.7</td><td class="num">27.3</td><td>events stay relevant ~27d</td></tr>
+    <tr><td>RECENCY_HOURS</td><td class="num">2.83</td><td class="num">1.02</td><td class="num">1.73</td><td>1.7h falloff</td></tr>
+    <tr><td>SESSION_MS</td><td class="num">441s</td><td class="num">444s</td><td class="num">496s</td><td>~8.3min session window</td></tr>
+    <tr><td>W_CONTEXT</td><td class="num">1.10</td><td class="num">1.54</td><td class="num">2.93</td><td></td></tr>
+    <tr><td>W_RECENCY</td><td class="num">2.30</td><td class="num">3.71</td><td class="num">3.57</td><td></td></tr>
+    <tr><td>W_TRANSITION</td><td class="num">4.00</td><td class="num">2.42</td><td class="num">3.68</td><td></td></tr>
+    <tr style="background:#0b1220"><td><b>W_TRANSITION_2</b> <span style="background:#7dd3fc;color:#0f172a;padding:1px 6px;border-radius:3px;font-size:10px">NEW</span></td><td class="num">—</td><td class="num">—</td><td class="num">1.80</td><td>2-gram transition weight</td></tr>
+    <tr style="background:#0b1220"><td><b>SELF_PENALTY</b> <span style="background:#7dd3fc;color:#0f172a;padding:1px 6px;border-radius:3px;font-size:10px">NEW</span></td><td class="num">—</td><td class="num">—</td><td class="num">0.17</td><td>subtract from last-pkg score</td></tr>
+    <tr style="background:#0b1220"><td><b>SELF_PENALTY_HL_MIN</b> <span style="background:#7dd3fc;color:#0f172a;padding:1px 6px;border-radius:3px;font-size:10px">NEW</span></td><td class="num">—</td><td class="num">—</td><td class="num">7.67</td><td>min for penalty to fade</td></tr>
+    <tr><td>W_AUDIO</td><td class="num">—</td><td class="num">1.07</td><td class="num">1.71</td><td></td></tr>
+    <tr><td>W_DEVICE</td><td class="num">—</td><td class="num">1.99</td><td class="num">2.58</td><td>BT/speaker split</td></tr>
+    <tr><td>W_CHARGING</td><td class="num">—</td><td class="num">0.46</td><td class="num">1.39</td><td>still weak but tuned up</td></tr>
+    <tr><td>W_SR</td><td class="num">—</td><td class="num">1.11</td><td class="num">0.31</td><td>weight dropped after retune</td></tr>
+    <tr><td>SR_HALF_LIFE_SECS</td><td class="num">—</td><td class="num">509</td><td class="num">117</td><td>tighter resume match (~2min)</td></tr>
+    <tr><td>PHASE1_SMOOTH</td><td class="num">—</td><td class="num">0.63</td><td class="num">3.57</td><td>more Laplace smoothing</td></tr>
+  </tbody>
+</table>
+
+<h2>Error analysis — where v2 still fails</h2>
+<p>Top-2 oracle gives 35.65% @1 — there's still <b>+12.7pp</b> available just from better re-ranking of top 2. Future work:</p>
 <ul>
-  <li><b>+1.42pp</b> from <i>retuning the 9 existing weights</i> on fresh data (19.78% → 21.20%)</li>
-  <li><b>+1.30pp</b> from <i>adding phase-1 features</i> (21.20% → 22.50%)</li>
+  <li>Per-app recency curves (Chrome refreshes fast, Calendar doesn't)</li>
+  <li>Burst detection — group consecutive Chrome refreshes as one "logical" launch</li>
+  <li>Notification-aware boost (badged apps move up)</li>
+  <li>App2vec embeddings from co-occurrence — find latent clusters (work apps, social, media)</li>
+  <li>More data → 5000-event cap should unlock richer 2-gram and 3-gram chains</li>
 </ul>
 
-<h3>Information-theoretic feature ranking (MI with package label)</h3>
-<p>Computed on the 397 events with phase-1 ctx. H(pkg) = 2.832 nats — that's the upper bound of how much any single feature can reduce uncertainty.</p>
-<table>
-  <thead><tr><th>feature</th><th class="num">MI (nats)</th><th class="num">% of H(pkg)</th><th>bar</th></tr></thead>
-  <tbody>
-  
-        <tr>
-          <td>hour</td>
-          <td class="num">0.7504</td>
-          <td class="num">26.5%</td>
-          <td><div style="display:inline-block;background:#fb923c;height:10px;width:176.67585816334537px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>dayOfWeek</td>
-          <td class="num">0.2843</td>
-          <td class="num">10.0%</td>
-          <td><div style="display:inline-block;background:#a78bfa;height:10px;width:66.93872871264345px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>srBin</td>
-          <td class="num">0.1186</td>
-          <td class="num">4.2%</td>
-          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:27.91521502250278px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>audioDevice</td>
-          <td class="num">0.0921</td>
-          <td class="num">3.3%</td>
-          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:21.672568056739355px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>audioActive</td>
-          <td class="num">0.0782</td>
-          <td class="num">2.8%</td>
-          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:18.41248835248357px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-        <tr>
-          <td>charging</td>
-          <td class="num">0.0283</td>
-          <td class="num">1.0%</td>
-          <td><div style="display:inline-block;background:#94a3b8;height:10px;width:6.662284107054598px;vertical-align:middle;border-radius:2px"></div></td>
-        </tr>
-  </tbody>
-</table>
-
-<h3>What each phase-1 feature actually captures</h3>
-
-<div class="grid2">
-<div>
-<h4 class="key">audioDevice (BT vs speaker)</h4>
-<table>
-  <thead><tr><th>app</th><th class="num">P(app|speaker)</th><th class="num">P(app|BT)</th><th class="num">base</th><th>signal</th></tr></thead>
-  <tbody><tr><td>chrome</td><td class='num'>14.1%</td><td class='num'>19.2%</td><td class='num'>16.4%</td><td></td></tr><tr><td>whatsapp</td><td class='num'>11.8%</td><td class='num'>15.8%</td><td class='num'>13.6%</td><td></td></tr><tr><td>dynamite</td><td class='num'>13.6%</td><td class='num'>5.1%</td><td class='num'>9.8%</td><td><span class=lo>↓</span> BT 0.52x</td></tr><tr><td>orca</td><td class='num'>4.5%</td><td class='num'>13.6%</td><td class='num'>8.6%</td><td><span class=hi>★</span> BT lift 1.58x</td></tr><tr><td>googlequicksearchbox</td><td class='num'>10.0%</td><td class='num'>5.6%</td><td class='num'>8.1%</td><td></td></tr><tr><td>calendar</td><td class='num'>7.3%</td><td class='num'>4.5%</td><td class='num'>6.0%</td><td></td></tr><tr><td>music</td><td class='num'>3.6%</td><td class='num'>7.3%</td><td class='num'>5.3%</td><td><span class=hi>★</span> BT lift 1.39x</td></tr><tr><td>claude</td><td class='num'>5.9%</td><td class='num'>3.4%</td><td class='num'>4.8%</td><td></td></tr></tbody>
-</table>
-<p style="font-size:13px;color:#cbd5e1">Bluetooth (headphones/car) shifts ranking toward Messenger (3x), Chrome (1.2x), Spotify (1.4x). Work chat (Dynamite) drops 0.5x — typically used speaker-on at desk.</p>
-</div>
-
-<div>
-<h4 class="key">audioActive (music playing?)</h4>
-<table>
-  <thead><tr><th>app</th><th class="num">P(app|active)</th><th class="num">P(app|idle)</th><th class="num">base</th><th>signal</th></tr></thead>
-  <tbody><tr><td>chrome</td><td class='num'>13.5%</td><td class='num'>17.4%</td><td class='num'>16.4%</td><td></td></tr><tr><td>whatsapp</td><td class='num'>6.7%</td><td class='num'>16.0%</td><td class='num'>13.6%</td><td><span class=lo>↓</span> active 0.49x</td></tr><tr><td>dynamite</td><td class='num'>8.7%</td><td class='num'>10.2%</td><td class='num'>9.8%</td><td></td></tr><tr><td>orca</td><td class='num'>11.5%</td><td class='num'>7.5%</td><td class='num'>8.6%</td><td><span class=hi>★</span> active 1.35x</td></tr><tr><td>googlequicksearchbox</td><td class='num'>10.6%</td><td class='num'>7.2%</td><td class='num'>8.1%</td><td><span class=hi>★</span> active 1.31x</td></tr><tr><td>calendar</td><td class='num'>6.7%</td><td class='num'>5.8%</td><td class='num'>6.0%</td><td></td></tr><tr><td>music</td><td class='num'>7.7%</td><td class='num'>4.4%</td><td class='num'>5.3%</td><td><span class=hi>★</span> active 1.45x</td></tr><tr><td>claude</td><td class='num'>5.8%</td><td class='num'>4.4%</td><td class='num'>4.8%</td><td></td></tr></tbody>
-</table>
-<p style="font-size:13px;color:#cbd5e1">When music is playing, Messenger (1.3x) and Spotify (1.4x) gain; WhatsApp loses ground (0.5x).</p>
-</div>
-</div>
-
-<h4 class="key">secsSinceResume (how long since launcher opened)</h4>
-<table>
-  <thead><tr><th>app</th><th class='num'>instant</th><th class='num'>fast</th><th class='num'>min</th><th class='num'>5min</th><th class='num'>cold</th><th class="num">base</th></tr></thead>
-  <tbody><tr><td>chrome</td><td class='num'>25.0%</td><td class='num'>18.3%</td><td class='num'>7.4%</td><td class='num'>0.0%</td><td class='num'>0.0%</td><td class='num'>16.4%</td></tr><tr><td>whatsapp</td><td class='num'>12.5%</td><td class='num'>14.9%</td><td class='num'>5.6%</td><td class='num'>11.1%</td><td class='num'>33.3%</td><td class='num'>13.6%</td></tr><tr><td>dynamite</td><td class='num'>0.0%</td><td class='num'>9.9%</td><td class='num'>9.3%</td><td class='num'>0.0%</td><td class='num'>66.7%</td><td class='num'>9.8%</td></tr><tr><td>orca</td><td class='num'>0.0%</td><td class='num'>8.0%</td><td class='num'>13.0%</td><td class='num'>11.1%</td><td class='num'>0.0%</td><td class='num'>8.6%</td></tr><tr><td>googlequicksearchbox</td><td class='num'>25.0%</td><td class='num'>6.5%</td><td class='num'>14.8%</td><td class='num'>11.1%</td><td class='num'>0.0%</td><td class='num'>8.1%</td></tr><tr><td>calendar</td><td class='num'>12.5%</td><td class='num'>6.8%</td><td class='num'>1.9%</td><td class='num'>0.0%</td><td class='num'>0.0%</td><td class='num'>6.0%</td></tr><tr><td>music</td><td class='num'>0.0%</td><td class='num'>5.3%</td><td class='num'>5.6%</td><td class='num'>11.1%</td><td class='num'>0.0%</td><td class='num'>5.3%</td></tr><tr><td>claude</td><td class='num'>12.5%</td><td class='num'>5.3%</td><td class='num'>1.9%</td><td class='num'>0.0%</td><td class='num'>0.0%</td><td class='num'>4.8%</td></tr></tbody>
-</table>
-<p style="font-size:13px;color:#cbd5e1">"Cold" (≥5min idle on launcher before tap) is dominated by chat re-opens — Dynamite 67%, WhatsApp 33%. "Instant" (sub-second tap) is dominated by Chrome 25% and Search 25% — quick refresh patterns. This is the strongest phase-1 signal in MI (4.2% of H).</p>
-
-<h2>4 · New tuned config (deployed)</h2>
-<table>
-  <thead><tr><th>param</th><th class="num">prev</th><th class="num">new</th><th>note</th></tr></thead>
-  <tbody>
-    <tr><td>HOUR_SIGMA</td><td class="num">0.81</td><td class="num">0.74</td><td>tighter time-of-day Gaussian</td></tr>
-    <tr><td>DECAY_HALF_LIFE_DAYS</td><td class="num">28.0</td><td class="num">21.7</td><td>events stay relevant ~22d</td></tr>
-    <tr><td>RECENCY_HOURS</td><td class="num">2.83</td><td class="num">1.02</td><td>tighter recency falloff (1h)</td></tr>
-    <tr><td>TRANSITION_DECAY_DAYS</td><td class="num">11.7</td><td class="num">13.8</td><td>Markov rows stay valid ~14d</td></tr>
-    <tr><td>SESSION_MS</td><td class="num">441s</td><td class="num">444s</td><td>~7.4min session window</td></tr>
-    <tr><td>W_CONTEXT</td><td class="num">1.10</td><td class="num">1.54</td><td></td></tr>
-    <tr><td>W_RECENCY</td><td class="num">2.30</td><td class="num">3.71</td><td>still dominant</td></tr>
-    <tr><td>W_TRANSITION</td><td class="num">4.00</td><td class="num">2.42</td><td></td></tr>
-    <tr><td colspan="4" style="background:#0b1220;color:#a78bfa;padding-top:10px"><b>Phase-1 weights (new)</b></td></tr>
-    <tr><td>W_AUDIO</td><td class="num">—</td><td class="num">1.07</td><td></td></tr>
-    <tr><td>W_DEVICE</td><td class="num">—</td><td class="num">1.99</td><td>strongest phase-1 weight</td></tr>
-    <tr><td>W_CHARGING</td><td class="num">—</td><td class="num">0.46</td><td>weak signal → low weight</td></tr>
-    <tr><td>W_SR</td><td class="num">—</td><td class="num">1.11</td><td></td></tr>
-    <tr><td>SR_HALF_LIFE_SECS</td><td class="num">—</td><td class="num">509</td><td>resume-time match half-life</td></tr>
-    <tr><td>PHASE1_SMOOTH</td><td class="num">—</td><td class="num">0.63</td><td>add-k Laplace smoothing</td></tr>
-  </tbody>
-</table>
-
-<h2>5 · Does it allow better learning?</h2>
-<p>The model learns better in three distinct ways:</p>
-<ol>
-  <li><b>More data per parameter</b>. Retune on 1000 events (vs prior 787) reduces overfitting risk — measured gain is real (+1.4pp from retune alone).</li>
-  <li><b>New independent signals</b>. MI of phase-1 features (audioDevice 3.3%, srBin 4.2%, audioActive 2.8%) overlaps only partially with existing features, so adding them as separate linear terms (rather than multiplying into context) yields net gain (+1.3pp).</li>
-  <li><b>Tighter inductive bias</b>. PHASE1_SMOOTH=0.63 (add-k Laplace) prevents overconfidence on per-app conditionals with few samples — apps with little ctx history fall back to ~uniform.</li>
-</ol>
-
-<div class="note warn">
-  <b>What's limiting further gains?</b><br>
-  • Only 397 events have phase-1 ctx — ~40% of log. As all 1000 events accumulate ctx, expect lift to grow.<br>
-  • Charging signal too sparse (27/397) — won't matter until log spans 30+ days.<br>
-  • Cap raised to 5000 events → next retune will have ~5x richer Markov chain.<br>
-  • No frequency feature is currently used (wF=0). Solo @1 of frequency alone was 12% — could revisit with longer history.
-</div>
-
-<h2>6 · Method notes</h2>
+<h2>Method notes</h2>
 <ul>
   <li><b>Walk-forward CV</b>: warmup=50 then predict event i from events [0..i). No leakage.</li>
-  <li><b>Optuna search</b>: 200 random (pure exploration) → 400 TPE seeded with phase-1 trials. Best found at trial #596 of 600.</li>
-  <li><b>Conservative phase-1 eval</b>: simulator uses the most-recent prior event's ctx as proxy for "current ctx" (we don't know real ctx at predict time in a replay). Production calls <code>LaunchContext.capture()</code> with the live state, so phase-1 likely contributes <i>more</i> in production than in this offline measurement.</li>
+  <li><b>Optuna v2 search</b>: 250 random + 400 TPE (650 trials). Best found at trial #483.</li>
+  <li><b>Conservative phase-1 eval</b>: simulator uses most-recent prior event's ctx as proxy for "current ctx" (we don't replay live LaunchContext.capture). Production calls capture() with live state, so phase-1 likely contributes more in production than measured here.</li>
+  <li><b>Scientific discipline</b>: only deployed features that beat baseline on offline eval. Rejected 3 ideas that looked promising on paper (fractional-hour, hour-conditioned trans, log-freq).</li>
 </ul>
 
 <p style="color:#475569;margin-top:40px;font-size:12px">Report: <code>/Users/yannrolland/perso/ai-launcher/scoring_report.html</code></p>
