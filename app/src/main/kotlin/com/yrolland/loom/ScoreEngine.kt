@@ -1,10 +1,15 @@
 package com.yrolland.loom
 
+import android.util.Log
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.ln
 
 object ScoreEngine {
+
+    /** When true, log top-15 apps with per-feature breakdown to logcat (tag=ScoreEngine).
+     *  View with: adb logcat -s ScoreEngine */
+    private const val DEBUG_LOG = false
 
     // Tuned via Optuna (200 rand + 400 TPE = 600 trials) on 1000 events.
     // @1=24.13% MRR=0.4039 vs prev (@1=22.93% MRR=0.3997): +1.20pp @1, +1.07% MRR.
@@ -186,22 +191,44 @@ object ScoreEngine {
         val penaltyDecay = if (inSession && SELF_PENALTY > 0)
             exp(-(gapMin / SELF_PENALTY_HL_MIN) * LN2).toFloat() else 0f
 
-        return byPkg.keys.associateWith { pkg ->
-            var s = W_CONTEXT * (ctxRaw[pkg] ?: 0f) / mC +
-                    W_RECENCY * (recRaw[pkg] ?: 0f) / mR +
-                    W_REC_8H * (rec8Raw[pkg] ?: 0f) / m8 +
-                    W_REC_24H * (rec24Raw[pkg] ?: 0f) / m24 +
-                    W_REC_168H * (rec168Raw[pkg] ?: 0f) / m168 +
-                    W_TRANSITION * (transRaw[pkg] ?: 0f) / mT +
-                    W_TRANSITION_2 * (trans2Raw[pkg] ?: 0f) / mT2
-            if (useCtxFeats) {
-                s += W_AUDIO * (audRaw[pkg] ?: 0f) / mA +
-                     W_DEVICE * (devRaw[pkg] ?: 0f) / mD +
-                     W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh +
-                     W_SR * (srRaw[pkg] ?: 0f) / mSr
-            }
-            if (inSession && pkg == lastEvent.packageName) s -= SELF_PENALTY * penaltyDecay
+        val breakdowns: HashMap<String, FloatArray>? = if (DEBUG_LOG) HashMap(byPkg.size) else null
+        val scores = byPkg.keys.associateWith { pkg ->
+            val pCtx = W_CONTEXT * (ctxRaw[pkg] ?: 0f) / mC
+            val pRec = W_RECENCY * (recRaw[pkg] ?: 0f) / mR
+            val pR8 = W_REC_8H * (rec8Raw[pkg] ?: 0f) / m8
+            val pR24 = W_REC_24H * (rec24Raw[pkg] ?: 0f) / m24
+            val pR168 = W_REC_168H * (rec168Raw[pkg] ?: 0f) / m168
+            val pT = W_TRANSITION * (transRaw[pkg] ?: 0f) / mT
+            val pT2 = W_TRANSITION_2 * (trans2Raw[pkg] ?: 0f) / mT2
+            val pA = if (useCtxFeats) W_AUDIO * (audRaw[pkg] ?: 0f) / mA else 0f
+            val pD = if (useCtxFeats) W_DEVICE * (devRaw[pkg] ?: 0f) / mD else 0f
+            val pCh = if (useCtxFeats) W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh else 0f
+            val pSr = if (useCtxFeats) W_SR * (srRaw[pkg] ?: 0f) / mSr else 0f
+            val pen = if (inSession && pkg == lastEvent.packageName) -SELF_PENALTY * penaltyDecay else 0f
+            val s = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pen
+            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, pen))
             s
+        }
+
+        if (DEBUG_LOG && breakdowns != null) logBreakdown(scores, breakdowns, effCtx, lastEvent, inSession)
+        return scores
+    }
+
+    private fun logBreakdown(
+        scores: Map<String, Float>,
+        breakdowns: Map<String, FloatArray>,
+        ctx: LaunchContext.Capture?,
+        lastEvent: UsageEvent,
+        inSession: Boolean
+    ) {
+        Log.d("ScoreEngine", "----- score run @${System.currentTimeMillis()} -----")
+        Log.d("ScoreEngine", "ctx=${ctx?.let { "audio=${it.audioActive} dev=${it.audioDevice} chg=${it.charging} sr=${it.secsSinceResume}" } ?: "none"}")
+        Log.d("ScoreEngine", "last=${lastEvent.packageName} inSession=$inSession")
+        Log.d("ScoreEngine", "labels: ctx rec rec8 rec24 rec168 trans trans2 aud dev chg sr SELF")
+        scores.entries.sortedByDescending { it.value }.take(15).forEachIndexed { i, (pkg, s) ->
+            val b = breakdowns[pkg]!!
+            val parts = b.joinToString(" ") { "%+.2f".format(it) }
+            Log.d("ScoreEngine", "%2d %-45s %+.2f  [%s]".format(i + 1, pkg, s, parts))
         }
     }
 
