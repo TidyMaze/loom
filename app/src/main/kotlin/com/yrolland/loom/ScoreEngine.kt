@@ -6,33 +6,37 @@ import kotlin.math.ln
 
 object ScoreEngine {
 
-    // Tuned via Optuna (250 rand + 400 TPE) on 1000 events.
-    // @1=22.93% MRR=0.3997 vs prev (@1=22.50% MRR=0.3977): +0.43pp @1, +0.50% MRR.
-    // Adds: 2-gram session transitions (P(C|A→B)) and self-loop penalty
-    // (subtract from just-launched app when in-session — user rarely re-opens same app).
-    private const val HOUR_SIGMA = 1.41f
-    private const val DECAY_HALF_LIFE_DAYS = 27.3f
-    private const val RECENCY_HOURS = 1.73f
-    private const val TRANSITION_DECAY_DAYS = 16.9f
-    private const val SESSION_MS = 496 * 1000L
-    private const val TRANSITION_SMOOTH = 0.86f
+    // Tuned via Optuna (200 rand + 400 TPE = 600 trials) on 1000 events.
+    // @1=24.13% MRR=0.4039 vs prev (@1=22.93% MRR=0.3997): +1.20pp @1, +1.07% MRR.
+    // New in v3:
+    //  - Burst collapse: drop consecutive same-pkg events within BURST_GAP_MS (cleans data).
+    //  - Multi-scale recency: 3 fixed-half-life recency signals (8h, 24h, 168h) blended in.
+    private const val HOUR_SIGMA = 0.64f
+    private const val DECAY_HALF_LIFE_DAYS = 8.39f
+    private const val RECENCY_HOURS = 0.39f
+    private const val TRANSITION_DECAY_DAYS = 17.9f
+    private const val SESSION_MS = 589 * 1000L
+    private const val TRANSITION_SMOOTH = 0.72f
+    private const val BURST_GAP_MS = 60_000L
 
-    private const val W_CONTEXT = 2.93f
-    private const val W_RECENCY = 3.57f
-    private const val W_TRANSITION = 3.68f
-    private const val W_TRANSITION_2 = 1.80f      // 2-gram (a,b) → c
+    private const val W_CONTEXT = 2.21f
+    private const val W_RECENCY = 2.66f
+    private const val W_TRANSITION = 3.74f
+    private const val W_TRANSITION_2 = 3.86f
 
-    // Self-loop penalty: when in-session, subtract from last-launched pkg's score.
-    private const val SELF_PENALTY = 0.17f
-    private const val SELF_PENALTY_HL_MIN = 7.67f
+    private const val W_REC_8H = 1.00f
+    private const val W_REC_24H = 0.81f
+    private const val W_REC_168H = 2.94f
 
-    // Phase-1 ctx features (decay-weighted conditional P(ctx|pkg), add-k smoothed).
-    private const val W_AUDIO = 1.71f
-    private const val W_DEVICE = 2.58f
-    private const val W_CHARGING = 1.39f
-    private const val W_SR = 0.31f
-    private const val SR_HALF_LIFE_SECS = 117f
-    private const val PHASE1_SMOOTH = 3.57f
+    private const val SELF_PENALTY = 2.24f
+    private const val SELF_PENALTY_HL_MIN = 1.46f
+
+    private const val W_AUDIO = 0.26f
+    private const val W_DEVICE = 1.30f
+    private const val W_CHARGING = 2.69f
+    private const val W_SR = 0.07f
+    private const val SR_HALF_LIFE_SECS = 588f
+    private const val PHASE1_SMOOTH = 2.62f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
@@ -46,11 +50,10 @@ object ScoreEngine {
     ): Map<String, Float> {
         if (events.isEmpty()) return emptyMap()
 
-        val byPkg = events.groupBy { it.packageName }
-        val sorted = events.sortedBy { it.timestampMillis }
+        val sorted = collapseBursts(events.sortedBy { it.timestampMillis })
+        val byPkg = sorted.groupBy { it.packageName }
         val nApps = byPkg.size
 
-        // Build 1-gram and 2-gram transition tables.
         val transitionWeights = HashMap<String, HashMap<String, Float>>()
         val transition2Weights = HashMap<Pair<String, String>, HashMap<String, Float>>()
         for (i in 1 until sorted.size) {
@@ -76,7 +79,6 @@ object ScoreEngine {
 
         val lastEvent = sorted.last()
         val inSession = (nowMillis - lastEvent.timestampMillis) <= SESSION_MS
-
         val transitionRow: Map<String, Float> =
             if (inSession) transitionWeights[lastEvent.packageName] ?: emptyMap() else emptyMap()
         val transitionDenom: Float =
@@ -84,8 +86,8 @@ object ScoreEngine {
 
         val transition2Row: Map<String, Float> = if (inSession && sorted.size >= 2) {
             val penultimate = sorted[sorted.size - 2]
-            val gap = lastEvent.timestampMillis - penultimate.timestampMillis
-            if (gap <= SESSION_MS) transition2Weights[penultimate.packageName to lastEvent.packageName] ?: emptyMap()
+            if (lastEvent.timestampMillis - penultimate.timestampMillis <= SESSION_MS)
+                transition2Weights[penultimate.packageName to lastEvent.packageName] ?: emptyMap()
             else emptyMap()
         } else emptyMap()
         val transition2Denom: Float =
@@ -104,6 +106,9 @@ object ScoreEngine {
 
         val ctxRaw = HashMap<String, Float>(byPkg.size)
         val recRaw = HashMap<String, Float>(byPkg.size)
+        val rec8Raw = HashMap<String, Float>(byPkg.size)
+        val rec24Raw = HashMap<String, Float>(byPkg.size)
+        val rec168Raw = HashMap<String, Float>(byPkg.size)
         val transRaw = HashMap<String, Float>(byPkg.size)
         val trans2Raw = HashMap<String, Float>(byPkg.size)
         val audRaw = HashMap<String, Float>(byPkg.size)
@@ -149,7 +154,11 @@ object ScoreEngine {
                 }
             }
             ctxRaw[pkg] = if (totalDecay > 0.0) (hourSum * daySum / totalDecay).toFloat() else 0f
-            recRaw[pkg] = exp(-((nowMillis - lastMs) / 3_600_000f) / RECENCY_HOURS).toFloat()
+            val hoursSinceLast = (nowMillis - lastMs) / 3_600_000f
+            recRaw[pkg] = exp(-hoursSinceLast / RECENCY_HOURS)
+            rec8Raw[pkg] = exp(-hoursSinceLast / 8f)
+            rec24Raw[pkg] = exp(-hoursSinceLast / 24f)
+            rec168Raw[pkg] = exp(-hoursSinceLast / 168f)
             transRaw[pkg] = if (transitionDenom > 0f)
                 ((transitionRow[pkg] ?: 0f) + TRANSITION_SMOOTH) / transitionDenom else 0f
             trans2Raw[pkg] = if (transition2Denom > 0f)
@@ -163,6 +172,9 @@ object ScoreEngine {
 
         val mC = ctxRaw.values.max().coerceAtLeast(1e-9f)
         val mR = recRaw.values.max().coerceAtLeast(1e-9f)
+        val m8 = rec8Raw.values.max().coerceAtLeast(1e-9f)
+        val m24 = rec24Raw.values.max().coerceAtLeast(1e-9f)
+        val m168 = rec168Raw.values.max().coerceAtLeast(1e-9f)
         val mT = transRaw.values.max().coerceAtLeast(1e-9f)
         val mT2 = trans2Raw.values.max().coerceAtLeast(1e-9f)
         val mA = audRaw.values.max().coerceAtLeast(1e-9f)
@@ -177,6 +189,9 @@ object ScoreEngine {
         return byPkg.keys.associateWith { pkg ->
             var s = W_CONTEXT * (ctxRaw[pkg] ?: 0f) / mC +
                     W_RECENCY * (recRaw[pkg] ?: 0f) / mR +
+                    W_REC_8H * (rec8Raw[pkg] ?: 0f) / m8 +
+                    W_REC_24H * (rec24Raw[pkg] ?: 0f) / m24 +
+                    W_REC_168H * (rec168Raw[pkg] ?: 0f) / m168 +
                     W_TRANSITION * (transRaw[pkg] ?: 0f) / mT +
                     W_TRANSITION_2 * (trans2Raw[pkg] ?: 0f) / mT2
             if (useCtxFeats) {
@@ -188,6 +203,22 @@ object ScoreEngine {
             if (inSession && pkg == lastEvent.packageName) s -= SELF_PENALTY * penaltyDecay
             s
         }
+    }
+
+    /** Drop consecutive same-package events within BURST_GAP_MS (keep the first).
+     *  Cleans noise from rapid re-launches (e.g. Chrome refreshes) without losing the session start. */
+    private fun collapseBursts(sorted: List<UsageEvent>): List<UsageEvent> {
+        if (sorted.size < 2) return sorted
+        val out = ArrayList<UsageEvent>(sorted.size)
+        out.add(sorted[0])
+        for (i in 1 until sorted.size) {
+            val e = sorted[i]
+            val prev = out.last()
+            if (e.packageName == prev.packageName &&
+                e.timestampMillis - prev.timestampMillis <= BURST_GAP_MS) continue
+            out.add(e)
+        }
+        return out
     }
 
     private fun isWeekend(dayOfWeek: Int) = dayOfWeek >= 6

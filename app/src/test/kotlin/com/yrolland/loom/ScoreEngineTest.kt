@@ -50,12 +50,13 @@ class ScoreEngineTest {
 
     @Test
     fun `app with more launches outranks app with single launch`() {
-        // Need >1 app for normalized blend to produce meaningful comparison
+        // Last event is a third app so neither heavy/light is hit by the in-session self-penalty.
         val events = listOf(
-            event("com.heavy", timestampMillis = FIXED_NOW),
-            event("com.heavy", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(1)),
             event("com.heavy", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(2)),
-            event("com.light", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(1))
+            event("com.heavy", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(3)),
+            event("com.heavy", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(4)),
+            event("com.light", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(5)),
+            event("com.last", timestampMillis = FIXED_NOW)
         )
         val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
