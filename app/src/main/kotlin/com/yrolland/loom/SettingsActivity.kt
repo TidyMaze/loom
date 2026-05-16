@@ -28,9 +28,18 @@ class SettingsActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.btn_clear_usage).setOnClickListener { confirmClearUsage() }
         findViewById<TextView>(R.id.btn_reset_all).setOnClickListener { confirmResetAll() }
+        findViewById<TextView>(R.id.btn_usage_access).setOnClickListener { UsageStatsSync.openSettings(this) }
 
         viewModel.apps.observe(this) { _ -> render() }
         viewModel.refresh()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val granted = UsageStatsSync.hasPermission(this)
+        findViewById<TextView>(R.id.usage_access_status).text =
+            if (granted) "✓ Granted — captures system-wide app launches"
+            else "Not granted — only launcher-tap launches recorded. Tap to enable."
     }
 
     private fun render() {

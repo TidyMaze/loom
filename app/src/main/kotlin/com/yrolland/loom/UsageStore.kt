@@ -18,6 +18,14 @@ class UsageStore(context: Context) {
         file.writeText(gson.toJson(trimmed))
     }
 
+    /** Append a batch of pre-built events; merges chronologically and applies MAX_EVENTS cap. */
+    fun appendBulk(newEvents: List<UsageEvent>) {
+        if (newEvents.isEmpty()) return
+        val merged = (load() + newEvents).sortedBy { it.timestampMillis }
+        val trimmed = if (merged.size > MAX_EVENTS) merged.takeLast(MAX_EVENTS) else merged
+        file.writeText(gson.toJson(trimmed))
+    }
+
     companion object {
         const val MAX_EVENTS = 5000
     }

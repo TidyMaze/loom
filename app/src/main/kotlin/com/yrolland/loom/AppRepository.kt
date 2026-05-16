@@ -23,6 +23,7 @@ class AppRepository(private val context: Context) {
     fun clearAll() { usageStore.clear(); hiddenStore.clear() }
 
     fun getRankedApps(currentCtx: LaunchContext.Capture? = null): List<AppEntry> {
+        UsageStatsSync.sync(context, usageStore)
         val pm = context.packageManager
         val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         val hidden = hiddenStore.all()
