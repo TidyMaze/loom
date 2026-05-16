@@ -11,36 +11,36 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // Tuned via Optuna (4 parallel workers × 250 trials = 1000 total) on 4313 events.
-    // Subsample-eval-tuned, verified on full walk-forward.
-    // @1=43.70% MRR=0.6134 vs prev v3 (@1=32.27% MRR=0.5120 on same 4313 events):
-    //   +11.43pp @1, +19.80% MRR.
-    private const val HOUR_SIGMA = 0.38f
-    private const val DECAY_HALF_LIFE_DAYS = 6.91f
-    private const val RECENCY_HOURS = 0.95f
-    private const val TRANSITION_DECAY_DAYS = 5.20f
-    private const val SESSION_MS = 313 * 1000L
-    private const val TRANSITION_SMOOTH = 0.98f
-    private const val BURST_GAP_MS = 0L  // disabled: with denser data, burst-collapse hurts
+    // Tuned via Optuna (4 parallel workers × 500 trials = 2000 total, stride=3 eval) on
+    // 9142-event log (UsageStats backfill 30d + cap raised to 20k).
+    // @1=67.88% MRR=0.7830 vs prev v4 (@1=66.03% MRR=0.7714 on same 9142 events):
+    //   +1.86pp @1, +1.50% MRR.
+    private const val HOUR_SIGMA = 1.46f
+    private const val DECAY_HALF_LIFE_DAYS = 11.77f
+    private const val RECENCY_HOURS = 0.44f
+    private const val TRANSITION_DECAY_DAYS = 1.01f
+    private const val SESSION_MS = 549 * 1000L
+    private const val TRANSITION_SMOOTH = 0.87f
+    private const val BURST_GAP_MS = 60_000L
 
-    private const val W_CONTEXT = 0.50f
-    private const val W_RECENCY = 3.70f
-    private const val W_TRANSITION = 2.35f
-    private const val W_TRANSITION_2 = 4.00f
+    private const val W_CONTEXT = 0.39f
+    private const val W_RECENCY = 3.11f
+    private const val W_TRANSITION = 3.98f
+    private const val W_TRANSITION_2 = 3.05f
 
-    private const val W_REC_8H = 2.33f
-    private const val W_REC_24H = 1.78f
-    private const val W_REC_168H = 1.43f
+    private const val W_REC_8H = 2.49f
+    private const val W_REC_24H = 0.16f
+    private const val W_REC_168H = 0.00f
 
-    private const val SELF_PENALTY = 0.38f
-    private const val SELF_PENALTY_HL_MIN = 24.62f
+    private const val SELF_PENALTY = 0.51f
+    private const val SELF_PENALTY_HL_MIN = 4.32f
 
-    private const val W_AUDIO = 1.04f
-    private const val W_DEVICE = 0.21f
-    private const val W_CHARGING = 0.04f
-    private const val W_SR = 1.02f
-    private const val SR_HALF_LIFE_SECS = 156.6f
-    private const val PHASE1_SMOOTH = 0.91f
+    private const val W_AUDIO = 0.79f
+    private const val W_DEVICE = 0.00f
+    private const val W_CHARGING = 0.21f
+    private const val W_SR = 0.63f
+    private const val SR_HALF_LIFE_SECS = 501.0f
+    private const val PHASE1_SMOOTH = 3.91f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)

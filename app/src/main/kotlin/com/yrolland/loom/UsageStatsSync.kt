@@ -22,7 +22,7 @@ object UsageStatsSync {
     private const val PREFS = "loom_sync_prefs"
     private const val KEY_LAST_SYNC = "last_sync_ms"
     private const val DEDUP_WINDOW_MS = 3_000L
-    private const val FIRST_RUN_BACKFILL_MS = 7L * 24 * 3_600_000 // 7 days
+    private const val FIRST_RUN_BACKFILL_MS = 90L * 24 * 3_600_000 // 90 days
 
     fun hasPermission(context: Context): Boolean {
         val ops = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
