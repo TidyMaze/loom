@@ -11,37 +11,36 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // Tuned via Optuna (200 rand + 400 TPE = 600 trials) on 1000 events.
-    // @1=24.13% MRR=0.4039 vs prev (@1=22.93% MRR=0.3997): +1.20pp @1, +1.07% MRR.
-    // New in v3:
-    //  - Burst collapse: drop consecutive same-pkg events within BURST_GAP_MS (cleans data).
-    //  - Multi-scale recency: 3 fixed-half-life recency signals (8h, 24h, 168h) blended in.
-    private const val HOUR_SIGMA = 0.64f
-    private const val DECAY_HALF_LIFE_DAYS = 8.39f
-    private const val RECENCY_HOURS = 0.39f
-    private const val TRANSITION_DECAY_DAYS = 17.9f
-    private const val SESSION_MS = 589 * 1000L
-    private const val TRANSITION_SMOOTH = 0.72f
-    private const val BURST_GAP_MS = 60_000L
+    // Tuned via Optuna (4 parallel workers × 250 trials = 1000 total) on 4313 events.
+    // Subsample-eval-tuned, verified on full walk-forward.
+    // @1=43.70% MRR=0.6134 vs prev v3 (@1=32.27% MRR=0.5120 on same 4313 events):
+    //   +11.43pp @1, +19.80% MRR.
+    private const val HOUR_SIGMA = 0.38f
+    private const val DECAY_HALF_LIFE_DAYS = 6.91f
+    private const val RECENCY_HOURS = 0.95f
+    private const val TRANSITION_DECAY_DAYS = 5.20f
+    private const val SESSION_MS = 313 * 1000L
+    private const val TRANSITION_SMOOTH = 0.98f
+    private const val BURST_GAP_MS = 0L  // disabled: with denser data, burst-collapse hurts
 
-    private const val W_CONTEXT = 2.21f
-    private const val W_RECENCY = 2.66f
-    private const val W_TRANSITION = 3.74f
-    private const val W_TRANSITION_2 = 3.86f
+    private const val W_CONTEXT = 0.50f
+    private const val W_RECENCY = 3.70f
+    private const val W_TRANSITION = 2.35f
+    private const val W_TRANSITION_2 = 4.00f
 
-    private const val W_REC_8H = 1.00f
-    private const val W_REC_24H = 0.81f
-    private const val W_REC_168H = 2.94f
+    private const val W_REC_8H = 2.33f
+    private const val W_REC_24H = 1.78f
+    private const val W_REC_168H = 1.43f
 
-    private const val SELF_PENALTY = 2.24f
-    private const val SELF_PENALTY_HL_MIN = 1.46f
+    private const val SELF_PENALTY = 0.38f
+    private const val SELF_PENALTY_HL_MIN = 24.62f
 
-    private const val W_AUDIO = 0.26f
-    private const val W_DEVICE = 1.30f
-    private const val W_CHARGING = 2.69f
-    private const val W_SR = 0.07f
-    private const val SR_HALF_LIFE_SECS = 588f
-    private const val PHASE1_SMOOTH = 2.62f
+    private const val W_AUDIO = 1.04f
+    private const val W_DEVICE = 0.21f
+    private const val W_CHARGING = 0.04f
+    private const val W_SR = 1.02f
+    private const val SR_HALF_LIFE_SECS = 156.6f
+    private const val PHASE1_SMOOTH = 0.91f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
@@ -233,9 +232,10 @@ object ScoreEngine {
     }
 
     /** Drop consecutive same-package events within BURST_GAP_MS (keep the first).
-     *  Cleans noise from rapid re-launches (e.g. Chrome refreshes) without losing the session start. */
+     *  Cleans noise from rapid re-launches (e.g. Chrome refreshes) without losing the session start.
+     *  No-op when BURST_GAP_MS <= 0. */
     private fun collapseBursts(sorted: List<UsageEvent>): List<UsageEvent> {
-        if (sorted.size < 2) return sorted
+        if (BURST_GAP_MS <= 0L || sorted.size < 2) return sorted
         val out = ArrayList<UsageEvent>(sorted.size)
         out.add(sorted[0])
         for (i in 1 until sorted.size) {
