@@ -15,38 +15,40 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _apps = MutableLiveData<List<AppEntry>>()
     val apps: LiveData<List<AppEntry>> = _apps
 
-    fun refresh() { viewModelScope.launch(Dispatchers.IO) { fetchAndPost() } }
+    fun refresh(ctx: LaunchContext.Capture? = null) {
+        viewModelScope.launch(Dispatchers.IO) { fetchAndPost(ctx) }
+    }
 
     fun resetApp(packageName: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.resetApp(packageName)
-            fetchAndPost()
+            fetchAndPost(null)
         }
     }
 
     fun setHidden(packageName: String, hidden: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.setHidden(packageName, hidden)
-            fetchAndPost()
+            fetchAndPost(null)
         }
     }
 
     fun clearUsage() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearUsage()
-            fetchAndPost()
+            fetchAndPost(null)
         }
     }
 
     fun clearAll() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearAll()
-            fetchAndPost()
+            fetchAndPost(null)
         }
     }
 
-    private fun fetchAndPost() {
-        val all = repository.getRankedApps()
+    private fun fetchAndPost(ctx: LaunchContext.Capture?) {
+        val all = repository.getRankedApps(ctx)
         val maxScore = all.maxOfOrNull { it.score.coerceAtLeast(0f) }?.takeIf { it > 0f } ?: 1f
         _apps.postValue(all.map { e -> e.copy(rank = (e.score / maxScore).coerceIn(0f, 1f)) })
     }

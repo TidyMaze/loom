@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
         greeting.animate().alpha(1f).setDuration(350).start()
         hideSearch()
         recycler.layoutAnimation = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_fall_down)
-        viewModel.refresh()
+        viewModel.refresh(LaunchContext.capture(this, launcherResumeMs))
     }
 
     private fun showSearch() {

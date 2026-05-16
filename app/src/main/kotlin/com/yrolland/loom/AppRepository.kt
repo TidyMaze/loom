@@ -22,7 +22,7 @@ class AppRepository(private val context: Context) {
     fun clearUsage() = usageStore.clear()
     fun clearAll() { usageStore.clear(); hiddenStore.clear() }
 
-    fun getRankedApps(): List<AppEntry> {
+    fun getRankedApps(currentCtx: LaunchContext.Capture? = null): List<AppEntry> {
         val pm = context.packageManager
         val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         val hidden = hiddenStore.all()
@@ -32,7 +32,7 @@ class AppRepository(private val context: Context) {
             .filter { it !in hidden }
 
         val events = usageStore.load()
-        val rawScores = ScoreEngine.score(events)
+        val rawScores = ScoreEngine.score(events, currentCtx)
         val totalScore = rawScores.values.filter { it > 0f }.sum().coerceAtLeast(1f)
         val stats = computeStats(events)
 

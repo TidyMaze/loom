@@ -19,7 +19,7 @@ class UsageStore(context: Context) {
     }
 
     companion object {
-        const val MAX_EVENTS = 1000
+        const val MAX_EVENTS = 5000
     }
 
     fun deleteApp(packageName: String) {
