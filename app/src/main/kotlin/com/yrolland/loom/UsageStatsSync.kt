@@ -21,7 +21,7 @@ object UsageStatsSync {
 
     private const val PREFS = "loom_sync_prefs"
     private const val KEY_LAST_SYNC = "last_sync_ms"
-    private const val DEDUP_WINDOW_MS = 3_000L
+    private const val DEDUP_WINDOW_MS = 120_000L  // 2min: collapses in-app Activity transitions
     private const val FIRST_RUN_BACKFILL_MS = 90L * 24 * 3_600_000 // 90 days
 
     fun hasPermission(context: Context): Boolean {
@@ -74,6 +74,43 @@ object UsageStatsSync {
             "com.google.android.permissioncontroller",
             "android"
         )
+        // Other launchers / system home — these aren't real "app launches", they're
+        // the user returning to home. Filtering them removes ~29% noise events and
+        // unblocks scoring of real apps that were being displaced.
+        val launcherPkgs = setOf(
+            "com.google.android.apps.nexuslauncher",  // Pixel
+            "com.android.launcher",
+            "com.android.launcher3",
+            "com.sec.android.app.launcher",            // Samsung
+            "com.miui.home",                            // Xiaomi
+            "com.huawei.android.launcher",              // Huawei
+            "com.oneplus.launcher",                     // OnePlus
+        )
+
+        // One-time clean: purge launcher entries + collapse rapid same-pkg duplicates
+        // (ACTIVITY_RESUMED fires on every in-app Activity transition, not just launches).
+        // Idempotent on subsequent runs.
+        val withoutLaunchers = existing.filter { it.packageName !in launcherPkgs }
+        val sorted = withoutLaunchers.sortedBy { it.timestampMillis }
+        val collapsed = ArrayList<UsageEvent>(sorted.size)
+        for (e in sorted) {
+            val prev = collapsed.lastOrNull()
+            // Skip exact duplicates and rapid same-pkg events within DEDUP_WINDOW_MS
+            if (prev != null && prev.packageName == e.packageName &&
+                e.timestampMillis - prev.timestampMillis < DEDUP_WINDOW_MS) continue
+            collapsed.add(e)
+        }
+        val purgedCount = existing.size - collapsed.size
+        if (purgedCount > 0) {
+            store.replaceAll(collapsed)
+            recentByPkg.clear()
+            for (e in collapsed) {
+                if (now - e.timestampMillis <= 24 * 3_600_000) {
+                    recentByPkg.getOrPut(e.packageName) { ArrayList() }.add(e.timestampMillis)
+                }
+            }
+            Log.d("UsageStatsSync", "cleaned $purgedCount stale events (launcher + duplicates)")
+        }
 
         val toAdd = ArrayList<UsageEvent>()
         val ev = UsageEvents.Event()
@@ -83,6 +120,7 @@ object UsageStatsSync {
             val pkg = ev.packageName ?: continue
             if (pkg == ownPkg) continue
             if (skipPrefixes.any { pkg == it || pkg.startsWith("$it.") }) continue
+            if (pkg in launcherPkgs) continue
             // Dedupe against recent events within DEDUP_WINDOW_MS
             val nearby = recentByPkg[pkg]
             if (nearby != null && nearby.any { kotlin.math.abs(it - ev.timeStamp) <= DEDUP_WINDOW_MS }) continue

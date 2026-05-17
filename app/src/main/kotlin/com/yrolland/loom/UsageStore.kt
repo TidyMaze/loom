@@ -18,6 +18,12 @@ class UsageStore(context: Context) {
         file.writeText(gson.toJson(trimmed))
     }
 
+    /** Replace the entire stored list (used by sync for one-shot cleanup like launcher purge). */
+    fun replaceAll(events: List<UsageEvent>) {
+        val capped = if (events.size > MAX_EVENTS) events.takeLast(MAX_EVENTS) else events
+        file.writeText(gson.toJson(capped))
+    }
+
     /** Append a batch of pre-built events; merges chronologically and applies MAX_EVENTS cap. */
     fun appendBulk(newEvents: List<UsageEvent>) {
         if (newEvents.isEmpty()) return

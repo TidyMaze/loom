@@ -101,7 +101,8 @@ class ScoreEngineTest {
     @Test
     fun `transition feature boosts likely next app within session`() {
         // History: A → B sequence repeated, then a recent A. B should rank above C (never-followed app).
-        val sessionGap = TimeUnit.MINUTES.toMillis(5)
+        // Gap is 30s — fits within SESSION_MS (currently 113s) so transition is recorded.
+        val sessionGap = TimeUnit.SECONDS.toMillis(30)
         val events = mutableListOf<UsageEvent>()
         var t = FIXED_NOW - TimeUnit.DAYS.toMillis(2)
         repeat(5) {
@@ -110,8 +111,8 @@ class ScoreEngineTest {
             events += event("com.c", timestampMillis = t + TimeUnit.HOURS.toMillis(3))
             t += TimeUnit.DAYS.toMillis(1) / 5
         }
-        // Recent A launch — "now" is just after, so we're in-session
-        events += event("com.a", timestampMillis = FIXED_NOW - TimeUnit.MINUTES.toMillis(2))
+        // Recent A launch — "now" is within SESSION_MS of this event
+        events += event("com.a", timestampMillis = FIXED_NOW - TimeUnit.SECONDS.toMillis(30))
 
         val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
         assertTrue("B (followed A 5x) should outrank C", scores["com.b"]!! > scores["com.c"]!!)
