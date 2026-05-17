@@ -12,3 +12,6 @@ keystore.properties
 # Generated performance reports
 reports/
 
+# Claude Code local workspace (agent memory, permission allowlist, etc.)
+.claude/
+
