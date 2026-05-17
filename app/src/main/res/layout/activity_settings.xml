@@ -71,6 +71,25 @@
             android:paddingBottom="20dp" />
 
         <TextView
+            android:id="@+id/btn_notif_access"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:gravity="center_vertical"
+            android:text="Notification access"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/notif_access_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#888888"
+            android:paddingBottom="20dp" />
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Data"

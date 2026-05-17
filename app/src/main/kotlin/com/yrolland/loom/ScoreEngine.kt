@@ -11,34 +11,39 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // Tuned via Optuna on CLEANED 2454-event log (post-dedup fix in UsageStatsSync).
-    // @1=43.68% MRR=0.5688 vs v6 (@1=38.39% MRR=0.5288): +6.16pp @1, +8.57% MRR.
-    // vs pure recency baseline (@1=17.62% MRR=0.4214): +26.06pp @1.
-    private const val HOUR_SIGMA = 1.69f
-    private const val DECAY_HALF_LIFE_DAYS = 15.47f
-    private const val RECENCY_HOURS = 0.38f
-    private const val TRANSITION_DECAY_DAYS = 17.94f
-    private const val SESSION_MS = 113 * 1000L
-    private const val TRANSITION_SMOOTH = 0.61f
+    // v9 — phase-1 gating added (per academic-rigor-auditor recommendation #2).
+    // For each app, count ctx-tagged events; if below CTX_MIN_EVENTS, the four
+    // phase-1 conditionals (audMatch/devMatch/chgMatch/srMatch) are set to the
+    // mean across qualifying apps instead of being computed from too-few samples
+    // (was overfitting per agent: PHASE1_SMOOTH alone shrinks toward 0.5 too softly).
+    // @1=44.28% MRR=0.5688 vs v8 (@1=43.46% MRR=0.5678): +0.82pp @1, +0.19% MRR.
+    // vs pure recency baseline (@1=17.84% MRR=0.4221): +26.44pp @1.
+    private const val HOUR_SIGMA = 1.76f
+    private const val DECAY_HALF_LIFE_DAYS = 15.0f
+    private const val RECENCY_HOURS = 0.45f
+    private const val TRANSITION_DECAY_DAYS = 18.0f
+    private const val SESSION_MS = 119 * 1000L
+    private const val TRANSITION_SMOOTH = 0.55f
     private const val BURST_GAP_MS = 30_000L
+    private const val CTX_MIN_EVENTS = 5
 
-    private const val W_CONTEXT = 0.01f
-    private const val W_RECENCY = 3.11f
-    private const val W_TRANSITION = 2.86f
-    private const val W_TRANSITION_2 = 2.41f
+    private const val W_CONTEXT = 0.00f
+    private const val W_RECENCY = 4.78f
+    private const val W_TRANSITION = 3.82f
+    private const val W_TRANSITION_2 = 5.57f
 
-    private const val W_REC_8H = 0.39f
-    private const val W_REC_24H = 0.99f
+    private const val W_REC_8H = 0.40f
+    private const val W_REC_24H = 1.00f
     private const val W_REC_168H = 0.40f
 
-    private const val SELF_PENALTY = 2.34f
-    private const val SELF_PENALTY_HL_MIN = 17.29f
+    private const val SELF_PENALTY = 2.88f
+    private const val SELF_PENALTY_HL_MIN = 17.0f
 
-    private const val W_AUDIO = 0.78f
-    private const val W_DEVICE = 2.45f
-    private const val W_CHARGING = 0.51f
-    private const val W_SR = 0.69f
-    private const val SR_HALF_LIFE_SECS = 374.11f
+    private const val W_AUDIO = 1.89f
+    private const val W_DEVICE = 1.69f
+    private const val W_CHARGING = 0.44f
+    private const val W_SR = 3.47f
+    private const val SR_HALF_LIFE_SECS = 374.0f
     private const val PHASE1_SMOOTH = 3.50f
 
     private const val MS_PER_DAY = 86_400_000f
@@ -171,6 +176,30 @@ object ScoreEngine {
             devRaw[pkg] = ((devMatch + PHASE1_SMOOTH) / (devTotal + 2 * PHASE1_SMOOTH)).toFloat()
             chgRaw[pkg] = ((chgMatch + PHASE1_SMOOTH) / (chgTotal + 2 * PHASE1_SMOOTH)).toFloat()
             srRaw[pkg] = srMatch.toFloat()
+        }
+
+        // Phase-1 gating: apps with too few ctx-tagged events get the mean of
+        // qualifying apps' phase-1 features instead of their own noisy estimate.
+        if (effCtx != null) {
+            val ctxCountByPkg = HashMap<String, Int>(byPkg.size)
+            for ((pkg, evs) in byPkg) {
+                ctxCountByPkg[pkg] = evs.count { it.audioActive != null }
+            }
+            val qualifying = byPkg.keys.filter { (ctxCountByPkg[it] ?: 0) >= CTX_MIN_EVENTS }
+            if (qualifying.isNotEmpty()) {
+                val mAud = qualifying.map { audRaw[it] ?: 0f }.average().toFloat()
+                val mDev = qualifying.map { devRaw[it] ?: 0f }.average().toFloat()
+                val mChg = qualifying.map { chgRaw[it] ?: 0f }.average().toFloat()
+                val mSr = qualifying.map { srRaw[it] ?: 0f }.average().toFloat()
+                for (pkg in byPkg.keys) {
+                    if ((ctxCountByPkg[pkg] ?: 0) < CTX_MIN_EVENTS) {
+                        audRaw[pkg] = mAud
+                        devRaw[pkg] = mDev
+                        chgRaw[pkg] = mChg
+                        srRaw[pkg] = mSr
+                    }
+                }
+            }
         }
 
         val mC = ctxRaw.values.max().coerceAtLeast(1e-9f)

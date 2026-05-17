@@ -29,6 +29,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btn_clear_usage).setOnClickListener { confirmClearUsage() }
         findViewById<TextView>(R.id.btn_reset_all).setOnClickListener { confirmResetAll() }
         findViewById<TextView>(R.id.btn_usage_access).setOnClickListener { UsageStatsSync.openSettings(this) }
+        findViewById<TextView>(R.id.btn_notif_access).setOnClickListener { NotificationCounts.openPermissionSettings(this) }
 
         viewModel.apps.observe(this) { _ -> render() }
         viewModel.refresh()
@@ -36,10 +37,16 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val granted = UsageStatsSync.hasPermission(this)
+        val usageGranted = UsageStatsSync.hasPermission(this)
         findViewById<TextView>(R.id.usage_access_status).text =
-            if (granted) "✓ Granted — captures system-wide app launches"
+            if (usageGranted) "✓ Granted — captures system-wide app launches"
             else "Not granted — only launcher-tap launches recorded. Tap to enable."
+        val notifGranted = NotificationCounts.hasPermission(this)
+        val n = NotificationCounts.totalCount()
+        findViewById<TextView>(R.id.notif_access_status).text = when {
+            notifGranted -> "✓ Granted — tracking notification counts ($n active). Feature wired but not yet used in ranking; will be added after data accumulates."
+            else -> "Not granted — apps with unread notifications won't be boosted. Tap to enable."
+        }
     }
 
     private fun render() {
