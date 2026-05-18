@@ -39,7 +39,10 @@ object ScoreEngine {
     private const val W_REC_24H = 3.83f
     private const val W_REC_168H = 0.87f
 
-    private const val SELF_PENALTY = 8.89f     // PL preferred much stronger penalty
+    // PL trained selfPenalty=8.89 but a sweep on held-out test shows MRR plateau at ≥3.0.
+    // Higher values push the just-used app off-screen (rank 25+) with no accuracy gain.
+    // Softened to 3.0: same @1/MRR, but last-used app stays at rank ~5-6 (still findable).
+    private const val SELF_PENALTY = 3.0f
     private const val SELF_PENALTY_HL_MIN = 27.55f
 
     private const val W_AUDIO = -0.20f         // slight negative
