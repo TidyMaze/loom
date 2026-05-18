@@ -7,6 +7,21 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- WiFi SSID hash used as a coarse location proxy (home/work/transit).
+         FINE_LOCATION is required on Android 8.0+ to read SSID. SSID is hashed
+         locally (SHA-256 truncated) before storage; raw network names never leave the device. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- Calendar event proximity feature: read next 30 min of events to predict app affinity. -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+
+    <!-- Activity recognition: detect walking / in-vehicle / still to predict app affinity. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+    <!-- Bluetooth device name hash (specific device beyond audioDevice category). -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -50,6 +65,11 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <!-- Receives ActivityRecognition broadcasts to update ActivityState singleton. -->
+        <receiver
+            android:name=".ActivityRecognitionReceiver"
+            android:exported="false" />
 
     </application>
 

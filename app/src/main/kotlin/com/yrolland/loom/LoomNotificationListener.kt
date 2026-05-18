@@ -38,11 +38,18 @@ class LoomNotificationListener : NotificationListenerService() {
     companion object { private const val TAG = "LoomNotif" }
 }
 
-/** Tracks active notification counts per package. Singleton. Thread-safe. */
+/** Tracks active notification counts per package. Singleton. Thread-safe.
+ *  Also tracks last notification source for "Slack pinged → open Slack" pattern. */
 object NotificationCounts {
     private val counts = ConcurrentHashMap<String, Int>()
+    @Volatile private var lastPkg: String? = null
+    @Volatile private var lastMs: Long = 0L
 
-    fun increment(pkg: String) { counts.merge(pkg, 1, Int::plus) }
+    fun increment(pkg: String) {
+        counts.merge(pkg, 1, Int::plus)
+        lastPkg = pkg
+        lastMs = System.currentTimeMillis()
+    }
 
     fun decrement(pkg: String) {
         counts.compute(pkg) { _, c -> if (c == null || c <= 1) null else c - 1 }
@@ -60,6 +67,9 @@ object NotificationCounts {
     fun getCount(pkg: String): Int = counts[pkg] ?: 0
     fun snapshot(): Map<String, Int> = HashMap(counts)
     fun totalCount(): Int = counts.values.sum()
+
+    /** Returns (lastNotifPkg, lastNotifMs). Null pkg if no notification seen yet. */
+    fun lastNotification(): Pair<String?, Long> = lastPkg to lastMs
 
     fun hasPermission(context: Context): Boolean {
         val cn = ComponentName(context, LoomNotificationListener::class.java)

@@ -1,5 +1,7 @@
 package com.yrolland.loom
 
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,8 +16,38 @@ class AppRepository(private val context: Context) {
     private val hiddenStore = HiddenStore(context)
 
     fun recordLaunch(packageName: String, ctx: LaunchContext.Capture? = null) {
-        usageStore.record(packageName, ctx)
+        val enriched = ctx?.copy(prevAppDwellSecs = computePrevAppDwellSecs())
+        usageStore.record(packageName, enriched ?: ctx)
     }
+
+    /** Foreground duration of the most recently used non-Loom app in seconds.
+     *  Queries UsageStatsManager for events in the last 30 min, computes RESUMED→PAUSED. */
+    /** Foreground duration of the most recently used non-Loom app in seconds.
+     *  Queries UsageStatsManager for events in the last 30 min, computes RESUMED→PAUSED.
+     *  Returns null if UsageStats hasn't yet processed recent events (typical latency: 30s-2min). */
+    private fun computePrevAppDwellSecs(): Int? = runCatching {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return@runCatching null
+        val now = System.currentTimeMillis()
+        val events = usm.queryEvents(now - 30 * 60_000L, now) ?: return@runCatching null
+        val ev = UsageEvents.Event()
+        val resumeTimes = HashMap<String, Long>()
+        var lastDwellMs = 0L
+        val ownPkg = context.packageName
+        while (events.hasNextEvent()) {
+            events.getNextEvent(ev)
+            val pkg = ev.packageName ?: continue
+            if (pkg == ownPkg) continue
+            when (ev.eventType) {
+                UsageEvents.Event.ACTIVITY_RESUMED -> resumeTimes[pkg] = ev.timeStamp
+                UsageEvents.Event.ACTIVITY_PAUSED, UsageEvents.Event.ACTIVITY_STOPPED -> {
+                    val res = resumeTimes.remove(pkg) ?: continue
+                    lastDwellMs = ev.timeStamp - res
+                }
+            }
+        }
+        if (lastDwellMs > 0) (lastDwellMs / 1000).toInt().coerceIn(0, 86400) else null
+    }.getOrNull()
 
     fun setHidden(pkg: String, hidden: Boolean) = hiddenStore.setHidden(pkg, hidden)
     fun hiddenPackages(): Set<String> = hiddenStore.all()

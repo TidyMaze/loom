@@ -1,5 +1,7 @@
 package com.yrolland.loom
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -18,6 +20,8 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -91,6 +95,27 @@ class MainActivity : AppCompatActivity() {
                 adapter.submitList(filteredList(s?.toString()?.trim().orEmpty()))
             }
         })
+
+        // Request runtime perms for the feature-collection pipeline. Each is optional —
+        // if denied, the corresponding capture function silently returns null.
+        val perms = buildList {
+            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACCESS_FINE_LOCATION)
+            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.READ_CALENDAR)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.READ_CALENDAR)
+            if (android.os.Build.VERSION.SDK_INT >= 29 &&
+                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACTIVITY_RECOGNITION)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACTIVITY_RECOGNITION)
+            if (android.os.Build.VERSION.SDK_INT >= 31 &&
+                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+        if (perms.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, perms.toTypedArray(), REQ_PERMS)
+        }
+
+        // Subscribe to activity recognition updates (callback-driven, ~60s cadence).
+        ActivityState.startUpdates(this)
 
         needsRefresh = true // treat first launch as coming from outside
 
@@ -257,5 +282,9 @@ class MainActivity : AppCompatActivity() {
         in 12..17 -> "Good afternoon."
         in 18..21 -> "Good evening."
         else -> "Good night."
+    }
+
+    companion object {
+        private const val REQ_PERMS = 1001
     }
 }
