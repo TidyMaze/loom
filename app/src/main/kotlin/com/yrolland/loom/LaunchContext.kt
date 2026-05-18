@@ -11,10 +11,11 @@ object LaunchContext {
         val secsSinceResume: Int,
         val audioActive: Boolean,
         val audioDevice: String,    // "speaker" | "wired" | "bt"
-        val charging: Boolean
+        val charging: Boolean,
+        val notificationCount: Int  // active notifications for the target app at launch time
     )
 
-    fun capture(context: Context, launcherResumeMs: Long, nowMs: Long = System.currentTimeMillis()): Capture {
+    fun capture(context: Context, launcherResumeMs: Long, targetPackage: String = "", nowMs: Long = System.currentTimeMillis()): Capture {
         val app = context.applicationContext
         val am = app.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val bm = app.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -22,7 +23,8 @@ object LaunchContext {
             secsSinceResume = ((nowMs - launcherResumeMs) / 1000).toInt().coerceIn(0, 3600),
             audioActive = am.isMusicActive,
             audioDevice = audioDevice(am),
-            charging = bm.isCharging
+            charging = bm.isCharging,
+            notificationCount = NotificationCounts.getCount(targetPackage)
         )
     }
 

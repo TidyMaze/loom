@@ -27,6 +27,7 @@ Summary of every tuning iteration, what changed, and measured results. Walk-forw
 | v9 | 2500 clean ev | + phase-1 gating (ctxMinEvents=5) | 44.33% | 63.31% | 71.27% | 82.16% | 0.5689 | +0.87pp (eval-on-tune-set inflated; see audit below) |
 | **v10** | **2544 clean ev** | **held-out tuned (Optuna on 80% train, eval on 20% test)** | **40.67%** | — | — | — | **0.5444** | **honest number, +0.98pp vs v9 on same test set** |
 | **v11** | **2544 clean ev (held-out)** | **Plackett-Luce ML training (PyTorch, cross-entropy on softmax)** | **42.15%** | — | — | — | **0.5712** | **first statistically significant improvement** (ΔMRR CI [+0.004, +0.046], Wilcoxon p=0.0004; Δ@1 within noise) |
+| **v12** | **2640 clean ev (held-out)** | **Joint Optuna HP search + PL retraining (80 trials, both HPs and weights re-optimized)** | **42.74%** | — | — | — | **0.5722** | ΔMRR=+0.0213 vs v11 [bootstrap CI: +0.0049, +0.0383] → **SIGNIFICANT** |
 
 ## v11 validation deep-dive (2026-05-18)
 
@@ -81,6 +82,10 @@ The +0.87pp v8→v9 claim was within tuning noise (binomial 95% CI on 509 predic
 | Hour histogram per app (24-bin Laplace-smoothed P(hour\|app)) | Add feature, full retune | @1=43.34% vs 43.64% | No gain |
 | Per-feature softmax with learnable temperature (replaces max-norm) | Add 11 τ params, full retune | @1=43.95% vs 43.46% | Tied, not worth the complexity |
 | Macro-MRR tune (equal weight per app, not per event) | Retune with macro objective | macro +1.34pp @1, micro −2.58pp | Trade-off, not deployed |
+| Hierarchical PL (per-app delta weights, λ sweep) | PL with L2 on Δ, λ∈{10,1,0.1,0.01,0.001} | Best λ=10: @1=39.83% vs 40.04% global-only; Δ@1=−0.21pp ns | ns — too few samples per app |
+| Mixture-of-Experts (separate weights: in_session vs cold_start) | Hard binary gate on in_sess flag | @1=39.63% vs 40.25%; Δ@1=−0.62pp [−3.11, +1.87] ns | ns — more params, same data = overfit |
+| Fourier hour features (sin/cos at 1× and 2× daily freq, 4 extra dims) | PL with 15 features | @1=40.04% vs 40.25%; Δ@1=−0.21pp [−2.07, +1.45] ns | ns — Gaussian already captures hour well enough |
+| PL retrain on fresh data (2640 ev, frozen HPs) | Same PL, just newer data | Δ@1=+0.41pp [−1.66, +2.49] ns, ΔMRR=+0.0037 ns | ns — marginal data gain insufficient |
 
 ## Bootstrap CI rule (added 2026-05-18)
 

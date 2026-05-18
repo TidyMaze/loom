@@ -57,6 +57,7 @@ object NotificationCounts {
     }
 
     fun get(pkg: String): Int = counts[pkg] ?: 0
+    fun getCount(pkg: String): Int = counts[pkg] ?: 0
     fun snapshot(): Map<String, Int> = HashMap(counts)
     fun totalCount(): Int = counts.values.sum()
 

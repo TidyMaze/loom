@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         adapter = AppAdapter(
             scope = lifecycleScope,
             onClick = { entry ->
-                val ctx = LaunchContext.capture(this, launcherResumeMs)
+                val ctx = LaunchContext.capture(this, launcherResumeMs, entry.packageName)
                 viewModel.recordLaunchAndGetIntent(entry.packageName, ctx)?.let { startActivity(it) }
             },
             onLongClickItem = { entry -> showItemSheet(entry) }

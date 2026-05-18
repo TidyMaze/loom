@@ -11,46 +11,37 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // v11 — Plackett-Luce maximum-likelihood training (PyTorch + Adam, cross-entropy
-    // loss on softmax-over-candidates). Replaces Optuna's zero-order MRR search with
-    // gradient descent on a smooth differentiable surface. Trained on first 80% of
-    // 2544 events, held-out tested on last 20%.
-    // Held-out test: @1=42.15% MRR=0.5712 vs v10 @1=40.43% MRR=0.5457
-    //   Δ MRR=+0.0255 [bootstrap 95% CI: +0.004, +0.046] → STATISTICALLY SIGNIFICANT
-    //   Wilcoxon p=0.0004 — first significant improvement since data cleanup.
-    // Note: PL discovered that some features need NEGATIVE weights (wRec8h, wAudio,
-    // wSr) — Optuna's [0,∞) bounds couldn't represent this.
-    // Feature-extraction hyperparams frozen at v10 values; PL only re-learned weights.
-    private const val HOUR_SIGMA = 1.01f
-    private const val DECAY_HALF_LIFE_DAYS = 2.40f
-    private const val RECENCY_HOURS = 0.76f
-    private const val TRANSITION_DECAY_DAYS = 4.98f
-    private const val SESSION_MS = 119 * 1000L
-    private const val TRANSITION_SMOOTH = 0.24f
-    private const val BURST_GAP_MS = 60_000L
-    private const val CTX_MIN_EVENTS = 4
+    // v12 — Optuna HP joint optimization + PL retraining on 2640 events (80/20 split).
+    // Both feature-extraction HPs and PL weights re-optimized together on fresh data.
+    // Held-out test: @1=42.74% MRR=0.5722 vs v11 @1=39.83% MRR=0.5509
+    //   Δ MRR=+0.0213 [bootstrap 95% CI: +0.0049, +0.0383] → STATISTICALLY SIGNIFICANT
+    private const val HOUR_SIGMA = 1.39f
+    private const val DECAY_HALF_LIFE_DAYS = 5.33f
+    private const val RECENCY_HOURS = 0.26f
+    private const val TRANSITION_DECAY_DAYS = 2.04f
+    private const val SESSION_MS = 120 * 1000L
+    private const val TRANSITION_SMOOTH = 0.59f
+    private const val BURST_GAP_MS = 10_000L
+    private const val CTX_MIN_EVENTS = 8
 
-    private const val W_CONTEXT = 1.04f
-    private const val W_RECENCY = 2.96f
-    private const val W_TRANSITION = 1.14f
-    private const val W_TRANSITION_2 = 0.99f
+    private const val W_CONTEXT = 0.87f
+    private const val W_RECENCY = 2.76f
+    private const val W_TRANSITION = 1.99f
+    private const val W_TRANSITION_2 = 1.37f
 
-    private const val W_REC_8H = -2.34f        // negative — feature actively hurts at this scale
-    private const val W_REC_24H = 3.83f
-    private const val W_REC_168H = 0.87f
+    private const val W_REC_8H = -0.30f
+    private const val W_REC_24H = 2.53f
+    private const val W_REC_168H = 1.87f
 
-    // PL trained selfPenalty=8.89 but a sweep on held-out test shows MRR plateau at ≥3.0.
-    // Higher values push the just-used app off-screen (rank 25+) with no accuracy gain.
-    // Softened to 3.0: same @1/MRR, but last-used app stays at rank ~5-6 (still findable).
-    private const val SELF_PENALTY = 3.0f
+    private const val SELF_PENALTY = 9.09f
     private const val SELF_PENALTY_HL_MIN = 27.55f
 
-    private const val W_AUDIO = -0.20f         // slight negative
-    private const val W_DEVICE = 0.06f
-    private const val W_CHARGING = 1.24f
-    private const val W_SR = -0.72f            // negative
-    private const val SR_HALF_LIFE_SECS = 417.15f
-    private const val PHASE1_SMOOTH = 0.62f
+    private const val W_AUDIO = -0.22f
+    private const val W_DEVICE = -0.27f
+    private const val W_CHARGING = 0.23f
+    private const val W_SR = -1.36f
+    private const val SR_HALF_LIFE_SECS = 466.28f
+    private const val PHASE1_SMOOTH = 1.68f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
@@ -112,7 +103,8 @@ object ScoreEngine {
                 secsSinceResume = it.secsSinceResume ?: 0,
                 audioActive = it.audioActive ?: false,
                 audioDevice = it.audioDevice ?: "speaker",
-                charging = it.charging ?: false
+                charging = it.charging ?: false,
+                notificationCount = 0
             )
         }
 

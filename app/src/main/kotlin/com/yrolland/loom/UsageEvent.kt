@@ -12,7 +12,8 @@ data class UsageEvent(
     val secsSinceResume: Int? = null,
     val audioActive: Boolean? = null,
     val audioDevice: String? = null,
-    val charging: Boolean? = null
+    val charging: Boolean? = null,
+    val notificationCount: Int? = null
 ) {
     companion object {
         operator fun invoke(
@@ -23,7 +24,8 @@ data class UsageEvent(
             val zdt = Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault())
             return UsageEvent(
                 packageName, timestampMillis, zdt.hour, zdt.dayOfWeek.value,
-                ctx?.secsSinceResume, ctx?.audioActive, ctx?.audioDevice, ctx?.charging
+                ctx?.secsSinceResume, ctx?.audioActive, ctx?.audioDevice, ctx?.charging,
+                ctx?.notificationCount
             )
         }
     }
