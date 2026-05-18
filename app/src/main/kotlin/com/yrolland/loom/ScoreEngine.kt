@@ -11,12 +11,16 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // v10 — held-out tuned. Optuna ran on first 80% of 2544 events; reported
-    // numbers measured on untouched last 20% (~2.3 days, 509 predictions).
-    // Honest held-out: @1=40.67% MRR=0.5444 (was reporting inflated @1=44.33%
-    // from tuning on the eval set itself — overfit gap ~4.5pp).
-    // vs v9 on same test set: +0.98pp @1, +0.29% MRR (within noise on n=509).
-    // Real margin over pure recency baseline (@1=17%, MRR=0.42): +24pp @1.
+    // v11 — Plackett-Luce maximum-likelihood training (PyTorch + Adam, cross-entropy
+    // loss on softmax-over-candidates). Replaces Optuna's zero-order MRR search with
+    // gradient descent on a smooth differentiable surface. Trained on first 80% of
+    // 2544 events, held-out tested on last 20%.
+    // Held-out test: @1=42.15% MRR=0.5712 vs v10 @1=40.43% MRR=0.5457
+    //   Δ MRR=+0.0255 [bootstrap 95% CI: +0.004, +0.046] → STATISTICALLY SIGNIFICANT
+    //   Wilcoxon p=0.0004 — first significant improvement since data cleanup.
+    // Note: PL discovered that some features need NEGATIVE weights (wRec8h, wAudio,
+    // wSr) — Optuna's [0,∞) bounds couldn't represent this.
+    // Feature-extraction hyperparams frozen at v10 values; PL only re-learned weights.
     private const val HOUR_SIGMA = 1.01f
     private const val DECAY_HALF_LIFE_DAYS = 2.40f
     private const val RECENCY_HOURS = 0.76f
@@ -26,22 +30,22 @@ object ScoreEngine {
     private const val BURST_GAP_MS = 60_000L
     private const val CTX_MIN_EVENTS = 4
 
-    private const val W_CONTEXT = 0.00f
-    private const val W_RECENCY = 4.90f
-    private const val W_TRANSITION = 3.97f
-    private const val W_TRANSITION_2 = 5.53f
+    private const val W_CONTEXT = 1.04f
+    private const val W_RECENCY = 2.96f
+    private const val W_TRANSITION = 1.14f
+    private const val W_TRANSITION_2 = 0.99f
 
-    private const val W_REC_8H = 2.63f
-    private const val W_REC_24H = 0.74f
-    private const val W_REC_168H = 2.83f
+    private const val W_REC_8H = -2.34f        // negative — feature actively hurts at this scale
+    private const val W_REC_24H = 3.83f
+    private const val W_REC_168H = 0.87f
 
-    private const val SELF_PENALTY = 2.60f
+    private const val SELF_PENALTY = 8.89f     // PL preferred much stronger penalty
     private const val SELF_PENALTY_HL_MIN = 27.55f
 
-    private const val W_AUDIO = 4.27f
-    private const val W_DEVICE = 0.44f
-    private const val W_CHARGING = 0.31f
-    private const val W_SR = 0.00f
+    private const val W_AUDIO = -0.20f         // slight negative
+    private const val W_DEVICE = 0.06f
+    private const val W_CHARGING = 1.24f
+    private const val W_SR = -0.72f            // negative
     private const val SR_HALF_LIFE_SECS = 417.15f
     private const val PHASE1_SMOOTH = 0.62f
 

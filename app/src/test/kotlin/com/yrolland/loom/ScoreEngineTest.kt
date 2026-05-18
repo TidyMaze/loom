@@ -26,22 +26,25 @@ class ScoreEngineTest {
     fun `app launched at current hour scores higher than app launched at different hour`() {
         val hour9Timestamp = 1714899600000L // May 5, 2024 09:00:00 UTC
         val hour4Timestamp = 1714881600000L // May 5, 2024 04:00:00 UTC
-        
+
+        // Sentinel "last event" is a separate app so neither test app is hit by self-penalty.
         val events = listOf(
             event("com.maps", timestampMillis = hour9Timestamp),
-            event("com.music", timestampMillis = hour4Timestamp)
+            event("com.music", timestampMillis = hour4Timestamp),
+            event("com.last", timestampMillis = hour9Timestamp + 1000)
         )
-        // Use hour9Timestamp as "now"
-        val scores = ScoreEngine.score(events, currentHour = 9, currentDayOfWeek = 7, nowMillis = hour9Timestamp)
+        val scores = ScoreEngine.score(events, currentHour = 9, currentDayOfWeek = 7, nowMillis = hour9Timestamp + 1000)
 
         assertTrue("Maps (current hour) should score higher than Music", scores["com.maps"]!! > scores["com.music"]!!)
     }
 
     @Test
     fun `recent events score higher than old events`() {
+        // Sentinel "last event" so recent/old aren't self-penalized.
         val events = listOf(
-            event("com.recent", timestampMillis = FIXED_NOW),
-            event("com.old", timestampMillis = thirtyDaysAgo)
+            event("com.recent", timestampMillis = FIXED_NOW - TimeUnit.MINUTES.toMillis(1)),
+            event("com.old", timestampMillis = thirtyDaysAgo),
+            event("com.last", timestampMillis = FIXED_NOW)
         )
         val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
@@ -66,12 +69,13 @@ class ScoreEngineTest {
     @Test
     fun `recent app outranks older app at same hour`() {
         val events = listOf(
-            event("com.recent", timestampMillis = FIXED_NOW),
-            event("com.older", timestampMillis = oneHourAgo)
+            event("com.recent", timestampMillis = FIXED_NOW - TimeUnit.MINUTES.toMillis(1)),
+            event("com.older", timestampMillis = oneHourAgo),
+            event("com.last", timestampMillis = FIXED_NOW)
         )
         val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
-        assertTrue("Recent (now) should outrank older (1h ago)", scores["com.recent"]!! > scores["com.older"]!!)
+        assertTrue("Recent (1min ago) should outrank older (1h ago)", scores["com.recent"]!! > scores["com.older"]!!)
     }
 
     @Test
@@ -90,8 +94,9 @@ class ScoreEngineTest {
     @Test
     fun `thirty day old app ranks below recent app`() {
         val events = listOf(
-            event("com.today", timestampMillis = FIXED_NOW),
-            event("com.old", timestampMillis = thirtyDaysAgo)
+            event("com.today", timestampMillis = FIXED_NOW - TimeUnit.MINUTES.toMillis(1)),
+            event("com.old", timestampMillis = thirtyDaysAgo),
+            event("com.last", timestampMillis = FIXED_NOW)
         )
         val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
 
