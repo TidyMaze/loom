@@ -11,40 +11,39 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // v9 — phase-1 gating added (per academic-rigor-auditor recommendation #2).
-    // For each app, count ctx-tagged events; if below CTX_MIN_EVENTS, the four
-    // phase-1 conditionals (audMatch/devMatch/chgMatch/srMatch) are set to the
-    // mean across qualifying apps instead of being computed from too-few samples
-    // (was overfitting per agent: PHASE1_SMOOTH alone shrinks toward 0.5 too softly).
-    // @1=44.28% MRR=0.5688 vs v8 (@1=43.46% MRR=0.5678): +0.82pp @1, +0.19% MRR.
-    // vs pure recency baseline (@1=17.84% MRR=0.4221): +26.44pp @1.
-    private const val HOUR_SIGMA = 1.76f
-    private const val DECAY_HALF_LIFE_DAYS = 15.0f
-    private const val RECENCY_HOURS = 0.45f
-    private const val TRANSITION_DECAY_DAYS = 18.0f
+    // v10 — held-out tuned. Optuna ran on first 80% of 2544 events; reported
+    // numbers measured on untouched last 20% (~2.3 days, 509 predictions).
+    // Honest held-out: @1=40.67% MRR=0.5444 (was reporting inflated @1=44.33%
+    // from tuning on the eval set itself — overfit gap ~4.5pp).
+    // vs v9 on same test set: +0.98pp @1, +0.29% MRR (within noise on n=509).
+    // Real margin over pure recency baseline (@1=17%, MRR=0.42): +24pp @1.
+    private const val HOUR_SIGMA = 1.01f
+    private const val DECAY_HALF_LIFE_DAYS = 2.40f
+    private const val RECENCY_HOURS = 0.76f
+    private const val TRANSITION_DECAY_DAYS = 4.98f
     private const val SESSION_MS = 119 * 1000L
-    private const val TRANSITION_SMOOTH = 0.55f
-    private const val BURST_GAP_MS = 30_000L
-    private const val CTX_MIN_EVENTS = 5
+    private const val TRANSITION_SMOOTH = 0.24f
+    private const val BURST_GAP_MS = 60_000L
+    private const val CTX_MIN_EVENTS = 4
 
     private const val W_CONTEXT = 0.00f
-    private const val W_RECENCY = 4.78f
-    private const val W_TRANSITION = 3.82f
-    private const val W_TRANSITION_2 = 5.57f
+    private const val W_RECENCY = 4.90f
+    private const val W_TRANSITION = 3.97f
+    private const val W_TRANSITION_2 = 5.53f
 
-    private const val W_REC_8H = 0.40f
-    private const val W_REC_24H = 1.00f
-    private const val W_REC_168H = 0.40f
+    private const val W_REC_8H = 2.63f
+    private const val W_REC_24H = 0.74f
+    private const val W_REC_168H = 2.83f
 
-    private const val SELF_PENALTY = 2.88f
-    private const val SELF_PENALTY_HL_MIN = 17.0f
+    private const val SELF_PENALTY = 2.60f
+    private const val SELF_PENALTY_HL_MIN = 27.55f
 
-    private const val W_AUDIO = 1.89f
-    private const val W_DEVICE = 1.69f
-    private const val W_CHARGING = 0.44f
-    private const val W_SR = 3.47f
-    private const val SR_HALF_LIFE_SECS = 374.0f
-    private const val PHASE1_SMOOTH = 3.50f
+    private const val W_AUDIO = 4.27f
+    private const val W_DEVICE = 0.44f
+    private const val W_CHARGING = 0.31f
+    private const val W_SR = 0.00f
+    private const val SR_HALF_LIFE_SECS = 417.15f
+    private const val PHASE1_SMOOTH = 0.62f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)

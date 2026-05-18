@@ -24,6 +24,21 @@ Summary of every tuning iteration, what changed, and measured results. Walk-forw
 | **— data audit —** | | | | | | | | discovered 45% duplicate events |
 | post-clean | 2454 ev | de-dup ACTIVITY_RESUMED (120s same-pkg), retune | 17.62% (recency) | — | — | — | 0.4214 | dirty headline gone |
 | **v8** | **2454 clean ev** | **Optuna on clean data** | **43.68%** | **64.68%** | **71.88%** | **82.24%** | **0.5688** | **+26.06pp over recency** |
+| v9 | 2500 clean ev | + phase-1 gating (ctxMinEvents=5) | 44.33% | 63.31% | 71.27% | 82.16% | 0.5689 | +0.87pp (eval-on-tune-set inflated; see audit below) |
+| **v10** | **2544 clean ev** | **held-out tuned (Optuna on 80% train, eval on 20% test)** | **40.67%** | — | — | — | **0.5444** | **honest number, +0.98pp vs v9 on same test set** |
+
+## ⚠️ Honesty audit (2026-05-18)
+
+All v0–v9 numbers above were measured on the SAME data the model was tuned on. Held-out validation (Optuna on first 80%, report on untouched last 20%) reveals overfitting:
+
+| version | reported @1 | TRAIN @1 | TEST @1 (honest) | overfit gap |
+|---|---|---|---|---|
+| v9 | 44.23% | 45.39% | **39.69%** | **−4.54pp** |
+| v10 (held-out tuned) | — | 44.28% | **40.67%** | −3.61pp |
+
+The +0.87pp v8→v9 claim was within tuning noise (binomial 95% CI on 509 predictions ≈ ±2.1pp). Future "+1pp" claims need bootstrap CIs or Wilcoxon signed-rank tests to be trustworthy.
+
+**What's real**: the model still beats pure recency by ~23pp @1 on held-out test (40.67% vs 17.84%). Order-of-magnitude gain is robust. Micro-iterations after v8 are not.
 
 ## Failed / discarded experiments
 
@@ -35,6 +50,15 @@ Summary of every tuning iteration, what changed, and measured results. Walk-forw
 | Hour histogram per app (24-bin Laplace-smoothed P(hour\|app)) | Add feature, full retune | @1=43.34% vs 43.64% | No gain |
 | Per-feature softmax with learnable temperature (replaces max-norm) | Add 11 τ params, full retune | @1=43.95% vs 43.46% | Tied, not worth the complexity |
 | Macro-MRR tune (equal weight per app, not per event) | Retune with macro objective | macro +1.34pp @1, micro −2.58pp | Trade-off, not deployed |
+
+## Bootstrap CI rule (added 2026-05-18)
+
+Going forward, any "improvement" claim must show:
+- Bootstrap 95% CI on Δ@1 NOT crossing 0
+- Wilcoxon signed-rank p < 0.05 on paired per-prediction reciprocal ranks
+- v10 vs v9 example: Δ@1=−0.68pp [CI: −1.64, +0.24], p=0.23 → NOT a real difference
+
+See `/tmp/bootstrap_ci.py`. 1000 resamples, paired comparison on per-prediction RR.
 
 ## Active experiments (this session)
 
