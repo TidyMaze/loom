@@ -95,6 +95,11 @@ The +0.87pp v8→v9 claim was within tuning noise (binomial 95% CI on 509 predic
 | Extra recency scales (rec_2h, rec_4h) | Add 2 new features; PL retrain on 13 dims | @1=37.34% vs 39.83%; Δ@1=−2.49pp | Overfit; collinearity with existing rec/rec8/rec24/rec168 |
 | Day-of-week sine/cosine (2 features) | Add sin/cos encoding for DOW | @1=38.38% vs 39.83%; Δ@1=−1.45pp | Weak — day-of-week already captured via dow match in dmtab |
 | Ensemble (v11 + v12 avg logits) | Average scores from both models | @1=39.42% vs 39.83%; Δ@1=−0.41pp | Slight hurt; models are correlated, no diversity gain |
+| Hard-negative mining (pairwise margin) | Margin loss on hardest wrong app | Δ@1=−1.04pp ns | Margin alone too noisy on small data |
+| Hybrid CE + margin loss (α=0.7, margin=0.5) | CE + α×hinge(top-wrong) | Best: @1=40.87% Δ=+1.04pp; CI [−1.45, +3.32] ns, Wilcoxon p=0.32 | Borderline but ns |
+| Frequency-bucketed MoE (3-bucket) | Per-bucket weights, share features | Δ@1=+0.00pp, Wilcoxon p=0.09 | Learned weights make sense (hot uses rec24, cold uses rec+trans) but n too small |
+| 2-bucket MoE thr=15 (seed 42) | Hot/cold split at 15 launches | Δ@1=+0.41pp, Wilcoxon p=0.016 SIG on 2640 ev | **SEED-DEPENDENT** — on fresh 2651 ev, only 1/5 seeds SIG |
+| (DOW, 2hr-bucket) frequency feature | Add explicit weekly routine signal | Mean Δ@1=+0.54pp across 5 seeds, w[11] sign UNSTABLE (+0.12, +0.06, +0.07, −0.10, −0.18) | Sparse signal — only 1.5 weeks of data, each (DOW, hour) cell has 1-2 obs |
 
 ## Bootstrap CI rule (added 2026-05-18)
 
@@ -142,6 +147,39 @@ Best result: **LR=0.01 + 40 epochs** → **+0.83pp**, but within binomial noise 
 1. **Notification data** (2–3 weeks): launch v12, accumulate notif counts. Retrain PL with 12th feature. Expected: +0.5–1.5pp @1.
 2. **App category** (1 week): hand-label top 20 apps or fetch Play Store. Add feature. Expected: +0.5–1.5pp @1.
 3. **Ship v12 now.** Current model (+25pp over recency, v12 ΔMRR SIG) is production-ready. Micro-tuning won't yield reproducible gains at this sample size.
+
+## Behavioral failure analysis (2026-05-18, Opus session)
+
+**Deep-dive on per-app failures with v11 baseline (482 test samples):**
+
+| Pattern | Evidence | Hypothesis |
+|---|---|---|
+| **Rank-1-or-2 close-call errors** | 44% of 290 wrong predictions land at rank 1-2 | Model is close, just lacks confidence — calibration problem |
+| **Rank-11+ unknowable** | 28% of errors at rank ≥11 — model has no clue | Genuinely random launches; can't fix without new signal |
+| **Maps 0% @1 (n=10)** | Almost all Mon morning 08-12, in-session after Calendar/Messaging | Model predicts Slack/Messenger instead — fails to catch post-Calendar→Maps commute pattern |
+| **Calendar 13% @1 (n=23)** | Mon mornings (06-09) and Sun late afternoon (planning) | Model can't catch the time-locked schedule-check routine |
+| **YouTube 10% @1 (n=10)** | Sat 19-21 + Sun 13 — Predicted "Chrome" instead | Weekend evening entertainment pattern not captured |
+| **Morning hours (7-9): 26-31% @1** | Across all apps | Cold-start period, context features absent, routines unique vs daily-average |
+| **Evening hours (20-21): 53-63% @1** | Across all apps | Strong evening routines (music, messaging, video) — model nails these |
+
+**Why the diagnostic features failed to fix it:**
+- **Weekly recurrence requires ~4+ weeks** of data. We have 11 days = 1.5 weeks.
+- Each (DOW, 2hr-bucket) cell has 1-2 observations → too sparse.
+- Adding explicit dow_hour_freq feature: sign of learned weight oscillates seed-to-seed (+0.12, +0.06, +0.07, −0.10, −0.18) — not real signal.
+- 2-bucket frequency MoE found *plausible* per-bucket weights (cold needs more `rec`+`trans`, hot needs `rec24`) but Δ@1 was seed-dependent.
+
+**v12 fair re-check on fresh 2651 events (each with its OWN feature HPs):**
+- v11 (v11 feats + V11 weights): @1=39.38% MRR=0.5463
+- **v12 (v12 feats + V12 weights): @1=42.47% MRR=0.5685**
+- Δ@1: **+3.09pp [bootstrap CI: +0.21, +5.98] SIG**
+- ΔMRR: **+0.0223 [CI: +0.0057, +0.0384] SIG**
+- Wilcoxon p=**0.0024 SIG**
+
+**Earlier mistake:** Initial fresh-data comparison evaluated v12 weights on v11-extracted features (incorrect — v12 changed feature-extraction HPs like burst_ms 60s→10s, hl 2.40d→5.33d, recH 0.76h→0.26h). Fair eval confirms v12 is significantly better than v11.
+
+**Final verdict:** v12 is **robustly the best** version. Stays deployed. +25pp over recency, +3pp over v11 (SIG by all 3 tests).
+
+**Concrete recommendation:** Stop iterating on weights. v12 is solid. Wait for 30+ days of data, then add notification feature, then re-run joint Optuna + PL search.
 
 ---
 
