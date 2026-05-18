@@ -26,6 +26,37 @@ Summary of every tuning iteration, what changed, and measured results. Walk-forw
 | **v8** | **2454 clean ev** | **Optuna on clean data** | **43.68%** | **64.68%** | **71.88%** | **82.24%** | **0.5688** | **+26.06pp over recency** |
 | v9 | 2500 clean ev | + phase-1 gating (ctxMinEvents=5) | 44.33% | 63.31% | 71.27% | 82.16% | 0.5689 | +0.87pp (eval-on-tune-set inflated; see audit below) |
 | **v10** | **2544 clean ev** | **held-out tuned (Optuna on 80% train, eval on 20% test)** | **40.67%** | — | — | — | **0.5444** | **honest number, +0.98pp vs v9 on same test set** |
+| **v11** | **2544 clean ev (held-out)** | **Plackett-Luce ML training (PyTorch, cross-entropy on softmax)** | **42.15%** | — | — | — | **0.5712** | **first statistically significant improvement** (ΔMRR CI [+0.004, +0.046], Wilcoxon p=0.0004; Δ@1 within noise) |
+
+## v11 validation deep-dive (2026-05-18)
+
+Bootstrap-validated against v10 on the held-out test set (n=465 predictions):
+
+| metric | v10 train | v10 test | v11 train | v11 test | Δ test | bootstrap 95% CI | significant? |
+|---|---|---|---|---|---|---|---|
+| @1 | 45.24% | 40.43% | 42.32% | 42.15% | +1.72pp | [−1.72, +5.16] | **NO** (within ±4.5pp binomial noise) |
+| MRR | 0.5809 | 0.5457 | 0.5694 | 0.5712 | +0.0255 | [+0.004, +0.046] | **YES** |
+| Wilcoxon | — | — | — | — | — | p=0.0004 | **HIGHLY YES** |
+| **train-test gap** | — | +4.81pp | — | +0.17pp | — | — | — |
+
+**Key insight from validation**: v11's win is NOT from better training fit — it actually scores LOWER than v10 on train (42.3% vs 45.2%). The win comes from better GENERALIZATION (train-test gap shrunk from +4.81pp to +0.17pp). PL's smooth log-loss + weight decay 1e-4 = much less overfitting than Optuna on jagged MRR.
+
+**Honest claims from v11**:
+- ✓ MRR significantly improved (continuous metric has tighter CI than binary @1)
+- ✓ Generalization dramatically better (train-test gap 28× smaller)
+- ✓ Model still beats pure-recency baseline by +22pp @1 on test (sanity check passed)
+- ✗ @1 absolute gain (+1.72pp) is within binomial noise at n=465 — DON'T claim it
+- ✗ PL not universally better than Optuna — depends on data size + objective shape
+
+**Noise floor reminder**: at n=465 test predictions, binomial 95% CI half-width on @1 is ±4.5pp. Any future @1 improvement claim ≤ 9pp needs bootstrap + Wilcoxon to be trustworthy.
+
+**Negative weights discovered by PL (Optuna couldn't):**
+- W_REC_8H: +2.63 → **−2.34**
+- W_AUDIO: +4.27 → −0.20
+- W_SR: 0.00 → **−0.72**
+- SELF_PENALTY: 2.60 → 8.89 (much stronger)
+
+These weren't bugs — they're consistent across PL training runs. Some features actually anti-predict when others are present (collinearity / redundancy). Constrained-positive Optuna couldn't represent this.
 
 ## ⚠️ Honesty audit (2026-05-18)
 
