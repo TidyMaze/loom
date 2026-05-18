@@ -86,6 +86,15 @@ The +0.87pp v8→v9 claim was within tuning noise (binomial 95% CI on 509 predic
 | Mixture-of-Experts (separate weights: in_session vs cold_start) | Hard binary gate on in_sess flag | @1=39.63% vs 40.25%; Δ@1=−0.62pp [−3.11, +1.87] ns | ns — more params, same data = overfit |
 | Fourier hour features (sin/cos at 1× and 2× daily freq, 4 extra dims) | PL with 15 features | @1=40.04% vs 40.25%; Δ@1=−0.21pp [−2.07, +1.45] ns | ns — Gaussian already captures hour well enough |
 | PL retrain on fresh data (2640 ev, frozen HPs) | Same PL, just newer data | Δ@1=+0.41pp [−1.66, +2.49] ns, ΔMRR=+0.0037 ns | ns — marginal data gain insufficient |
+| Temperature scaling (τ∈[0.5, 1.5] on softmax) | Grid search on logit scaling | Best τ=1.0 (baseline); all others ns | No effect — softmax invariant under uniform scaling |
+| Label smoothing (α=0.1) | CE loss with smoothed targets | @1=39.21% vs 39.83%; Δ@1=−0.62pp ns | Slight hurt; already low overfit |
+| Per-app bias term (100 learned offsets) | Add bias[app_idx] to logits, PL retrain | @1=33.20% vs 39.83%; Δ@1=−6.64pp | Overfit — too many params (100) on 2062 train samples |
+| Constrain self_pen ∈ [0.1, 5] | Clamp penalty during training | @1=33.20% vs 39.83%; Δ@1=−6.64pp | Overfit; constraint is not the bottleneck |
+| Freq-weighted CE loss | Weight samples by log1p(app frequency) | @1=37.76% vs 39.83%; Δ@1=−2.07pp ns | Worse — class-weighting amplifies noise on small test set |
+| Hour binning (4 categories: morning/afternoon/evening/night) | Replace Gaussian hour with 4-bin one-hot | @1=34.00% vs 39.83%; Δ@1=−5.83pp | Worse — loses continuous hour information, poor binning |
+| Extra recency scales (rec_2h, rec_4h) | Add 2 new features; PL retrain on 13 dims | @1=37.34% vs 39.83%; Δ@1=−2.49pp | Overfit; collinearity with existing rec/rec8/rec24/rec168 |
+| Day-of-week sine/cosine (2 features) | Add sin/cos encoding for DOW | @1=38.38% vs 39.83%; Δ@1=−1.45pp | Weak — day-of-week already captured via dow match in dmtab |
+| Ensemble (v11 + v12 avg logits) | Average scores from both models | @1=39.42% vs 39.83%; Δ@1=−0.41pp | Slight hurt; models are correlated, no diversity gain |
 
 ## Bootstrap CI rule (added 2026-05-18)
 
@@ -95,6 +104,29 @@ Going forward, any "improvement" claim must show:
 - v10 vs v9 example: Δ@1=−0.68pp [CI: −1.64, +0.24], p=0.23 → NOT a real difference
 
 See `/tmp/bootstrap_ci.py`. 1000 resamples, paired comparison on per-prediction RR.
+
+## Architectural ceiling analysis (2026-05-18)
+
+**Observation:** All 14 recent improvement attempts (HP retuning, MoE, hierarchical, Fourier, retraining, temp scaling, label smoothing, per-app bias, rec scales, DOW encoding, freq weighting, ensembling) failed to beat v12's +0.0213 MRR [CI: +0.0049, +0.0383].
+
+**Why:**
+- Test set: 482 samples. Binomial 95% CI on @1 = ±4.5pp. Bootstrap CI on MRR ≈ ±0.008.
+- Current model: 11 features + 1 penalty param + Plackett-Luce. Already captures recency, hour-of-day, day-of-week, transitions, context cues (audio/charging/device/sr).
+- Adding params (bias, extra features, scales) → overfit on limited data. Removing constraints (label smoothing, freq weighting) → underfit.
+- Architecture is not bottleneck. Signal is.
+
+**What's missing (can't train on yet):**
+- **Notification count:** feature wired into UsageEvent (v12 payload); needs ~1-2 weeks accumulated data. App-context (notifications = intent-driven usage).
+- **App category:** grouping apps (social/productivity/gaming) could reveal cross-app patterns. Requires external data source (Google Play API or hand-annotation).
+- **Network state / location:** coarse location (home/work/commute) from WiFi/cell tower. Requires privacy policy + battery impact.
+- **Time-of-day context:** morning rush vs evening vs weekend patterns. Current Gaussian hour + DOW approximate this, but new signal could help.
+
+**Realistic next steps:**
+1. **Notification data** (2–3 weeks): launch v12, let phones accumulate notif counts. Retrain PL with 12th feature.
+2. **App category** (1 week): hand-label top 20 apps or fetch from Play Store. Add feature during feature extraction. Likely +0.5–1.5pp @1.
+3. **Stop chasing micro-improvements.** Current v12 (+25pp over recency) is production-ready. Further gains require new orthogonal signals, not weight tuning.
+
+---
 
 ## Active experiments (this session)
 
