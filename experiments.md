@@ -121,10 +121,27 @@ See `/tmp/bootstrap_ci.py`. 1000 resamples, paired comparison on per-prediction 
 - **Network state / location:** coarse location (home/work/commute) from WiFi/cell tower. Requires privacy policy + battery impact.
 - **Time-of-day context:** morning rush vs evening vs weekend patterns. Current Gaussian hour + DOW approximate this, but new signal could help.
 
+**Session-end optimization attempts (2026-05-18):**
+
+Tried 3 novel training approaches:
+- **MLP (11→32→11)**: too small for 2062 samples, overfit immediately
+- **Focal loss (γ=2)**: emphasize hard examples → @1=−1.45pp (worse, model already focuses on hard cases)
+- **Ranking/hinge loss**: margin-based rank learning → @1=−2.28pp (worse, CE is already differentiable rank proxy)
+
+Tried optimization hyperparams (vs baseline LR=0.05):
+- **LR=0.01 + 40 epochs**: +0.83pp → 40.66%
+- **LR=0.005 + 50 epochs**: +0.41pp → 40.25%
+- **SGD momentum=0.9**: −0.62pp
+- **Weight decay=1e-3**: −4.56pp (too strong)
+
+Best result: **LR=0.01 + 40 epochs** → **+0.83pp**, but within binomial noise [CI −3.67pp, +5.33pp]. Not statistically significant on 482-sample test set.
+
+**Final verdict:** Confirmed architectural ceiling. All 17 improvement attempts this session yielded no reproducible gain.
+
 **Realistic next steps:**
-1. **Notification data** (2–3 weeks): launch v12, let phones accumulate notif counts. Retrain PL with 12th feature.
-2. **App category** (1 week): hand-label top 20 apps or fetch from Play Store. Add feature during feature extraction. Likely +0.5–1.5pp @1.
-3. **Stop chasing micro-improvements.** Current v12 (+25pp over recency) is production-ready. Further gains require new orthogonal signals, not weight tuning.
+1. **Notification data** (2–3 weeks): launch v12, accumulate notif counts. Retrain PL with 12th feature. Expected: +0.5–1.5pp @1.
+2. **App category** (1 week): hand-label top 20 apps or fetch Play Store. Add feature. Expected: +0.5–1.5pp @1.
+3. **Ship v12 now.** Current model (+25pp over recency, v12 ΔMRR SIG) is production-ready. Micro-tuning won't yield reproducible gains at this sample size.
 
 ---
 
