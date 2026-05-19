@@ -213,8 +213,9 @@ object ScoreEngine {
         val mSr = srRaw.values.max().coerceAtLeast(1e-9f)
 
         val useCtxFeats = effCtx != null
-        val penaltyDecay = if (inSession && SELF_PENALTY > 0)
-            exp(-(gapMin / SELF_PENALTY_HL_MIN) * LN2).toFloat() else 0f
+        val selfFactor = if (inSession && SELF_PENALTY > 0)
+            (1f - SELF_PENALTY * exp(-(gapMin / SELF_PENALTY_HL_MIN) * LN2).toFloat()).coerceAtLeast(0.40f)
+        else 1f
 
         val breakdowns: HashMap<String, FloatArray>? = if (DEBUG_LOG) HashMap(byPkg.size) else null
         val scores = byPkg.keys.associateWith { pkg ->
@@ -229,9 +230,9 @@ object ScoreEngine {
             val pD = if (useCtxFeats) W_DEVICE * (devRaw[pkg] ?: 0f) / mD else 0f
             val pCh = if (useCtxFeats) W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh else 0f
             val pSr = if (useCtxFeats) W_SR * (srRaw[pkg] ?: 0f) / mSr else 0f
-            val pen = if (inSession && pkg == lastEvent.packageName) -SELF_PENALTY * penaltyDecay else 0f
-            val s = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pen
-            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, pen))
+            val base = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr
+            val s = if (pkg == lastEvent.packageName) base * selfFactor else base
+            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, if (pkg == lastEvent.packageName) base * (selfFactor - 1f) else 0f))
             s
         }
 

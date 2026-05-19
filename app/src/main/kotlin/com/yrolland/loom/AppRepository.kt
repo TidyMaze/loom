@@ -79,7 +79,7 @@ class AppRepository(private val context: Context) {
                 AppEntry(
                     packageName = pkg,
                     label = label,
-                    score = if (raw != null && raw > 0f) raw / totalScore else (-index.toFloat()),
+                    score = if (raw != null) raw / totalScore else (-index.toFloat()),
                     launchCount = count,
                     lastLaunchedMillis = stats.lastByPkg[pkg],
                     todayCount = stats.todayByPkg[pkg] ?: 0,
