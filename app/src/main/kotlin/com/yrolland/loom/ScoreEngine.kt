@@ -294,7 +294,7 @@ object ScoreEngine {
             val pBat = if (useCtx3Feats) W_BAT * (batRaw[pkg] ?: 0.5f) / mBa else 0f
             val base = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pNo + pCal + pBat
             val s = if (pkg == lastEvent.packageName) base * selfFactor else base
-            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, if (pkg == lastEvent.packageName) base * (selfFactor - 1f) else 0f))
+            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, pNo, pCal, pBat, if (pkg == lastEvent.packageName) base * (selfFactor - 1f) else 0f))
             s
         }
 
@@ -312,7 +312,7 @@ object ScoreEngine {
         Log.d("ScoreEngine", "----- score run @${System.currentTimeMillis()} -----")
         Log.d("ScoreEngine", "ctx=${ctx?.let { "audio=${it.audioActive} dev=${it.audioDevice} chg=${it.charging} sr=${it.secsSinceResume}" } ?: "none"}")
         Log.d("ScoreEngine", "last=${lastEvent.packageName} inSession=$inSession")
-        Log.d("ScoreEngine", "labels: ctx rec rec8 rec24 rec168 trans trans2 aud dev chg sr SELF")
+        Log.d("ScoreEngine", "labels: ctx rec rec8 rec24 rec168 trans trans2 aud dev chg sr notif cal bat SELF")
         scores.entries.sortedByDescending { it.value }.take(15).forEachIndexed { i, (pkg, s) ->
             val b = breakdowns[pkg]!!
             val parts = b.joinToString(" ") { "%+.2f".format(it) }
