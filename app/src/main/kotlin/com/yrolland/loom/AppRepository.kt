@@ -65,7 +65,7 @@ class AppRepository(private val context: Context) {
             .filter { it !in hidden }
 
         val events = usageStore.load()
-        val rawScores = ScoreEngine.score(events, currentCtx)
+        val rawScores = ScoreEngine.score(events, currentCtx, currentNotifCounts = NotificationCounts.snapshot())
         val totalScore = rawScores.values.filter { it > 0f }.sum().coerceAtLeast(1f)
         val stats = computeStats(events)
 
