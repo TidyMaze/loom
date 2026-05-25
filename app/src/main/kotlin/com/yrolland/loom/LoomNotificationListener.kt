@@ -27,46 +27,51 @@ class LoomNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
-        NotificationCounts.increment(sbn.packageName)
+        NotificationCounts.increment(sbn)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         sbn ?: return
-        NotificationCounts.decrement(sbn.packageName)
+        NotificationCounts.decrement(sbn)
     }
 
     companion object { private const val TAG = "LoomNotif" }
 }
 
 /** Tracks active notification counts per package. Singleton. Thread-safe.
+ *  Uses notification keys (unique per notification) so updates don't inflate counts.
  *  Also tracks last notification source for "Slack pinged → open Slack" pattern. */
 object NotificationCounts {
-    private val counts = ConcurrentHashMap<String, Int>()
+    // key = sbn.key (unique per notification slot), value = packageName
+    private val keys = ConcurrentHashMap<String, String>()
     @Volatile private var lastPkg: String? = null
     @Volatile private var lastMs: Long = 0L
 
-    fun increment(pkg: String) {
-        counts.merge(pkg, 1, Int::plus)
-        lastPkg = pkg
-        lastMs = System.currentTimeMillis()
-    }
-
-    fun decrement(pkg: String) {
-        counts.compute(pkg) { _, c -> if (c == null || c <= 1) null else c - 1 }
-    }
-
-    fun replaceAll(active: Array<StatusBarNotification>) {
-        counts.clear()
-        for (sbn in active) {
-            val pkg = sbn.packageName ?: continue
-            counts.merge(pkg, 1, Int::plus)
+    fun increment(sbn: StatusBarNotification) {
+        val pkg = sbn.packageName ?: return
+        val isNew = keys.put(sbn.key, pkg) == null
+        if (isNew) {
+            lastPkg = pkg
+            lastMs = System.currentTimeMillis()
         }
     }
 
-    fun get(pkg: String): Int = counts[pkg] ?: 0
-    fun getCount(pkg: String): Int = counts[pkg] ?: 0
-    fun snapshot(): Map<String, Int> = HashMap(counts)
-    fun totalCount(): Int = counts.values.sum()
+    fun decrement(sbn: StatusBarNotification) {
+        keys.remove(sbn.key)
+    }
+
+    fun replaceAll(active: Array<StatusBarNotification>) {
+        keys.clear()
+        for (sbn in active) {
+            val pkg = sbn.packageName ?: continue
+            keys[sbn.key] = pkg
+        }
+    }
+
+    fun get(pkg: String): Int = keys.values.count { it == pkg }
+    fun getCount(pkg: String): Int = get(pkg)
+    fun snapshot(): Map<String, Int> = keys.values.groupingBy { it }.eachCount()
+    fun totalCount(): Int = keys.size
 
     /** Returns (lastNotifPkg, lastNotifMs). Null pkg if no notification seen yet. */
     fun lastNotification(): Pair<String?, Long> = lastPkg to lastMs

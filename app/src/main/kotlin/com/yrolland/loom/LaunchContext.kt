@@ -54,8 +54,8 @@ object LaunchContext {
             secsSinceLastNotif = secsSinceLast,
             wifiSsidHash = wifiSsidHash(app),
             batteryPct = batteryPct(bm),
-            activityType = ActivityState.lastActivity,
-            activityConfidence = ActivityState.lastConfidence.takeIf { it >= 0 },
+            activityType = ActivityState.lastActivity.takeIf { (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 600 },
+            activityConfidence = ActivityState.lastConfidence.takeIf { it >= 0 && (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 600 },
             secsToNextEvent = secsToNextCalendarEvent(app, nowMs),
             btDeviceHash = bluetoothDeviceHash(app),
             prevAppDwellSecs = null  // set by AppRepository — needs UsageStats query
@@ -94,18 +94,9 @@ object LaunchContext {
             ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
                 != PackageManager.PERMISSION_GRANTED) return@runCatching null
         val btm = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager ?: return@runCatching null
-        val adapter = btm.adapter ?: return@runCatching null
-        if (!adapter.isEnabled) return@runCatching null
-        // Get connected A2DP devices (BT audio sinks)
-        val connected = adapter.bondedDevices?.firstOrNull { dev ->
-            runCatching {
-                @Suppress("DEPRECATION")
-                val cls = adapter.javaClass.getDeclaredMethod("getConnectionState", BluetoothAdapter::class.java)
-                false  // fallback: just pick first bonded device
-            }.getOrDefault(false)
-        } ?: adapter.bondedDevices?.firstOrNull()
-        val name = connected?.name ?: return@runCatching null
-        hash8(name)
+        // A2DP = BT audio sink (headphones, speakers); only returns actually-connected devices
+        val device = btm.getConnectedDevices(BluetoothProfile.A2DP).firstOrNull() ?: return@runCatching null
+        hash8(device.name ?: return@runCatching null)
     }.getOrNull()
 
     private fun secsToNextCalendarEvent(context: Context, nowMs: Long): Int? = runCatching {
