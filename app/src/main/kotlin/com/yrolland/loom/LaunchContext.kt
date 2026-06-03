@@ -54,8 +54,8 @@ object LaunchContext {
             secsSinceLastNotif = secsSinceLast,
             wifiSsidHash = wifiSsidHash(app),
             batteryPct = batteryPct(bm),
-            activityType = ActivityState.lastActivity.takeIf { (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 600 },
-            activityConfidence = ActivityState.lastConfidence.takeIf { it >= 0 && (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 600 },
+            activityType = ActivityState.lastActivity.takeIf { (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 1200 },
+            activityConfidence = ActivityState.lastConfidence.takeIf { it >= 0 && (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 1200 },
             secsToNextEvent = secsToNextCalendarEvent(app, nowMs),
             btDeviceHash = bluetoothDeviceHash(app),
             prevAppDwellSecs = null  // set by AppRepository — needs UsageStats query
@@ -83,9 +83,9 @@ object LaunchContext {
     private fun wifiSsidHash(context: Context): String? = runCatching {
         val wm = context.getSystemService(Context.WIFI_SERVICE) as? WifiManager ?: return@runCatching null
         @Suppress("DEPRECATION")
-        val info = wm.connectionInfo ?: return@runCatching null
-        val ssid = info.ssid?.trim('"') ?: return@runCatching null
-        if (ssid.isEmpty() || ssid == "<unknown ssid>") return@runCatching null
+        val info = wm.connectionInfo ?: return@runCatching "none"
+        val ssid = info.ssid?.trim('"') ?: return@runCatching "none"
+        if (ssid.isEmpty() || ssid == "<unknown ssid>") return@runCatching "none"
         hash8(ssid)
     }.getOrNull()
 
@@ -95,8 +95,8 @@ object LaunchContext {
                 != PackageManager.PERMISSION_GRANTED) return@runCatching null
         val btm = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager ?: return@runCatching null
         // A2DP = BT audio sink (headphones, speakers); only returns actually-connected devices
-        val device = btm.getConnectedDevices(BluetoothProfile.A2DP).firstOrNull() ?: return@runCatching null
-        hash8(device.name ?: return@runCatching null)
+        val device = btm.getConnectedDevices(BluetoothProfile.A2DP).firstOrNull() ?: return@runCatching "none"
+        hash8(device.name ?: return@runCatching "none")
     }.getOrNull()
 
     private fun secsToNextCalendarEvent(context: Context, nowMs: Long): Int? = runCatching {
