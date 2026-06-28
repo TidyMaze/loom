@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun filteredList(query: String) =
         if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
-        else fullList.filter { it.label.contains(query, ignoreCase = true) }
+        else fullList.filter { FuzzyMatcher.matches(query, it.label) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
