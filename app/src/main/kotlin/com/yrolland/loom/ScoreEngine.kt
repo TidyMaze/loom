@@ -14,26 +14,26 @@ object ScoreEngine {
     // v14 — Optuna TPE retune on 4617 events; MRR 0.2283→0.3493 (+53%) vs v13+ctx params.
     // Key changes: shorter burst gap, longer session window, stronger w_ctx/w_trans/w_r168,
     //              weaker w_rec/w_trans2, all ctx features positive, tighter notif_scale.
-    private const val HOUR_SIGMA = 2.31f
-    private const val DECAY_HALF_LIFE_DAYS = 14.07f
-    private const val RECENCY_HOURS = 2.15f
-    private const val TRANSITION_DECAY_DAYS = 2.46f
-    private const val SESSION_MS = 136_962L
-    private const val TRANSITION_SMOOTH = 4.07f
-    private const val BURST_GAP_MS = 3_752L
-    private const val CTX_MIN_EVENTS = 6
+    private const val HOUR_SIGMA = 1.05f
+    private const val DECAY_HALF_LIFE_DAYS = 34.48f
+    private const val RECENCY_HOURS = 0.70f
+    private const val TRANSITION_DECAY_DAYS = 15.00f
+    private const val SESSION_MS = 60_000L
+    private const val TRANSITION_SMOOTH = 6.60f
+    private const val BURST_GAP_MS = 20_000L
+    private const val CTX_MIN_EVENTS = 16
 
-    private const val W_CONTEXT = 1.76f
-    private const val W_RECENCY = 0.41f
-    private const val W_TRANSITION = 3.68f
-    private const val W_TRANSITION_2 = 0.55f
+    private const val W_CONTEXT = 2.75f
+    private const val W_RECENCY = 4.04f
+    private const val W_TRANSITION = 0.28f
+    private const val W_TRANSITION_2 = 2.35f
 
-    private const val W_REC_8H = 0.32f
-    private const val W_REC_24H = 1.42f
-    private const val W_REC_168H = 3.61f
+    private const val W_REC_8H = 2.61f
+    private const val W_REC_24H = 0.51f
+    private const val W_REC_168H = 0.59f
 
-    private const val SELF_PENALTY = 23.93f
-    private const val SELF_PENALTY_HL_MIN = 47.49f
+    private const val SELF_PENALTY = 37.92f
+    private const val SELF_PENALTY_HL_MIN = 100.28f
 
     private const val W_AUDIO = 0.04f
     private const val W_DEVICE = 1.91f
@@ -75,38 +75,58 @@ object ScoreEngine {
             val prev = sorted[i - 1]
             val curr = sorted[i]
             if (curr.timestampMillis - prev.timestampMillis <= SESSION_MS) {
+                val diff = abs(prev.hour - currentHour)
+                val hourDist = if (diff > 12) 24 - diff else diff
+                val hourMatch = exp(-(hourDist * hourDist) / (2f * HOUR_SIGMA * HOUR_SIGMA))
+                val dayMatch = when {
+                    prev.dayOfWeek == 0 -> 1.0f
+                    prev.dayOfWeek == currentDayOfWeek -> 1.0f
+                    isWeekend(prev.dayOfWeek) == isWeekend(currentDayOfWeek) -> 0.6f
+                    else -> 0.2f
+                }
                 val daysAgo = (nowMillis - prev.timestampMillis) / MS_PER_DAY
-                val w = exp(-(daysAgo / TRANSITION_DECAY_DAYS) * LN2).toFloat()
+                val decay = exp(-(daysAgo / DECAY_HALF_LIFE_DAYS) * LN2).toFloat()
+                val w = decay * hourMatch * dayMatch
+
                 transitionWeights.getOrPut(prev.packageName) { HashMap() }
                     .merge(curr.packageName, w) { a, b -> a + b }
-            }
-            if (i >= 2) {
-                val prevPrev = sorted[i - 2]
-                if (prev.timestampMillis - prevPrev.timestampMillis <= SESSION_MS &&
-                    curr.timestampMillis - prev.timestampMillis <= SESSION_MS) {
-                    val daysAgo = (nowMillis - prevPrev.timestampMillis) / MS_PER_DAY
-                    val w = exp(-(daysAgo / TRANSITION_DECAY_DAYS) * LN2).toFloat()
-                    transition2Weights.getOrPut(prevPrev.packageName to prev.packageName) { HashMap() }
-                        .merge(curr.packageName, w) { a, b -> a + b }
+
+                if (i >= 2) {
+                    val prevPrev = sorted[i - 2]
+                    if (prev.timestampMillis - prevPrev.timestampMillis <= SESSION_MS) {
+                        transition2Weights.getOrPut(prevPrev.packageName to prev.packageName) { HashMap() }
+                            .merge(curr.packageName, w) { a, b -> a + b }
+                    }
                 }
             }
         }
 
         val lastEvent = sorted.last()
         val inSession = (nowMillis - lastEvent.timestampMillis) <= SESSION_MS
-        val transitionRow: Map<String, Float> =
-            if (inSession) transitionWeights[lastEvent.packageName] ?: emptyMap() else emptyMap()
-        val transitionDenom: Float =
-            if (transitionRow.isNotEmpty()) transitionRow.values.sum() + TRANSITION_SMOOTH * nApps else 0f
 
-        val transition2Row: Map<String, Float> = if (inSession && sorted.size >= 2) {
-            val penultimate = sorted[sorted.size - 2]
-            if (lastEvent.timestampMillis - penultimate.timestampMillis <= SESSION_MS)
-                transition2Weights[penultimate.packageName to lastEvent.packageName] ?: emptyMap()
-            else emptyMap()
-        } else emptyMap()
-        val transition2Denom: Float =
-            if (transition2Row.isNotEmpty()) transition2Row.values.sum() + TRANSITION_SMOOTH * nApps else 0f
+        val transScores = HashMap<String, Float>(byPkg.size)
+        if (inSession) {
+            val penultimate = if (sorted.size >= 2) sorted[sorted.size - 2] else null
+            val prev2pkg = if (penultimate != null && lastEvent.timestampMillis - penultimate.timestampMillis <= SESSION_MS)
+                penultimate.packageName
+            else null
+
+            var row: Map<String, Float>? = if (prev2pkg != null) {
+                transition2Weights[prev2pkg to lastEvent.packageName]
+            } else null
+
+            if (row == null || row.isEmpty()) {
+                row = transitionWeights[lastEvent.packageName]
+            }
+
+            if (row != null && row.isNotEmpty()) {
+                val sumWeights = row.values.sum()
+                val denom = sumWeights + TRANSITION_SMOOTH * nApps
+                for (pkg in byPkg.keys) {
+                    transScores[pkg] = ((row[pkg] ?: 0f) + TRANSITION_SMOOTH) / denom
+                }
+            }
+        }
 
         val effCtx = currentCtx ?: sorted.asReversed().firstOrNull { it.audioActive != null }?.let {
             LaunchContext.Capture(
@@ -201,10 +221,8 @@ object ScoreEngine {
             rec8Raw[pkg] = exp(-hoursSinceLast / 8f)
             rec24Raw[pkg] = exp(-hoursSinceLast / 24f)
             rec168Raw[pkg] = exp(-hoursSinceLast / 168f)
-            transRaw[pkg] = if (transitionDenom > 0f)
-                ((transitionRow[pkg] ?: 0f) + TRANSITION_SMOOTH) / transitionDenom else 0f
-            trans2Raw[pkg] = if (transition2Denom > 0f)
-                ((transition2Row[pkg] ?: 0f) + TRANSITION_SMOOTH) / transition2Denom else 0f
+            transRaw[pkg] = transScores[pkg] ?: 0f
+            trans2Raw[pkg] = 0f
 
             audRaw[pkg] = ((audMatch + PHASE1_SMOOTH) / (audTotal + 2 * PHASE1_SMOOTH)).toFloat()
             devRaw[pkg] = ((devMatch + PHASE1_SMOOTH) / (devTotal + 2 * PHASE1_SMOOTH)).toFloat()

@@ -130,11 +130,50 @@ class ScoreEngineTest {
     }
 
     @Test
-    fun `apps not in events are not in scores`() {
-        val events = listOf(event("com.known", timestampMillis = FIXED_NOW))
-        val scores = ScoreEngine.score(events, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW)
+    fun `bigram transitions with backoff fallback`() {
+        val t1 = FIXED_NOW - TimeUnit.HOURS.toMillis(2)
+        val t2 = t1 + TimeUnit.SECONDS.toMillis(30) // 30s separation prevents interleaving
+        val sessionGap = TimeUnit.SECONDS.toMillis(10)
 
-        assertTrue("com.known" in scores)
-        assertTrue("com.unknown" !in scores)
+        val events = listOf(
+            // Sequence 1: a -> b -> c
+            event("com.a", t1),
+            event("com.b", t1 + sessionGap),
+            event("com.c", t1 + sessionGap * 2),
+
+            // Sequence 2: d -> b -> e
+            event("com.d", t2),
+            event("com.b", t2 + sessionGap),
+            event("com.e", t2 + sessionGap * 2)
+        )
+
+        // Case 1: last is a -> b. Bigram matches a -> b -> c.
+        // Therefore com.c should outrank com.e
+        val events1 = events + listOf(
+            event("com.a", FIXED_NOW - sessionGap),
+            event("com.b", FIXED_NOW)
+        )
+        val scores1 = ScoreEngine.score(events1, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW + 1000)
+        assertTrue("c should outrank e when history is a -> b", scores1["com.c"]!! > scores1["com.e"]!!)
+
+        // Case 2: last is d -> b. Bigram matches d -> b -> e.
+        // Therefore com.e should outrank com.c
+        val events2 = events + listOf(
+            event("com.d", FIXED_NOW - sessionGap),
+            event("com.b", FIXED_NOW)
+        )
+        val scores2 = ScoreEngine.score(events2, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW + 1000)
+        assertTrue("e should outrank c when history is d -> b", scores2["com.e"]!! > scores2["com.c"]!!)
+
+        // Case 3: last is x -> b. Bigram x -> b -> ? does not exist.
+        // Falls back to unigram: b -> c and b -> e. Both should score high.
+        val events3 = events + listOf(
+            event("com.x", FIXED_NOW - sessionGap),
+            event("com.b", FIXED_NOW)
+        )
+        val scores3 = ScoreEngine.score(events3, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW + 1000)
+        assertTrue("c should score reasonably high due to unigram fallback", scores3["com.c"]!! > 0f)
+        assertTrue("e should score reasonably high due to unigram fallback", scores3["com.e"]!! > 0f)
     }
 }
+

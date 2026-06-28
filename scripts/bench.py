@@ -160,38 +160,38 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
     sess_ms = int(p["session_ms"])
     ts_smooth = p["trans_smooth"]
 
-    # Transition tables: 1-gram and 2-gram
+    # Transition tables: 1-gram and 2-gram (context-weighted)
     trans1: dict = collections.defaultdict(lambda: collections.defaultdict(float))
     trans2: dict = collections.defaultdict(lambda: collections.defaultdict(float))
     for i in range(1, len(sorted_evs)):
         prev, curr = sorted_evs[i - 1], sorted_evs[i]
         if curr["timestampMillis"] - prev["timestampMillis"] <= sess_ms:
-            w = _decay(prev["timestampMillis"], now_ms, p["trans_decay"])
+            w = (_decay(prev["timestampMillis"], now_ms, p["decay_hl"]) *
+                 _hm(_hd(prev["hour"], now_hour), p["hour_sigma"]) *
+                 _dm(prev.get("dayOfWeek", 0), now_dow))
             trans1[prev["packageName"]][curr["packageName"]] += w
-        if i >= 2:
-            pp = sorted_evs[i - 2]
-            if (prev["timestampMillis"] - pp["timestampMillis"] <= sess_ms and
-                    curr["timestampMillis"] - prev["timestampMillis"] <= sess_ms):
-                w = _decay(pp["timestampMillis"], now_ms, p["trans_decay"])
-                trans2[(pp["packageName"], prev["packageName"])][curr["packageName"]] += w
+            if i >= 2:
+                prevPrev = sorted_evs[i - 2]
+                if prev["timestampMillis"] - prevPrev["timestampMillis"] <= sess_ms:
+                    trans2[(prevPrev["packageName"], prev["packageName"])][curr["packageName"]] += w
 
     last_e = sorted_evs[-1]
     in_session = (now_ms - last_e["timestampMillis"]) <= sess_ms
 
-    trans1_row = dict(trans1.get(last_e["packageName"], {})) if in_session else {}
-    trans1_denom = (sum(trans1_row.values()) + ts_smooth * n_apps) if trans1_row else 0.0
+    trans_scores: dict = collections.defaultdict(float)
+    if in_session:
+        penultimate = sorted_evs[-2] if len(sorted_evs) >= 2 else None
+        prev2pkg = penultimate["packageName"] if (penultimate and
+                   last_e["timestampMillis"] - penultimate["timestampMillis"] <= sess_ms) else None
 
-    trans2_row: dict = {}
-    trans2_denom = 0.0
-    if in_session and len(sorted_evs) >= 2:
-        pen = sorted_evs[-2]
-        if last_e["timestampMillis"] - pen["timestampMillis"] <= sess_ms:
-            trans2_row = dict(
-                trans2.get((pen["packageName"], last_e["packageName"]), {})
-            )
-            trans2_denom = (
-                sum(trans2_row.values()) + ts_smooth * n_apps
-            ) if trans2_row else 0.0
+        row = dict(trans2.get((prev2pkg, last_e["packageName"]), {})) if prev2pkg else {}
+        if not row:
+            row = dict(trans1.get(last_e["packageName"], {}))
+
+        if row:
+            denom = sum(row.values()) + ts_smooth * n_apps
+            for pkg in by_pkg:
+                trans_scores[pkg] = (row.get(pkg, 0) + ts_smooth) / denom
 
     # Proxy ctx: last historical event with audio data (Kotlin fallback behavior)
     eff_ctx = next(
@@ -273,8 +273,8 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
         r8[pkg]     = math.exp(-hrs_since / 8.0)
         r24[pkg]    = math.exp(-hrs_since / 24.0)
         r168[pkg]   = math.exp(-hrs_since / 168.0)
-        trans1_r[pkg] = ((trans1_row.get(pkg, 0.0) + ts_smooth) / trans1_denom) if trans1_denom > 0 else 0.0
-        trans2_r[pkg] = ((trans2_row.get(pkg, 0.0) + ts_smooth) / trans2_denom) if trans2_denom > 0 else 0.0
+        trans1_r[pkg] = trans_scores.get(pkg, 0.0)
+        trans2_r[pkg] = 0.0
 
         aud_r[pkg]  = (aud_m + p1s) / (aud_t + 2 * p1s)  if eff_ctx is not None else 0.5
         dev_r[pkg]  = (dev_m + p1s) / (dev_t + 2 * p1s)  if eff_ctx is not None else 0.5
