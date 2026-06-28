@@ -11,47 +11,46 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // v13 + ctx — Optuna re-tune on 3108 events; adds notif/calendar/battery context features.
-    // vs v13: MRR +0.0113 CI=[+0.0077,+0.0152] p=0.0000
-    // vs v12: MRR=0.5965 (+0.0218) @1=47.49% (+3.84pp) Wilcoxon p=0.0000
-    // Key changes: wider hour_sigma, longer decay, near-zero w_ctx, stronger w_trans2, self_pen re-tuned.
-    private const val HOUR_SIGMA = 3.67f
-    private const val DECAY_HALF_LIFE_DAYS = 11.77f
-    private const val RECENCY_HOURS = 0.44f
-    private const val TRANSITION_DECAY_DAYS = 3.78f
-    private const val SESSION_MS = 120 * 1000L
-    private const val TRANSITION_SMOOTH = 1.82f
-    private const val BURST_GAP_MS = 11_000L
-    private const val CTX_MIN_EVENTS = 8
+    // v14 — Optuna TPE retune on 4617 events; MRR 0.2283→0.3493 (+53%) vs v13+ctx params.
+    // Key changes: shorter burst gap, longer session window, stronger w_ctx/w_trans/w_r168,
+    //              weaker w_rec/w_trans2, all ctx features positive, tighter notif_scale.
+    private const val HOUR_SIGMA = 2.31f
+    private const val DECAY_HALF_LIFE_DAYS = 14.07f
+    private const val RECENCY_HOURS = 2.15f
+    private const val TRANSITION_DECAY_DAYS = 2.46f
+    private const val SESSION_MS = 136_962L
+    private const val TRANSITION_SMOOTH = 4.07f
+    private const val BURST_GAP_MS = 3_752L
+    private const val CTX_MIN_EVENTS = 6
 
-    private const val W_CONTEXT = 0.007f
-    private const val W_RECENCY = 2.84f
-    private const val W_TRANSITION = 1.56f
-    private const val W_TRANSITION_2 = 2.73f
+    private const val W_CONTEXT = 1.76f
+    private const val W_RECENCY = 0.41f
+    private const val W_TRANSITION = 3.68f
+    private const val W_TRANSITION_2 = 0.55f
 
-    private const val W_REC_8H = 0.025f
-    private const val W_REC_24H = 3.94f
-    private const val W_REC_168H = 2.06f
+    private const val W_REC_8H = 0.32f
+    private const val W_REC_24H = 1.42f
+    private const val W_REC_168H = 3.61f
 
-    private const val SELF_PENALTY = 19.93f
-    private const val SELF_PENALTY_HL_MIN = 16.94f
+    private const val SELF_PENALTY = 23.93f
+    private const val SELF_PENALTY_HL_MIN = 47.49f
 
-    private const val W_AUDIO = -0.22f
-    private const val W_DEVICE = -0.27f
-    private const val W_CHARGING = 0.23f
-    private const val W_SR = -1.36f
-    private const val SR_HALF_LIFE_SECS = 466.28f
-    private const val PHASE1_SMOOTH = 1.68f
+    private const val W_AUDIO = 0.04f
+    private const val W_DEVICE = 1.91f
+    private const val W_CHARGING = 1.42f
+    private const val W_SR = 1.59f
+    private const val SR_HALF_LIFE_SECS = 903.04f
+    private const val PHASE1_SMOOTH = 4.50f
 
-    // Phase-3 context features (notif / calendar / battery) — tuned on 3108 events
-    private const val W_NOTIF = 5.52f
-    private const val W_CAL = 2.12f
-    private const val W_BAT = 2.92f
-    private const val NOTIF_SCALE = 200f   // exp(-|Δnotif| / NOTIF_SCALE)
-    private const val BAT_SCALE = 20f      // exp(-|Δbat%| / BAT_SCALE)
-    private const val CAL_SCALE = 1800f    // exp(-|Δsecs| / CAL_SCALE) — 30-min half-life
-    private const val CTX3_MIN_EVENTS = 6
-    private const val CTX3_SMOOTH = 0.054f
+    // Phase-3 context features (notif / calendar / battery) — v14 retune on 4617 events
+    private const val W_NOTIF = 0.79f
+    private const val W_CAL = 3.32f
+    private const val W_BAT = 5.31f
+    private const val NOTIF_SCALE = 26.52f  // exp(-|Δnotif| / NOTIF_SCALE)
+    private const val BAT_SCALE = 60.48f    // exp(-|Δbat%| / BAT_SCALE)
+    private const val CAL_SCALE = 1741.40f  // exp(-|Δsecs| / CAL_SCALE)
+    private const val CTX3_MIN_EVENTS = 11
+    private const val CTX3_SMOOTH = 0.375f
 
     private const val MS_PER_DAY = 86_400_000f
     private val LN2 = ln(2.0)
