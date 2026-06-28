@@ -11,11 +11,12 @@ class UsageStore(context: Context) {
     private val gson = Gson()
     private val listType = object : TypeToken<MutableList<UsageEvent>>() {}.type
 
-    fun record(packageName: String, ctx: LaunchContext.Capture? = null) {
+    fun record(packageName: String, ctx: LaunchContext.Capture? = null, nowMs: Long = System.currentTimeMillis()): Long {
         val events = load().toMutableList()
-        events.add(UsageEvent(packageName, System.currentTimeMillis(), ctx))
+        events.add(UsageEvent(packageName, nowMs, ctx))
         val trimmed = if (events.size > MAX_EVENTS) events.takeLast(MAX_EVENTS) else events
         file.writeText(gson.toJson(trimmed))
+        return nowMs
     }
 
     /** Replace the entire stored list (used by sync for one-shot cleanup like launcher purge). */

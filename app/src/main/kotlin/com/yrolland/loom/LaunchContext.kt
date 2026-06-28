@@ -44,6 +44,12 @@ object LaunchContext {
         val secsSinceLast = if (lastPkg != null && lastMs > 0) {
             ((nowMs - lastMs) / 1000).toInt().coerceIn(0, 86400)
         } else null
+        val prefs = app.getSharedPreferences("loom_launch_prefs", Context.MODE_PRIVATE)
+        val prevDwell = prefs.getInt("last_computed_dwell", -1).takeIf { it >= 0 }
+        if (prevDwell != null) {
+            prefs.edit().remove("last_computed_dwell").apply()
+        }
+
         return Capture(
             secsSinceResume = ((nowMs - launcherResumeMs) / 1000).toInt().coerceIn(0, 3600),
             audioActive = am.isMusicActive,
@@ -58,7 +64,7 @@ object LaunchContext {
             activityConfidence = ActivityState.lastConfidence.takeIf { it >= 0 && (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 1200 },
             secsToNextEvent = secsToNextCalendarEvent(app, nowMs),
             btDeviceHash = bluetoothDeviceHash(app),
-            prevAppDwellSecs = null  // set by AppRepository — needs UsageStats query
+            prevAppDwellSecs = prevDwell
         )
     }
 

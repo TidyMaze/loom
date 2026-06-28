@@ -33,23 +33,23 @@ from typing import Callable
 
 V14 = dict(
     # Core scoring
-    hour_sigma      = 2.31,
-    decay_hl        = 14.07,   # days — main decay half-life
-    recency_h       = 2.15,    # hours — short recency scale
-    trans_decay     = 2.46,    # days — transition table decay
-    session_ms      = 136_962, # session window (ms)
-    trans_smooth    = 4.07,    # Laplace smoothing for transition probs
-    burst_gap_ms    = 3_752,   # collapse same-pkg events within this gap
-    ctx_min         = 6,       # phase-1 gate: min events with ctx to qualify
-    w_ctx           = 1.76,
-    w_rec           = 0.41,
-    w_trans         = 3.68,
-    w_trans2        = 0.55,
-    w_r8            = 0.32,
-    w_r24           = 1.42,
-    w_r168          = 3.61,
-    self_pen        = 23.93,
-    self_hl_min     = 47.49,
+    hour_sigma      = 2.5928,
+    decay_hl        = 45.7858,   # days — main decay half-life
+    recency_h       = 0.8139,    # hours — short recency scale
+    trans_decay     = 4.1375,    # days — transition table decay
+    session_ms      = 60_000,    # session window (ms)
+    trans_smooth    = 19.4291,   # Laplace smoothing for transition probs
+    burst_gap_ms    = 23_000,    # collapse same-pkg events within this gap
+    ctx_min         = 8,         # phase-1 gate: min events with ctx to qualify
+    w_ctx           = 3.3898,
+    w_rec           = 1.6941,
+    w_trans         = 3.0689,
+    w_trans2        = 0.3933,
+    w_r8            = 3.5607,
+    w_r24           = 3.4230,
+    w_r168          = 0.4464,
+    self_pen        = 20.2377,
+    self_hl_min     = 5.1103,
     # Phase-1 context (audio/device/charging/secsSinceResume)
     w_audio         = 0.04,
     w_device        = 1.91,
@@ -61,7 +61,7 @@ V14 = dict(
     w_notif         = 0.79,
     w_cal           = 3.32,
     w_bat           = 5.31,
-    notif_scale     = 26.52,
+    w_cat_trans     = 1.20,
     bat_scale       = 60.48,
     cal_scale       = 1741.40,
     ctx3_min        = 11,
@@ -133,10 +133,49 @@ def _ema_analytical(events: list, alpha: float = 0.15) -> dict:
     return dict(ema)
 
 
+def get_app_category(pkg: str) -> int:
+    mapping = {
+        'com.whatsapp': 4,
+        'com.instagram.android': 4,
+        'com.facebook.katana': 4,
+        'com.facebook.orca': 4,
+        'com.twitter.android': 4,
+        'org.telegram.messenger': 4,
+        'com.google.android.apps.dynamite': 4,
+        'com.openai.chatgpt': 4,
+        'com.anthropic.claude': 4,
+        'com.spotify.music': 1,
+        'com.radioplayer.mobile': 1,
+        'com.suno.android': 1,
+        'com.google.android.youtube': 2,
+        'com.netflix.mediaclient': 2,
+        'com.google.android.apps.subscriptions.red': 2,
+        'com.google.android.gm': 7,
+        'com.google.android.calendar': 7,
+        'com.google.android.keep': 7,
+        'com.google.android.apps.docs': 7,
+        'com.google.android.apps.docs.editors.docs': 7,
+        'com.google.android.apps.docs.editors.sheets': 7,
+        'com.google.android.calculator': 7,
+        'com.google.android.apps.playconsole': 7,
+        'com.github.android': 7,
+        'com.google.android.apps.maps': 6,
+        'com.waze': 6,
+        'fr.geovelo': 6,
+        'com.tranzmate': 6,
+        'com.devhd.feedly': 5,
+        'com.google.android.apps.magazines': 5,
+        'fr.playsoft.teleloisirs': 5,
+        'com.google.android.apps.photos': 3,
+        'com.google.android.GoogleCamera': 3,
+    }
+    return mapping.get(pkg, -1)
+
+
 # ─── ScoreEngine.kt v14 — Python port ────────────────────────────────────────
 
 def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
-              p: dict = None) -> dict:
+              target_ev: dict = None, p: dict = None) -> dict:
     """
     Faithful port of ScoreEngine.kt v14.
     14 features: ctx (hour×day NB), rec+rec8h/24h/168h, trans1+trans2,
@@ -217,7 +256,7 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
     ctx_r, rec_r, r8, r24, r168 = {}, {}, {}, {}, {}
     trans1_r, trans2_r = {}, {}
     aud_r, dev_r, chg_r, sr_r = {}, {}, {}, {}
-    notif_r, cal_r, bat_r = {}, {}, {}
+    cal_r, bat_r = {}, {}
     ctx3_count: dict = {}
 
     for pkg, pkg_evs in by_pkg.items():
@@ -228,7 +267,6 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
         dev_m = dev_t = 0.0
         chg_m = chg_t = 0.0
         sr_m = 0.0
-        notif_m = notif_t = 0.0
         cal_m = cal_t = 0.0
         bat_m = bat_t = 0.0
         c3 = 0
@@ -257,8 +295,6 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
             # Phase-3 ctx features
             if e.get("notificationCount") is not None:
                 c3 += 1
-                notif_m += math.exp(-abs(e["notificationCount"]) / p["notif_scale"]) * dec
-                notif_t += dec
                 ev_bat = e.get("batteryPct", 50)
                 bat_m  += math.exp(-abs(ev_bat - cur_bat) / p["bat_scale"]) * dec
                 bat_t  += dec
@@ -282,38 +318,57 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
         sr_r[pkg]   = sr_m
 
         ctx3_count[pkg] = c3
-        notif_r[pkg] = (notif_m + ctx3s) / (notif_t + 2 * ctx3s)
         cal_r[pkg]   = ((cal_m + ctx3s) / (cal_t + 2 * ctx3s)) if cal_t > 0 else 0.5
         bat_r[pkg]   = (bat_m  + ctx3s) / (bat_t  + 2 * ctx3s)
 
-    # Phase-1 gating: below-threshold apps get the qualifying mean
+    # Phase-1 gating with category fallback
     ctx_min = int(p["ctx_min"])
     if eff_ctx is not None:
         ctx_cnts = {pkg: sum(1 for e in evs if e.get("audioActive") is not None)
                     for pkg, evs in by_pkg.items()}
         q1 = [pkg for pkg in by_pkg if ctx_cnts.get(pkg, 0) >= ctx_min]
         if q1:
-            m_a  = sum(aud_r[pkg] for pkg in q1) / len(q1)
-            m_d  = sum(dev_r[pkg] for pkg in q1) / len(q1)
-            m_ch = sum(chg_r[pkg] for pkg in q1) / len(q1)
-            m_sr = sum(sr_r[pkg]  for pkg in q1) / len(q1)
+            global_aud = sum(aud_r[pkg] for pkg in q1) / len(q1)
+            global_dev = sum(dev_r[pkg] for pkg in q1) / len(q1)
+            global_chg = sum(chg_r[pkg] for pkg in q1) / len(q1)
+            global_sr  = sum(sr_r[pkg]  for pkg in q1) / len(q1)
+
+            cat_q1 = collections.defaultdict(list)
+            for pkg in q1:
+                cat_q1[get_app_category(pkg)].append(pkg)
+            cat_aud = {cat: sum(aud_r[pkg] for pkg in pkgs) / len(pkgs) for cat, pkgs in cat_q1.items()}
+            cat_dev = {cat: sum(dev_r[pkg] for pkg in pkgs) / len(pkgs) for cat, pkgs in cat_q1.items()}
+            cat_chg = {cat: sum(chg_r[pkg] for pkg in pkgs) / len(pkgs) for cat, pkgs in cat_q1.items()}
+            cat_sr  = {cat: sum(sr_r[pkg]  for pkg in pkgs) / len(pkgs) for cat, pkgs in cat_q1.items()}
+
             for pkg in by_pkg:
                 if ctx_cnts.get(pkg, 0) < ctx_min:
-                    aud_r[pkg] = m_a; dev_r[pkg] = m_d
-                    chg_r[pkg] = m_ch; sr_r[pkg] = m_sr
+                    cat = get_app_category(pkg)
+                    aud_r[pkg] = cat_aud.get(cat, global_aud)
+                    dev_r[pkg] = cat_dev.get(cat, global_dev)
+                    chg_r[pkg] = cat_chg.get(cat, global_chg)
+                    sr_r[pkg]  = cat_sr.get(cat, global_sr)
 
-    # Phase-3 gating
+    # Phase-3 gating with category fallback
     ctx3_min = int(p["ctx3_min"])
     use_ctx3 = eff_ctx3 is not None
     if use_ctx3:
         q3 = [pkg for pkg in by_pkg if ctx3_count.get(pkg, 0) >= ctx3_min]
         if q3:
-            m_no = sum(notif_r[pkg] for pkg in q3) / len(q3)
-            m_ca = sum(cal_r[pkg]   for pkg in q3) / len(q3)
-            m_ba = sum(bat_r[pkg]   for pkg in q3) / len(q3)
+            global_ca = sum(cal_r[pkg] for pkg in q3) / len(q3)
+            global_ba = sum(bat_r[pkg] for pkg in q3) / len(q3)
+
+            cat_q3 = collections.defaultdict(list)
+            for pkg in q3:
+                cat_q3[get_app_category(pkg)].append(pkg)
+            cat_ca = {cat: sum(cal_r[pkg] for pkg in pkgs) / len(pkgs) for cat, pkgs in cat_q3.items()}
+            cat_ba = {cat: sum(bat_r[pkg] for pkg in pkgs) / len(pkgs) for cat, pkgs in cat_q3.items()}
+
             for pkg in by_pkg:
                 if ctx3_count.get(pkg, 0) < ctx3_min:
-                    notif_r[pkg] = m_no; cal_r[pkg] = m_ca; bat_r[pkg] = m_ba
+                    cat = get_app_category(pkg)
+                    cal_r[pkg] = cat_ca.get(cat, global_ca)
+                    bat_r[pkg] = cat_ba.get(cat, global_ba)
 
     # Max-normalize each feature
     EPS = 1e-9
@@ -328,29 +383,35 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
     mD   = max(dev_r.values())   or EPS
     mCh  = max(chg_r.values())   or EPS
     mSr  = max(sr_r.values())    or EPS
-    mNo  = max(notif_r.values()) or EPS
     mCa  = max(cal_r.values())   or EPS
     mBa  = max(bat_r.values())   or EPS
 
     use_ctx1 = eff_ctx is not None
+    last_cat = get_app_category(last_e["packageName"]) if in_session else -1
 
     scores = {}
     for pkg in by_pkg:
+        cur_notif = (target_ev.get("notificationCount") or 0) if (target_ev and pkg == target_ev["packageName"]) else 0
+        pNo = p["w_notif"] * math.log1p(cur_notif) if cur_notif > 0 else 0.0
+
+        pkg_cat = get_app_category(pkg)
+        pCatTrans = p["w_cat_trans"] if (in_session and last_cat != -1 and last_cat == pkg_cat) else 0.0
+
         s = (p["w_ctx"]    * ctx_r[pkg]   / mC  +
              p["w_rec"]    * rec_r[pkg]   / mR  +
              p["w_r8"]     * r8[pkg]      / m8  +
              p["w_r24"]    * r24[pkg]     / m24 +
              p["w_r168"]   * r168[pkg]    / m168 +
              p["w_trans"]  * trans1_r[pkg]/ mT  +
-             p["w_trans2"] * trans2_r[pkg]/ mT2)
+             p["w_trans2"] * trans2_r[pkg]/ mT2 +
+             pNo + pCatTrans)
         if use_ctx1:
             s += (p["w_audio"]    * aud_r[pkg] / mA  +
                   p["w_device"]   * dev_r[pkg] / mD  +
                   p["w_charging"] * chg_r[pkg] / mCh +
                   p["w_sr"]       * sr_r[pkg]  / mSr)
         if use_ctx3:
-            s += (p["w_notif"] * notif_r[pkg] / mNo +
-                  p["w_cal"]   * cal_r[pkg]   / mCa +
+            s += (p["w_cal"]   * cal_r[pkg]   / mCa +
                   p["w_bat"]   * bat_r[pkg]   / mBa)
         if in_session and pkg == last_e["packageName"]:
             s *= self_factor
@@ -361,7 +422,7 @@ def score_v14(events: list, now_hour: int, now_dow: int, now_ms: int,
 # ─── alternative models ──────────────────────────────────────────────────────
 
 def score_bigram(events: list, now_hour: int, now_dow: int, now_ms: int,
-                 p: dict = None) -> dict:
+                 target_ev: dict = None, p: dict = None) -> dict:
     """Bigram Markov: 2-gram transitions + ctx NB + recency."""
     if not events:
         return {}
@@ -425,7 +486,7 @@ def score_bigram(events: list, now_hour: int, now_dow: int, now_ms: int,
 
 
 def score_recency(events: list, now_hour: int, now_dow: int, now_ms: int,
-                  p: dict = None) -> dict:
+                  target_ev: dict = None, p: dict = None) -> dict:
     """Dumb recency baseline: rank by last-launched timestamp."""
     by_pkg: dict = collections.defaultdict(list)
     for e in events:
@@ -435,12 +496,12 @@ def score_recency(events: list, now_hour: int, now_dow: int, now_ms: int,
 
 
 def score_rrf(events: list, now_hour: int, now_dow: int, now_ms: int,
-              p: dict = None, k: int = 60) -> dict:
+              target_ev: dict = None, p: dict = None, k: int = 60) -> dict:
     """Reciprocal Rank Fusion of v14 + bigram Markov."""
     all_pkgs = list({e["packageName"] for e in events})
     rrf: dict = collections.defaultdict(float)
     for fn in (score_v14, score_bigram):
-        s = fn(events, now_hour, now_dow, now_ms, p)
+        s = fn(events, now_hour, now_dow, now_ms, target_ev, p)
         ranked = sorted(all_pkgs, key=lambda pkg: s.get(pkg, 0.0), reverse=True)
         for rank, pkg in enumerate(ranked, 1):
             rrf[pkg] += 1.0 / (k + rank)
@@ -470,6 +531,7 @@ def evaluate(events: list, score_fn: Callable, min_hist: int = 50) -> dict:
             target.get("hour", 0),
             target.get("dayOfWeek", 0) or 1,
             target["timestampMillis"],
+            target
         )
         ranked = sorted(all_pkgs, key=lambda pkg: scores.get(pkg, 0.0), reverse=True)
         pkg = target["packageName"]
@@ -617,7 +679,7 @@ def run_tune(events: list, train_frac: float = 0.8, n_trials: int = 200,
     # Frozen ctx params: too sparse / complex for reliable offline tuning
     _FROZEN = {k: V14[k] for k in (
         "w_audio", "w_device", "w_charging", "w_sr", "sr_hl_secs", "phase1_smooth",
-        "w_notif", "w_cal", "w_bat", "notif_scale", "bat_scale", "cal_scale",
+        "w_notif", "w_cal", "w_bat", "w_cat_trans", "bat_scale", "cal_scale",
         "ctx3_min", "ctx3_smooth",
     )}
 
@@ -642,7 +704,7 @@ def run_tune(events: list, train_frac: float = 0.8, n_trials: int = 200,
             "self_hl_min":  trial.suggest_float("self_hl_min",  5.0, 120.0),
             **_FROZEN,
         }
-        fn = lambda evs, h, d, t: score_v14(evs, h, d, t, p)
+        fn = lambda evs, h, d, t, target_ev=None: score_v14(evs, h, d, t, target_ev, p)
         # Use strided train events — history is still events[:i] for each target i
         r  = evaluate(train_eval, fn, min_hist=min_hist // tune_stride)
         return -r.get("mrr", 0.0)
@@ -658,7 +720,7 @@ def run_tune(events: list, train_frac: float = 0.8, n_trials: int = 200,
     print(f"\nBest train MRR (strided): {-study.best_value:.4f}")
 
     fn_cur  = score_v14
-    fn_new  = lambda evs, h, d, t: score_v14(evs, h, d, t, best_p)
+    fn_new  = lambda evs, h, d, t, target_ev=None: score_v14(evs, h, d, t, target_ev, best_p)
 
     # Full test-set evaluation: all models vs retuned v14
     print("\n=== Held-out test set (ALL models) ===")

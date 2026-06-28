@@ -14,26 +14,26 @@ object ScoreEngine {
     // v14 — Optuna TPE retune on 4617 events; MRR 0.2283→0.3493 (+53%) vs v13+ctx params.
     // Key changes: shorter burst gap, longer session window, stronger w_ctx/w_trans/w_r168,
     //              weaker w_rec/w_trans2, all ctx features positive, tighter notif_scale.
-    private const val HOUR_SIGMA = 1.05f
-    private const val DECAY_HALF_LIFE_DAYS = 34.48f
-    private const val RECENCY_HOURS = 0.70f
-    private const val TRANSITION_DECAY_DAYS = 15.00f
+    private const val HOUR_SIGMA = 2.59f
+    private const val DECAY_HALF_LIFE_DAYS = 45.79f
+    private const val RECENCY_HOURS = 0.81f
+    private const val TRANSITION_DECAY_DAYS = 4.14f
     private const val SESSION_MS = 60_000L
-    private const val TRANSITION_SMOOTH = 6.60f
-    private const val BURST_GAP_MS = 20_000L
-    private const val CTX_MIN_EVENTS = 16
+    private const val TRANSITION_SMOOTH = 19.43f
+    private const val BURST_GAP_MS = 23_000L
+    private const val CTX_MIN_EVENTS = 8
 
-    private const val W_CONTEXT = 2.75f
-    private const val W_RECENCY = 4.04f
-    private const val W_TRANSITION = 0.28f
-    private const val W_TRANSITION_2 = 2.35f
+    private const val W_CONTEXT = 3.39f
+    private const val W_RECENCY = 1.69f
+    private const val W_TRANSITION = 3.07f
+    private const val W_TRANSITION_2 = 0.39f
 
-    private const val W_REC_8H = 2.61f
-    private const val W_REC_24H = 0.51f
-    private const val W_REC_168H = 0.59f
+    private const val W_REC_8H = 3.56f
+    private const val W_REC_24H = 3.42f
+    private const val W_REC_168H = 0.45f
 
-    private const val SELF_PENALTY = 37.92f
-    private const val SELF_PENALTY_HL_MIN = 100.28f
+    private const val SELF_PENALTY = 20.24f
+    private const val SELF_PENALTY_HL_MIN = 5.11f
 
     private const val W_AUDIO = 0.04f
     private const val W_DEVICE = 1.91f
@@ -46,7 +46,7 @@ object ScoreEngine {
     private const val W_NOTIF = 0.79f
     private const val W_CAL = 3.32f
     private const val W_BAT = 5.31f
-    private const val NOTIF_SCALE = 26.52f  // exp(-|Δnotif| / NOTIF_SCALE)
+    private const val W_CAT_TRANS = 1.20f
     private const val BAT_SCALE = 60.48f    // exp(-|Δbat%| / BAT_SCALE)
     private const val CAL_SCALE = 1741.40f  // exp(-|Δsecs| / CAL_SCALE)
     private const val CTX3_MIN_EVENTS = 11
@@ -61,7 +61,8 @@ object ScoreEngine {
         currentHour: Int = java.time.LocalTime.now().hour,
         currentDayOfWeek: Int = java.time.LocalDate.now().dayOfWeek.value,
         nowMillis: Long = System.currentTimeMillis(),
-        currentNotifCounts: Map<String, Int> = emptyMap()
+        currentNotifCounts: Map<String, Int> = emptyMap(),
+        appCategories: Map<String, Int> = emptyMap()
     ): Map<String, Float> {
         if (events.isEmpty()) return emptyMap()
 
@@ -151,7 +152,6 @@ object ScoreEngine {
         val devRaw = HashMap<String, Float>(byPkg.size)
         val chgRaw = HashMap<String, Float>(byPkg.size)
         val srRaw = HashMap<String, Float>(byPkg.size)
-        val notifRaw = HashMap<String, Float>(byPkg.size)
         val calRaw = HashMap<String, Float>(byPkg.size)
         val batRaw = HashMap<String, Float>(byPkg.size)
         val ctx3CountByPkg = HashMap<String, Int>(byPkg.size)
@@ -168,11 +168,9 @@ object ScoreEngine {
             var devMatch = 0.0; var devTotal = 0.0
             var chgMatch = 0.0; var chgTotal = 0.0
             var srMatch = 0.0
-            var notifMatch = 0.0; var notifTotal = 0.0
             var calMatch = 0.0; var calTotal = 0.0
             var batMatch = 0.0; var batTotal = 0.0
             var ctx3Count = 0
-            val curNotif = currentNotifCounts[pkg] ?: 0
             for (event in appEvents) {
                 val diff = abs(event.hour - currentHour)
                 val hourDist = if (diff > 12) 24 - diff else diff
@@ -189,7 +187,7 @@ object ScoreEngine {
                 hourSum += hourMatch * decay
                 daySum += dayMatch * decay
                 if (event.timestampMillis > lastMs) lastMs = event.timestampMillis
-
+ 
                 if (effCtx != null && event.audioActive != null) {
                     if (event.audioActive == effCtx.audioActive) audMatch += decay
                     audTotal += decay
@@ -200,11 +198,9 @@ object ScoreEngine {
                     val sd = abs((event.secsSinceResume ?: 0) - effCtx.secsSinceResume).toFloat()
                     srMatch += exp(-(sd / SR_HALF_LIFE_SECS) * LN2) * decay
                 }
-
+ 
                 if (event.notificationCount != null) {
                     ctx3Count++
-                    notifMatch += exp(-abs(event.notificationCount - curNotif) / NOTIF_SCALE) * decay
-                    notifTotal += decay
                     val evBat = event.batteryPct ?: 50
                     batMatch += exp(-abs(evBat - curBat) / BAT_SCALE) * decay
                     batTotal += decay
@@ -223,20 +219,18 @@ object ScoreEngine {
             rec168Raw[pkg] = exp(-hoursSinceLast / 168f)
             transRaw[pkg] = transScores[pkg] ?: 0f
             trans2Raw[pkg] = 0f
-
+ 
             audRaw[pkg] = ((audMatch + PHASE1_SMOOTH) / (audTotal + 2 * PHASE1_SMOOTH)).toFloat()
             devRaw[pkg] = ((devMatch + PHASE1_SMOOTH) / (devTotal + 2 * PHASE1_SMOOTH)).toFloat()
             chgRaw[pkg] = ((chgMatch + PHASE1_SMOOTH) / (chgTotal + 2 * PHASE1_SMOOTH)).toFloat()
             srRaw[pkg] = srMatch.toFloat()
-
+ 
             ctx3CountByPkg[pkg] = ctx3Count
-            notifRaw[pkg] = ((notifMatch + CTX3_SMOOTH) / (notifTotal + 2 * CTX3_SMOOTH)).toFloat()
             calRaw[pkg] = if (calTotal > 0) ((calMatch + CTX3_SMOOTH) / (calTotal + 2 * CTX3_SMOOTH)).toFloat() else 0.5f
             batRaw[pkg] = ((batMatch + CTX3_SMOOTH) / (batTotal + 2 * CTX3_SMOOTH)).toFloat()
         }
 
-        // Phase-1 gating: apps with too few ctx-tagged events get the mean of
-        // qualifying apps' phase-1 features instead of their own noisy estimate.
+        // Phase-1 gating with category fallback
         if (effCtx != null) {
             val ctxCountByPkg = HashMap<String, Int>(byPkg.size)
             for ((pkg, evs) in byPkg) {
@@ -244,30 +238,44 @@ object ScoreEngine {
             }
             val qualifying = byPkg.keys.filter { (ctxCountByPkg[it] ?: 0) >= CTX_MIN_EVENTS }
             if (qualifying.isNotEmpty()) {
-                val mAud = qualifying.map { audRaw[it] ?: 0f }.average().toFloat()
-                val mDev = qualifying.map { devRaw[it] ?: 0f }.average().toFloat()
-                val mChg = qualifying.map { chgRaw[it] ?: 0f }.average().toFloat()
-                val mSr = qualifying.map { srRaw[it] ?: 0f }.average().toFloat()
+                val globalAud = qualifying.map { audRaw[it] ?: 0.5f }.average().toFloat()
+                val globalDev = qualifying.map { devRaw[it] ?: 0.5f }.average().toFloat()
+                val globalChg = qualifying.map { chgRaw[it] ?: 0.5f }.average().toFloat()
+                val globalSr = qualifying.map { srRaw[it] ?: 0f }.average().toFloat()
+
+                val catQualifying = qualifying.groupBy { appCategories[it] ?: -1 }
+                val catAud = catQualifying.mapValues { (_, pkgs) -> pkgs.map { audRaw[it] ?: 0.5f }.average().toFloat() }
+                val catDev = catQualifying.mapValues { (_, pkgs) -> pkgs.map { devRaw[it] ?: 0.5f }.average().toFloat() }
+                val catChg = catQualifying.mapValues { (_, pkgs) -> pkgs.map { chgRaw[it] ?: 0.5f }.average().toFloat() }
+                val catSr = catQualifying.mapValues { (_, pkgs) -> pkgs.map { srRaw[it] ?: 0f }.average().toFloat() }
+
                 for (pkg in byPkg.keys) {
                     if ((ctxCountByPkg[pkg] ?: 0) < CTX_MIN_EVENTS) {
-                        audRaw[pkg] = mAud
-                        devRaw[pkg] = mDev
-                        chgRaw[pkg] = mChg
-                        srRaw[pkg] = mSr
+                        val cat = appCategories[pkg] ?: -1
+                        audRaw[pkg] = catAud[cat] ?: globalAud
+                        devRaw[pkg] = catDev[cat] ?: globalDev
+                        chgRaw[pkg] = catChg[cat] ?: globalChg
+                        srRaw[pkg] = catSr[cat] ?: globalSr
                     }
                 }
             }
         }
 
-        // Phase-3 gating: apps with < CTX3_MIN_EVENTS ctx-tagged events get the mean
+        // Phase-3 gating with category fallback
         val ctx3Qualifying = byPkg.keys.filter { (ctx3CountByPkg[it] ?: 0) >= CTX3_MIN_EVENTS }
         if (ctx3Qualifying.isNotEmpty()) {
-            val mNo = ctx3Qualifying.map { notifRaw[it] ?: 0.5f }.average().toFloat()
-            val mCa = ctx3Qualifying.map { calRaw[it] ?: 0.5f }.average().toFloat()
-            val mBa = ctx3Qualifying.map { batRaw[it] ?: 0.5f }.average().toFloat()
+            val globalCa = ctx3Qualifying.map { calRaw[it] ?: 0.5f }.average().toFloat()
+            val globalBa = ctx3Qualifying.map { batRaw[it] ?: 0.5f }.average().toFloat()
+
+            val catQualifying = ctx3Qualifying.groupBy { appCategories[it] ?: -1 }
+            val catCa = catQualifying.mapValues { (_, pkgs) -> pkgs.map { calRaw[it] ?: 0.5f }.average().toFloat() }
+            val catBa = catQualifying.mapValues { (_, pkgs) -> pkgs.map { batRaw[it] ?: 0.5f }.average().toFloat() }
+
             for (pkg in byPkg.keys) {
                 if ((ctx3CountByPkg[pkg] ?: 0) < CTX3_MIN_EVENTS) {
-                    notifRaw[pkg] = mNo; calRaw[pkg] = mCa; batRaw[pkg] = mBa
+                    val cat = appCategories[pkg] ?: -1
+                    calRaw[pkg] = catCa[cat] ?: globalCa
+                    batRaw[pkg] = catBa[cat] ?: globalBa
                 }
             }
         }
@@ -283,7 +291,6 @@ object ScoreEngine {
         val mD = devRaw.values.max().coerceAtLeast(1e-9f)
         val mCh = chgRaw.values.max().coerceAtLeast(1e-9f)
         val mSr = srRaw.values.max().coerceAtLeast(1e-9f)
-        val mNo = notifRaw.values.max().coerceAtLeast(1e-9f)
         val mCa = calRaw.values.max().coerceAtLeast(1e-9f)
         val mBa = batRaw.values.max().coerceAtLeast(1e-9f)
 
@@ -292,6 +299,8 @@ object ScoreEngine {
         val selfFactor = if (inSession && SELF_PENALTY > 0)
             (1f - SELF_PENALTY * exp(-(gapMin / SELF_PENALTY_HL_MIN) * LN2).toFloat()).coerceAtLeast(0.40f)
         else 1f
+
+        val lastCategory = if (inSession) appCategories[lastEvent.packageName] ?: -1 else -1
 
         val breakdowns: HashMap<String, FloatArray>? = if (DEBUG_LOG) HashMap(byPkg.size) else null
         val scores = byPkg.keys.associateWith { pkg ->
@@ -306,12 +315,16 @@ object ScoreEngine {
             val pD = if (useCtxFeats) W_DEVICE * (devRaw[pkg] ?: 0f) / mD else 0f
             val pCh = if (useCtxFeats) W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh else 0f
             val pSr = if (useCtxFeats) W_SR * (srRaw[pkg] ?: 0f) / mSr else 0f
-            val pNo = if (useCtx3Feats) W_NOTIF * (notifRaw[pkg] ?: 0.5f) / mNo else 0f
+            val curNotif = currentNotifCounts[pkg] ?: 0
+            val pNo = if (curNotif > 0) W_NOTIF * ln(1f + curNotif) else 0f
             val pCal = if (useCtx3Feats && curCal != null) W_CAL * (calRaw[pkg] ?: 0.5f) / mCa else 0f
             val pBat = if (useCtx3Feats) W_BAT * (batRaw[pkg] ?: 0.5f) / mBa else 0f
-            val base = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pNo + pCal + pBat
+            val pkgCategory = appCategories[pkg] ?: -1
+            val pCatTrans = if (inSession && lastCategory != -1 && lastCategory == pkgCategory) W_CAT_TRANS else 0f
+
+            val base = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pNo + pCal + pBat + pCatTrans
             val s = if (pkg == lastEvent.packageName) base * selfFactor else base
-            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, pNo, pCal, pBat, if (pkg == lastEvent.packageName) base * (selfFactor - 1f) else 0f))
+            breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, pNo, pCal, pBat, pCatTrans, if (pkg == lastEvent.packageName) base * (selfFactor - 1f) else 0f))
             s
         }
 

@@ -113,7 +113,7 @@ class ScoreEngineTest {
         repeat(5) {
             events += event("com.a", timestampMillis = t)
             events += event("com.b", timestampMillis = t + sessionGap)
-            events += event("com.c", timestampMillis = t + TimeUnit.HOURS.toMillis(3))
+            events += event("com.c", timestampMillis = t - TimeUnit.HOURS.toMillis(3))
             t += TimeUnit.DAYS.toMillis(1) / 5
         }
         // Recent A launch — "now" is within SESSION_MS of this event
@@ -174,6 +174,53 @@ class ScoreEngineTest {
         val scores3 = ScoreEngine.score(events3, currentHour = 18, currentDayOfWeek = 7, nowMillis = FIXED_NOW + 1000)
         assertTrue("c should score reasonably high due to unigram fallback", scores3["com.c"]!! > 0f)
         assertTrue("e should score reasonably high due to unigram fallback", scores3["com.e"]!! > 0f)
+    }
+
+    @Test
+    fun `direct notification boost increases score`() {
+        val events = listOf(
+            event("com.notifapp", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(1)),
+            event("com.plainapp", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(1)),
+            event("com.last", timestampMillis = FIXED_NOW)
+        )
+        val notifCounts = mapOf("com.notifapp" to 1)
+
+        val scores = ScoreEngine.score(
+            events,
+            currentHour = 18,
+            currentDayOfWeek = 7,
+            nowMillis = FIXED_NOW,
+            currentNotifCounts = notifCounts
+        )
+        assertTrue(
+            "notifapp with active notification should outrank plainapp",
+            scores["com.notifapp"]!! > scores["com.plainapp"]!!
+        )
+    }
+
+    @Test
+    fun `same category transition boost increases score`() {
+        val events = listOf(
+            event("com.appA", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(2)),
+            event("com.appB", timestampMillis = FIXED_NOW - TimeUnit.HOURS.toMillis(2)),
+            event("com.last", timestampMillis = FIXED_NOW - TimeUnit.SECONDS.toMillis(10))
+        )
+        val categories = mapOf(
+            "com.appA" to 1,
+            "com.last" to 1,
+            "com.appB" to 2
+        )
+        val scores = ScoreEngine.score(
+            events,
+            currentHour = 18,
+            currentDayOfWeek = 7,
+            nowMillis = FIXED_NOW,
+            appCategories = categories
+        )
+        assertTrue(
+            "appA (same category as last) should outrank appB (different category)",
+            scores["com.appA"]!! > scores["com.appB"]!!
+        )
     }
 }
 
