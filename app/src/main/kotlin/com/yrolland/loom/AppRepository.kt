@@ -16,8 +16,43 @@ class AppRepository(private val context: Context) {
     private val hiddenStore = HiddenStore(context)
 
     fun recordLaunch(packageName: String, ctx: LaunchContext.Capture? = null) {
-        val enriched = ctx?.copy(prevAppDwellSecs = computePrevAppDwellSecs())
-        usageStore.record(packageName, enriched ?: ctx)
+        val enriched = ctx?.copy(prevAppDwellSecs = ctx.prevAppDwellSecs ?: computePrevAppDwellSecs())
+        val recordedMs = usageStore.record(packageName, enriched ?: ctx)
+
+        val prefs = context.getSharedPreferences("loom_launch_prefs", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString("last_launch_pkg", packageName)
+            .putLong("last_launch_ms", recordedMs)
+            .apply()
+    }
+
+    fun updateLastLaunchDwell(): Int? {
+        val prefs = context.getSharedPreferences("loom_launch_prefs", Context.MODE_PRIVATE)
+        val lastPkg = prefs.getString("last_launch_pkg", null) ?: return null
+        val lastMs = prefs.getLong("last_launch_ms", 0L)
+        if (lastMs <= 0L) return null
+
+        val now = System.currentTimeMillis()
+        val dwellSecs = ((now - lastMs) / 1000).toInt().coerceIn(0, 86400)
+
+        // Update in usage store retrospectively
+        val events = usageStore.load().toMutableList()
+        val idx = events.indexOfLast { it.packageName == lastPkg && it.timestampMillis == lastMs }
+        if (idx != -1) {
+            val original = events[idx]
+            events[idx] = original.copy(prevAppDwellSecs = dwellSecs)
+            usageStore.replaceAll(events)
+            android.util.Log.d("AppRepository", "Updated dwell time for $lastPkg: ${dwellSecs}s")
+        }
+
+        // Save computed dwell to be read by the next launch capture
+        prefs.edit()
+            .remove("last_launch_pkg")
+            .remove("last_launch_ms")
+            .putInt("last_computed_dwell", dwellSecs)
+            .apply()
+
+        return dwellSecs
     }
 
     /** Foreground duration of the most recently used non-Loom app in seconds.
@@ -64,8 +99,21 @@ class AppRepository(private val context: Context) {
             .distinct()
             .filter { it !in hidden }
 
+        val categoryMap = installedApps.associateWith { pkg ->
+            runCatching {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    pm.getApplicationInfo(pkg, 0).category
+                } else -1
+            }.getOrDefault(-1)
+        }
+
         val events = usageStore.load()
-        val rawScores = ScoreEngine.score(events, currentCtx, currentNotifCounts = NotificationCounts.snapshot())
+        val rawScores = ScoreEngine.score(
+            events,
+            currentCtx,
+            currentNotifCounts = NotificationCounts.snapshot(),
+            appCategories = categoryMap
+        )
         val totalScore = rawScores.values.filter { it > 0f }.sum().coerceAtLeast(1f)
         val stats = computeStats(events)
 

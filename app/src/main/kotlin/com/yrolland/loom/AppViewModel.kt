@@ -57,4 +57,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.IO) { repository.recordLaunch(packageName, ctx) }
         repository.getLaunchIntent(packageName)
     }
+
+    fun updateLastLaunchDwell() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateLastLaunchDwell()
+        }
+    }
 }

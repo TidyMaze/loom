@@ -134,6 +134,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        viewModel.updateLastLaunchDwell()
         launcherResumeMs = System.currentTimeMillis()
         if (!needsRefresh) return
         needsRefresh = false
