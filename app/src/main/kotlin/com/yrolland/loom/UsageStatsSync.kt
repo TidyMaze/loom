@@ -41,6 +41,10 @@ object UsageStatsSync {
         )
     }
 
+    fun clearSyncState(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
+    }
+
     /**
      * Sync new MOVE_TO_FOREGROUND events from system since last sync.
      * Skips own package, system UI, dedupes against recent existing events.

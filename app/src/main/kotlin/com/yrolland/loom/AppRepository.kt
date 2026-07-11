@@ -86,8 +86,15 @@ class AppRepository(private val context: Context) {
 
     fun setHidden(pkg: String, hidden: Boolean) = hiddenStore.setHidden(pkg, hidden)
     fun hiddenPackages(): Set<String> = hiddenStore.all()
-    fun clearUsage() = usageStore.clear()
-    fun clearAll() { usageStore.clear(); hiddenStore.clear() }
+    fun clearUsage() {
+        usageStore.clear()
+        UsageStatsSync.clearSyncState(context)
+    }
+    fun clearAll() { 
+        usageStore.clear()
+        UsageStatsSync.clearSyncState(context)
+        hiddenStore.clear() 
+    }
 
     fun getRankedApps(currentCtx: LaunchContext.Capture? = null): List<AppEntry> {
         UsageStatsSync.sync(context, usageStore)
