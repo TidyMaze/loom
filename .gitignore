@@ -15,3 +15,9 @@ reports/
 # Claude Code local workspace (agent memory, permission allowlist, etc.)
 .claude/
 
+# Usage logs
+usage_log.json
+usage_log.json.tmp
+phone_log.json
+
+
