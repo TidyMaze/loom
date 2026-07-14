@@ -36,7 +36,7 @@ class AppRepository(private val context: Context) {
         val dwellSecs = ((now - lastMs) / 1000).toInt().coerceIn(0, 86400)
 
         // Update in usage store retrospectively
-        val events = usageStore.load().toMutableList()
+        val events = usageStore.load()?.toMutableList() ?: return null
         val idx = events.indexOfLast { it.packageName == lastPkg && it.timestampMillis == lastMs }
         if (idx != -1) {
             val original = events[idx]
@@ -114,7 +114,7 @@ class AppRepository(private val context: Context) {
             }.getOrDefault(-1)
         }
 
-        val events = usageStore.load()
+        val events = usageStore.load() ?: emptyList()
         val rawScores = ScoreEngine.score(
             events,
             currentCtx,
