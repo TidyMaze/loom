@@ -62,7 +62,7 @@ object UsageStatsSync {
         val events = usm.queryEvents(start, now)
 
         // Load existing store to dedupe.
-        val existing = store.load()
+        val existing = store.load() ?: return 0
         // Index existing events by (pkg, second-bucket) for fast dedup.
         val recentByPkg = HashMap<String, ArrayList<Long>>()
         for (e in existing) {
