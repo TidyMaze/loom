@@ -22,6 +22,9 @@
     <!-- Bluetooth device name hash (specific device beyond audioDevice category). -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <!-- Haptic feedback vibration permission -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />

@@ -138,7 +138,7 @@ class AppAdapter(
         }
 
         holder.itemView.setOnClickListener { v ->
-            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+            HapticHelper.vibrateClick(v)
             v.animate()
                 .scaleX(0.96f).scaleY(0.96f)
                 .setDuration(80)
@@ -148,7 +148,7 @@ class AppAdapter(
                 }.start()
         }
         holder.itemView.setOnLongClickListener { v ->
-            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+            HapticHelper.vibrateLongPress(v)
             onLongClickItem(entry)
             true
         }
@@ -179,6 +179,50 @@ class AppAdapter(
         private val DIFF = object : DiffUtil.ItemCallback<AppEntry>() {
             override fun areItemsTheSame(a: AppEntry, b: AppEntry) = a.packageName == b.packageName
             override fun areContentsTheSame(a: AppEntry, b: AppEntry) = a == b
+        }
+    }
+}
+
+object HapticHelper {
+    fun vibrateClick(view: View) {
+        view.isHapticFeedbackEnabled = true
+        val ok = view.performHapticFeedback(
+            android.view.HapticFeedbackConstants.KEYBOARD_TAP,
+            android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+        )
+        if (!ok) {
+            val vibrator = view.context.getSystemService(android.content.Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(android.os.VibrationEffect.createPredefined(android.os.VibrationEffect.EFFECT_CLICK))
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    vibrator.vibrate(android.os.VibrationEffect.createOneShot(25L, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(25L)
+                }
+            }
+        }
+    }
+
+    fun vibrateLongPress(view: View) {
+        view.isHapticFeedbackEnabled = true
+        val ok = view.performHapticFeedback(
+            android.view.HapticFeedbackConstants.LONG_PRESS,
+            android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+        )
+        if (!ok) {
+            val vibrator = view.context.getSystemService(android.content.Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(android.os.VibrationEffect.createPredefined(android.os.VibrationEffect.EFFECT_HEAVY_CLICK))
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    vibrator.vibrate(android.os.VibrationEffect.createOneShot(55L, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(55L)
+                }
+            }
         }
     }
 }
