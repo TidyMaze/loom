@@ -17,7 +17,15 @@
         android:textSize="18sp"
         android:textColor="#FFFFFF"
         android:fontFamily="sans-serif-medium"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="12dp" />
+
+    <LinearLayout
+        android:id="@+id/layout_shortcuts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/sheet_hide"
