@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         applyAccent()
 
         recycler = findViewById<RecyclerView>(R.id.recycler).apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@MainActivity, 4)
             this.adapter = this@MainActivity.adapter
             (itemAnimator as? DefaultItemAnimator)?.apply {
                 addDuration = 120; removeDuration = 80; moveDuration = 150; changeDuration = 100
