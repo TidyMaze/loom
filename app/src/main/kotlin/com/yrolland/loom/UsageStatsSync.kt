@@ -55,14 +55,18 @@ object UsageStatsSync {
 
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
-        val lastSync = prefs.getLong(KEY_LAST_SYNC, 0L)
-        val start = if (lastSync == 0L) now - FIRST_RUN_BACKFILL_MS else lastSync
-
-        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val events = usm.queryEvents(start, now)
+        val storedLastSync = prefs.getLong(KEY_LAST_SYNC, 0L)
 
         // Load existing store to dedupe.
         val existing = store.load() ?: return 0
+
+        // Self-healing: If existing store is empty but lastSync was set (e.g. data reset occurred),
+        // reset sync window to 90 days to recover system history.
+        val effectiveLastSync = if (existing.isEmpty() && storedLastSync > 0L) 0L else storedLastSync
+        val start = if (effectiveLastSync == 0L) now - FIRST_RUN_BACKFILL_MS else effectiveLastSync
+
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val events = usm.queryEvents(start, now)
         // Index existing events by (pkg, second-bucket) for fast dedup.
         val recentByPkg = HashMap<String, ArrayList<Long>>()
         for (e in existing) {

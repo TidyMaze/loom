@@ -49,13 +49,15 @@ class UsageStore(context: Context) {
         var fos: FileOutputStream? = null
         try {
             fos = atomicFile.startWrite()
-            JsonWriter(OutputStreamWriter(fos, Charsets.UTF_8)).use { w ->
-                w.beginArray()
-                for (e in events) {
-                    writeEvent(w, e)
-                }
-                w.endArray()
+            val writer = OutputStreamWriter(fos, Charsets.UTF_8)
+            val jsonWriter = JsonWriter(writer)
+            jsonWriter.beginArray()
+            for (e in events) {
+                writeEvent(jsonWriter, e)
             }
+            jsonWriter.endArray()
+            jsonWriter.flush()
+            writer.flush()
             atomicFile.finishWrite(fos)
         } catch (e: Exception) {
             fos?.let { atomicFile.failWrite(it) }
