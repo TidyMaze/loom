@@ -130,6 +130,22 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        search.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_GO
+            ) {
+                val query = search.text?.toString()?.trim().orEmpty()
+                val list = filteredList(query)
+                val topApp = list.firstOrNull()
+                if (topApp != null) {
+                    val ctx = LaunchContext.capture(this, launcherResumeMs, topApp.packageName)
+                    viewModel.recordLaunchAndGetIntent(topApp.packageName, ctx)?.let { startActivity(it) }
+                    true
+                } else false
+            } else false
+        }
+
         // Request runtime perms for the feature-collection pipeline. Each is optional —
         // if denied, the corresponding capture function silently returns null.
         val perms = buildList {
