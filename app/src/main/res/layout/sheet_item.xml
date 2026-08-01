@@ -30,6 +30,16 @@
         android:background="?attr/selectableItemBackground" />
 
     <TextView
+        android:id="@+id/sheet_reset"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:text="Reset stats"
+        android:textSize="16sp"
+        android:textColor="#FF5252"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
         android:id="@+id/sheet_info"
         android:layout_width="match_parent"
         android:layout_height="48dp"
