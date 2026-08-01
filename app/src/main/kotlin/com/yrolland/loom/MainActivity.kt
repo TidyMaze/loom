@@ -185,6 +185,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount = gridStore.getColumnCount()
+        adapter.iconSizeDp = gridStore.getIconSizeDp()
+        adapter.itemHeightDp = gridStore.getItemHeightDp()
         viewModel.updateLastLaunchDwell()
         launcherResumeMs = System.currentTimeMillis()
         if (!needsRefresh) return

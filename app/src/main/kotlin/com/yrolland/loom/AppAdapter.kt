@@ -30,6 +30,8 @@ class AppAdapter(
     private val iconCache = LruCache<String, Drawable>(150)
     var showScores = false
     var accent: Accent = accentForNow()
+    var iconSizeDp: Int = 44
+    var itemHeightDp: Int = 76
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.iv_icon)
@@ -52,6 +54,15 @@ class AppAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val entry = getItem(position)
         val pm = holder.itemView.context.packageManager
+        val dp = holder.itemView.resources.displayMetrics.density
+
+        holder.itemView.layoutParams = (holder.itemView.layoutParams ?: ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (itemHeightDp * dp).toInt())).apply {
+            height = (itemHeightDp * dp).toInt()
+        }
+        holder.icon.layoutParams = (holder.icon.layoutParams ?: ViewGroup.LayoutParams((iconSizeDp * dp).toInt(), (iconSizeDp * dp).toInt())).apply {
+            width = (iconSizeDp * dp).toInt()
+            height = (iconSizeDp * dp).toInt()
+        }
 
         holder.label.text = entry.label
 
@@ -70,8 +81,6 @@ class AppAdapter(
             else             -> 16f
         }
         holder.label.alpha = prominence
-
-        val dp = holder.itemView.resources.displayMetrics.density
 
         val statsText = buildStats(entry)
         holder.stats.text = statsText
