@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(list) {
             onSubmitted?.invoke()
         }
-        layoutEmptyState.visibility = if (query.isNotEmpty() && list.isEmpty()) View.VISIBLE else View.GONE
+        layoutEmptyState.visibility = if (SearchFallback.shouldShowEmptyState(query, list.isNotEmpty())) View.VISIBLE else View.GONE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         btnOpenChrome.setOnClickListener {
             val query = search.text?.toString()?.trim().orEmpty()
             if (query.isNotEmpty()) {
-                val url = "https://www.google.com/search?q=" + android.net.Uri.encode(query)
+                val url = SearchFallback.buildChromeUrl(query)
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
                     setPackage("com.android.chrome")
                 }
@@ -90,8 +90,7 @@ class MainActivity : AppCompatActivity() {
         btnOpenGemini.setOnClickListener {
             val query = search.text?.toString()?.trim().orEmpty()
             if (query.isNotEmpty()) {
-                val prompt = "Tell me about $query"
-                val url = "https://gemini.google.com/app?q=" + android.net.Uri.encode(prompt)
+                val url = SearchFallback.buildGeminiUrl(query)
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
                     setPackage("com.google.android.apps.bard")
                 }
