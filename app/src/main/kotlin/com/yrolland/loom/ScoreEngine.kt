@@ -14,26 +14,26 @@ object ScoreEngine {
     // v14 — Optuna TPE retune on 4617 events; MRR 0.2283→0.3493 (+53%) vs v13+ctx params.
     // Key changes: shorter burst gap, longer session window, stronger w_ctx/w_trans/w_r168,
     //              weaker w_rec/w_trans2, all ctx features positive, tighter notif_scale.
-    private const val HOUR_SIGMA = 2.59f
-    private const val DECAY_HALF_LIFE_DAYS = 45.79f
-    private const val RECENCY_HOURS = 0.81f
-    private const val TRANSITION_DECAY_DAYS = 4.14f
+    private const val HOUR_SIGMA = 2.24f
+    private const val DECAY_HALF_LIFE_DAYS = 13.65f
+    private const val RECENCY_HOURS = 0.51f
+    private const val TRANSITION_DECAY_DAYS = 5.60f
     private const val SESSION_MS = 60_000L
-    private const val TRANSITION_SMOOTH = 19.43f
-    private const val BURST_GAP_MS = 23_000L
-    private const val CTX_MIN_EVENTS = 8
+    private const val TRANSITION_SMOOTH = 8.98f
+    private const val BURST_GAP_MS = 27_500L
+    private const val CTX_MIN_EVENTS = 15
 
-    private const val W_CONTEXT = 3.39f
-    private const val W_RECENCY = 1.69f
-    private const val W_TRANSITION = 3.07f
-    private const val W_TRANSITION_2 = 0.39f
+    private const val W_CONTEXT = 4.51f
+    private const val W_RECENCY = 3.04f
+    private const val W_TRANSITION = 2.99f
+    private const val W_TRANSITION_2 = 0.36f
 
-    private const val W_REC_8H = 3.56f
-    private const val W_REC_24H = 3.42f
-    private const val W_REC_168H = 0.45f
+    private const val W_REC_8H = 0.56f
+    private const val W_REC_24H = 2.16f
+    private const val W_REC_168H = 2.67f
 
-    private const val SELF_PENALTY = 20.24f
-    private const val SELF_PENALTY_HL_MIN = 5.11f
+    private const val SELF_PENALTY = 16.96f
+    private const val SELF_PENALTY_HL_MIN = 51.82f
 
     private const val W_AUDIO = 0.04f
     private const val W_DEVICE = 1.91f
