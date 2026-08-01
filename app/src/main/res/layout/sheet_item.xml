@@ -4,11 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/glass_bg"
+    android:background="@drawable/sheet_glass_bg"
     android:paddingTop="20dp"
-    android:paddingBottom="12dp"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp">
+    android:paddingBottom="16dp"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
 
     <TextView
         android:id="@+id/sheet_title"
@@ -16,15 +16,20 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:textColor="#FFFFFF"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="sans-serif-black"
         android:paddingBottom="12dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#1FFFFFFF"
+        android:layout_marginBottom="8dp" />
 
     <LinearLayout
         android:id="@+id/layout_shortcuts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="8dp"
         android:visibility="gone" />
 
     <TextView
@@ -34,7 +39,8 @@
         android:gravity="center_vertical"
         android:text="Hide app"
         android:textSize="16sp"
-        android:textColor="#FFFFFF"
+        android:textColor="#DDFFFFFF"
+        android:fontFamily="sans-serif-medium"
         android:background="?attr/selectableItemBackground" />
 
     <TextView
@@ -45,6 +51,7 @@
         android:text="Reset stats"
         android:textSize="16sp"
         android:textColor="#FF5252"
+        android:fontFamily="sans-serif-medium"
         android:background="?attr/selectableItemBackground" />
 
     <TextView
@@ -54,7 +61,8 @@
         android:gravity="center_vertical"
         android:text="App info"
         android:textSize="16sp"
-        android:textColor="#FFFFFF"
+        android:textColor="#DDFFFFFF"
+        android:fontFamily="sans-serif-medium"
         android:background="?attr/selectableItemBackground" />
 
 </LinearLayout>
