@@ -187,7 +187,11 @@ class MainActivity : AppCompatActivity() {
         search.visibility = View.VISIBLE
         search.alpha = 0f
         search.translationY = -24f
-        search.animate().alpha(1f).translationY(0f).setDuration(180).start()
+        search.animate().alpha(1f).translationY(0f).setDuration(180).withEndAction {
+            search.requestFocus()
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.showSoftInput(search, InputMethodManager.SHOW_IMPLICIT)
+        }.start()
     }
 
     private fun hideSearch() {
