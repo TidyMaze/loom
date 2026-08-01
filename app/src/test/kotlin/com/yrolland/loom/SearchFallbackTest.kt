@@ -30,8 +30,8 @@ class SearchFallbackTest {
     }
 
     @Test
-    fun `buildGeminiUrl formats prompt query correctly`() {
-        val url = SearchFallback.buildGeminiUrl("quantum computing")
-        assertEquals("https://gemini.google.com/app?q=Tell+me+about+quantum+computing", url)
+    fun `buildGeminiPrompt formats pre-prompt correctly`() {
+        val prompt = SearchFallback.buildGeminiPrompt("quantum computing")
+        assertEquals("Tell me about quantum computing", prompt)
     }
 }
