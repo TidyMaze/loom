@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recycler: RecyclerView
     private lateinit var search: EditText
     private lateinit var greeting: TextView
+    private lateinit var layoutEmptyState: View
+    private lateinit var btnOpenChrome: View
+    private lateinit var btnOpenGemini: View
     private var fullList: List<AppEntry> = emptyList()
     private var searchShownAt = 0L
     private var needsRefresh = false
@@ -44,6 +47,14 @@ class MainActivity : AppCompatActivity() {
     private fun filteredList(query: String) =
         if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
         else fullList.filter { FuzzyMatcher.matches(query, it.label) }
+
+    private fun updateListAndEmptyState(query: String, onSubmitted: (() -> Unit)? = null) {
+        val list = filteredList(query)
+        adapter.submitList(list) {
+            onSubmitted?.invoke()
+        }
+        layoutEmptyState.visibility = if (query.isNotEmpty() && list.isEmpty()) View.VISIBLE else View.GONE
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +69,37 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         greeting = findViewById(R.id.tv_greeting)
-
         search = findViewById(R.id.et_search)
+        layoutEmptyState = findViewById(R.id.layout_empty_state)
+        btnOpenChrome = findViewById(R.id.btn_open_chrome)
+        btnOpenGemini = findViewById(R.id.btn_open_gemini)
+
+        btnOpenChrome.setOnClickListener {
+            val query = search.text?.toString()?.trim().orEmpty()
+            if (query.isNotEmpty()) {
+                val url = "https://www.google.com/search?q=" + android.net.Uri.encode(query)
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
+                    setPackage("com.android.chrome")
+                }
+                runCatching { startActivity(intent) }.onFailure {
+                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+                }
+            }
+        }
+
+        btnOpenGemini.setOnClickListener {
+            val query = search.text?.toString()?.trim().orEmpty()
+            if (query.isNotEmpty()) {
+                val prompt = "Tell me about $query"
+                val url = "https://gemini.google.com/app?q=" + android.net.Uri.encode(prompt)
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
+                    setPackage("com.google.android.apps.bard")
+                }
+                runCatching { startActivity(intent) }.onFailure {
+                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://gemini.google.com")))
+                }
+            }
+        }
 
         adapter = AppAdapter(
             scope = lifecycleScope,
@@ -92,7 +132,7 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(s: Editable?) {
-                adapter.submitList(filteredList(s?.toString()?.trim().orEmpty()))
+                updateListAndEmptyState(s?.toString()?.trim().orEmpty())
             }
         })
 
@@ -121,7 +161,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.apps.observe(this) { apps ->
             fullList = apps
-            adapter.submitList(filteredList(search.text?.toString()?.trim().orEmpty())) {
+            updateListAndEmptyState(search.text?.toString()?.trim().orEmpty()) {
                 recycler.scrollToPosition(0)
             }
         }
@@ -157,6 +197,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun hideSearch() {
         if (search.visibility == View.GONE) return
+        layoutEmptyState.visibility = View.GONE
         search.animate().alpha(0f).translationY(-24f).setDuration(150).withEndAction {
             search.visibility = View.GONE
             search.text?.clear()
