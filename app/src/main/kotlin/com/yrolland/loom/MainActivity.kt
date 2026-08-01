@@ -90,13 +90,8 @@ class MainActivity : AppCompatActivity() {
         btnOpenGemini.setOnClickListener {
             val query = search.text?.toString()?.trim().orEmpty()
             if (query.isNotEmpty()) {
-                val url = SearchFallback.buildGeminiUrl(query)
-                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
-                    setPackage("com.google.android.apps.bard")
-                }
-                runCatching { startActivity(intent) }.onFailure {
-                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://gemini.google.com")))
-                }
+                val intent = SearchFallback.createGeminiIntent(this, query)
+                runCatching { startActivity(intent) }
             }
         }
 
