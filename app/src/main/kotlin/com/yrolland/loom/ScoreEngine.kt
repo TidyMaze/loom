@@ -42,13 +42,15 @@ object ScoreEngine {
     private const val SR_HALF_LIFE_SECS = 903.04f
     private const val PHASE1_SMOOTH = 4.50f
 
-    // Phase-3 context features (notif / calendar / battery) — v14 retune on 4617 events
+    // Phase-3 context features (notif / calendar / battery / dwell) — v14 retune on 4617 events
     private const val W_NOTIF = 0.79f
     private const val W_CAL = 3.32f
     private const val W_BAT = 5.31f
+    private const val W_DWELL = 1.25f
     private const val W_CAT_TRANS = 1.20f
     private const val BAT_SCALE = 60.48f    // exp(-|Δbat%| / BAT_SCALE)
     private const val CAL_SCALE = 1741.40f  // exp(-|Δsecs| / CAL_SCALE)
+    private const val DWELL_SCALE = 120.0f  // exp(-|ΔdwellSecs| / DWELL_SCALE)
     private const val CTX3_MIN_EVENTS = 11
     private const val CTX3_SMOOTH = 0.375f
 
@@ -154,10 +156,12 @@ object ScoreEngine {
         val srRaw = HashMap<String, Float>(byPkg.size)
         val calRaw = HashMap<String, Float>(byPkg.size)
         val batRaw = HashMap<String, Float>(byPkg.size)
+        val dwellRaw = HashMap<String, Float>(byPkg.size)
         val ctx3CountByPkg = HashMap<String, Int>(byPkg.size)
 
         val curBat = currentCtx?.batteryPct ?: 50
         val curCal = currentCtx?.secsToNextEvent
+        val curDwell = currentCtx?.prevAppDwellSecs
 
         for ((pkg, appEvents) in byPkg) {
             var totalDecay = 0.0
@@ -170,6 +174,7 @@ object ScoreEngine {
             var srMatch = 0.0
             var calMatch = 0.0; var calTotal = 0.0
             var batMatch = 0.0; var batTotal = 0.0
+            var dwellMatch = 0.0; var dwellTotal = 0.0
             var ctx3Count = 0
             for (event in appEvents) {
                 val diff = abs(event.hour - currentHour)
@@ -209,6 +214,11 @@ object ScoreEngine {
                         calMatch += exp(-abs(evCal - curCal) / CAL_SCALE) * decay
                         calTotal += decay
                     }
+                    val evDwell = event.prevAppDwellSecs
+                    if (evDwell != null && curDwell != null) {
+                        dwellMatch += exp(-abs(evDwell - curDwell) / DWELL_SCALE) * decay
+                        dwellTotal += decay
+                    }
                 }
             }
             ctxRaw[pkg] = if (totalDecay > 0.0) (hourSum * daySum / totalDecay).toFloat() else 0f
@@ -228,6 +238,7 @@ object ScoreEngine {
             ctx3CountByPkg[pkg] = ctx3Count
             calRaw[pkg] = if (calTotal > 0) ((calMatch + CTX3_SMOOTH) / (calTotal + 2 * CTX3_SMOOTH)).toFloat() else 0.5f
             batRaw[pkg] = ((batMatch + CTX3_SMOOTH) / (batTotal + 2 * CTX3_SMOOTH)).toFloat()
+            dwellRaw[pkg] = if (dwellTotal > 0) ((dwellMatch + CTX3_SMOOTH) / (dwellTotal + 2 * CTX3_SMOOTH)).toFloat() else 0.5f
         }
 
         // Phase-1 gating with category fallback
@@ -266,16 +277,19 @@ object ScoreEngine {
         if (ctx3Qualifying.isNotEmpty()) {
             val globalCa = ctx3Qualifying.map { calRaw[it] ?: 0.5f }.average().toFloat()
             val globalBa = ctx3Qualifying.map { batRaw[it] ?: 0.5f }.average().toFloat()
+            val globalDw = ctx3Qualifying.map { dwellRaw[it] ?: 0.5f }.average().toFloat()
 
             val catQualifying = ctx3Qualifying.groupBy { appCategories[it] ?: -1 }
             val catCa = catQualifying.mapValues { (_, pkgs) -> pkgs.map { calRaw[it] ?: 0.5f }.average().toFloat() }
             val catBa = catQualifying.mapValues { (_, pkgs) -> pkgs.map { batRaw[it] ?: 0.5f }.average().toFloat() }
+            val catDw = catQualifying.mapValues { (_, pkgs) -> pkgs.map { dwellRaw[it] ?: 0.5f }.average().toFloat() }
 
             for (pkg in byPkg.keys) {
                 if ((ctx3CountByPkg[pkg] ?: 0) < CTX3_MIN_EVENTS) {
                     val cat = appCategories[pkg] ?: -1
                     calRaw[pkg] = catCa[cat] ?: globalCa
                     batRaw[pkg] = catBa[cat] ?: globalBa
+                    dwellRaw[pkg] = catDw[cat] ?: globalDw
                 }
             }
         }
@@ -293,6 +307,7 @@ object ScoreEngine {
         val mSr = srRaw.values.max().coerceAtLeast(1e-9f)
         val mCa = calRaw.values.max().coerceAtLeast(1e-9f)
         val mBa = batRaw.values.max().coerceAtLeast(1e-9f)
+        val mDw = dwellRaw.values.max().coerceAtLeast(1e-9f)
 
         val useCtxFeats = effCtx != null
         val useCtx3Feats = currentCtx?.batteryPct != null && ctx3Qualifying.isNotEmpty()
@@ -319,10 +334,11 @@ object ScoreEngine {
             val pNo = if (curNotif > 0) W_NOTIF * ln(1f + curNotif) else 0f
             val pCal = if (useCtx3Feats && curCal != null) W_CAL * (calRaw[pkg] ?: 0.5f) / mCa else 0f
             val pBat = if (useCtx3Feats) W_BAT * (batRaw[pkg] ?: 0.5f) / mBa else 0f
+            val pDwell = if (useCtx3Feats && curDwell != null) W_DWELL * (dwellRaw[pkg] ?: 0.5f) / mDw else 0f
             val pkgCategory = appCategories[pkg] ?: -1
             val pCatTrans = if (inSession && lastCategory != -1 && lastCategory == pkgCategory) W_CAT_TRANS else 0f
 
-            val base = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pNo + pCal + pBat + pCatTrans
+            val base = pCtx + pRec + pR8 + pR24 + pR168 + pT + pT2 + pA + pD + pCh + pSr + pNo + pCal + pBat + pDwell + pCatTrans
             val s = if (pkg == lastEvent.packageName) base * selfFactor else base
             breakdowns?.put(pkg, floatArrayOf(pCtx, pRec, pR8, pR24, pR168, pT, pT2, pA, pD, pCh, pSr, pNo, pCal, pBat, pCatTrans, if (pkg == lastEvent.packageName) base * (selfFactor - 1f) else 0f))
             s
