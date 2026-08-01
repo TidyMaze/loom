@@ -270,6 +270,7 @@ class MainActivity : AppCompatActivity() {
                             gravity = android.view.Gravity.CENTER_VERTICAL
                             text = shortcut.shortLabel ?: shortcut.longLabel ?: "Shortcut"
                             textSize = 16f
+                            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
                             setTextColor(0xFF81D4FA.toInt())
                             setBackgroundResource(typedValue.resourceId)
                             setOnClickListener {
