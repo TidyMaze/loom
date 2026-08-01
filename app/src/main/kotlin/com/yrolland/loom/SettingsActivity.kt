@@ -15,9 +15,11 @@ import androidx.appcompat.app.AppCompatActivity
 class SettingsActivity : AppCompatActivity() {
 
     private val viewModel: AppViewModel by viewModels()
+    private lateinit var gridStore: GridStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        gridStore = GridStore(this)
         window.apply {
             addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             statusBarColor = Color.BLACK
@@ -26,6 +28,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_settings)
 
+        findViewById<TextView>(R.id.btn_grid_columns).setOnClickListener { pickGridColumns() }
         findViewById<TextView>(R.id.btn_clear_usage).setOnClickListener { confirmClearUsage() }
         findViewById<TextView>(R.id.btn_reset_all).setOnClickListener { confirmResetAll() }
         findViewById<TextView>(R.id.btn_usage_access).setOnClickListener { UsageStatsSync.openSettings(this) }
@@ -37,6 +40,8 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        val cols = gridStore.getColumnCount()
+        findViewById<TextView>(R.id.grid_columns_status).text = "$cols columns"
         val usageGranted = UsageStatsSync.hasPermission(this)
         findViewById<TextView>(R.id.usage_access_status).text =
             if (usageGranted) "✓ Granted — captures system-wide app launches"
@@ -83,6 +88,23 @@ class SettingsActivity : AppCompatActivity() {
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply { topMargin = 8; bottomMargin = 12 }
         return tv
+    }
+
+    private fun pickGridColumns() {
+        val options = arrayOf("3 columns", "4 columns (Default)", "5 columns", "6 columns")
+        val current = gridStore.getColumnCount()
+        val selectedIndex = (current - 3).coerceIn(0, 3)
+
+        AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+            .setTitle("Select Grid Columns")
+            .setSingleChoiceItems(options, selectedIndex) { dialog, which ->
+                val newCols = which + 3
+                gridStore.setColumnCount(newCols)
+                findViewById<TextView>(R.id.grid_columns_status).text = "$newCols columns"
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun confirmClearUsage() {
