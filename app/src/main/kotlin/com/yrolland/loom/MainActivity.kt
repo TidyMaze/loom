@@ -235,6 +235,52 @@ class MainActivity : AppCompatActivity() {
             .setView(view).create()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         view.findViewById<TextView>(R.id.sheet_title).text = entry.label
+
+        val shortcutsContainer = view.findViewById<android.widget.LinearLayout>(R.id.layout_shortcuts)
+        if (android.os.Build.VERSION.SDK_INT >= 25) {
+            val launcherApps = getSystemService(android.content.Context.LAUNCHER_APPS_SERVICE) as? android.content.pm.LauncherApps
+            if (launcherApps != null && launcherApps.hasShortcutHostPermission()) {
+                val query = android.content.pm.LauncherApps.ShortcutQuery().apply {
+                    setPackage(entry.packageName)
+                    setQueryFlags(
+                        android.content.pm.LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or
+                        android.content.pm.LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or
+                        android.content.pm.LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
+                    )
+                }
+                val shortcuts = runCatching {
+                    launcherApps.getShortcuts(query, android.os.Process.myUserHandle())
+                }.getOrNull().orEmpty()
+
+                if (shortcuts.isNotEmpty()) {
+                    shortcutsContainer.visibility = android.view.View.VISIBLE
+                    val typedValue = android.util.TypedValue()
+                    ctx.theme.resolveAttribute(android.R.attr.selectableItemBackground, typedValue, true)
+
+                    shortcuts.take(4).forEach { shortcut ->
+                        val tv = TextView(ctx).apply {
+                            layoutParams = android.widget.LinearLayout.LayoutParams(
+                                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                (48 * resources.displayMetrics.density).toInt()
+                            )
+                            gravity = android.view.Gravity.CENTER_VERTICAL
+                            text = shortcut.shortLabel ?: shortcut.longLabel ?: "Shortcut"
+                            textSize = 16f
+                            setTextColor(0xFF81D4FA.toInt())
+                            setBackgroundResource(typedValue.resourceId)
+                            setOnClickListener {
+                                runCatching {
+                                    launcherApps.startShortcut(shortcut, null, null)
+                                }
+                                dialog.dismiss()
+                            }
+                        }
+                        shortcutsContainer.addView(tv)
+                    }
+                }
+            }
+        }
+
         view.findViewById<TextView>(R.id.sheet_hide).setOnClickListener {
             viewModel.setHidden(entry.packageName, true)
             dialog.dismiss()
