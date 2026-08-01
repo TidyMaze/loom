@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutEmptyState: View
     private lateinit var btnOpenChrome: View
     private lateinit var btnOpenGemini: View
+    private lateinit var gridStore: GridStore
     private var fullList: List<AppEntry> = emptyList()
     private var searchShownAt = 0L
     private var needsRefresh = false
@@ -67,6 +68,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        gridStore = GridStore(this)
         greeting = findViewById(R.id.tv_greeting)
         search = findViewById(R.id.et_search)
         layoutEmptyState = findViewById(R.id.layout_empty_state)
@@ -105,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         applyAccent()
 
         recycler = findViewById<RecyclerView>(R.id.recycler).apply {
-            layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@MainActivity, 4)
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@MainActivity, gridStore.getColumnCount())
             this.adapter = this@MainActivity.adapter
             (itemAnimator as? DefaultItemAnimator)?.apply {
                 addDuration = 120; removeDuration = 80; moveDuration = 150; changeDuration = 100
@@ -166,6 +168,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount = gridStore.getColumnCount()
         viewModel.updateLastLaunchDwell()
         launcherResumeMs = System.currentTimeMillis()
         if (!needsRefresh) return
