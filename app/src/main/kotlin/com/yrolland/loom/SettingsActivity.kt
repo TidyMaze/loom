@@ -49,7 +49,7 @@ class SettingsActivity : AppCompatActivity() {
         val notifGranted = NotificationCounts.hasPermission(this)
         val n = NotificationCounts.totalCount()
         findViewById<TextView>(R.id.notif_access_status).text = when {
-            notifGranted -> "✓ Granted — tracking notification counts ($n active). Feature wired but not yet used in ranking; will be added after data accumulates."
+            notifGranted -> "✓ Granted — tracking notification counts ($n active). Active notifications boost app rank in ScoreEngine."
             else -> "Not granted — apps with unread notifications won't be boosted. Tap to enable."
         }
     }
