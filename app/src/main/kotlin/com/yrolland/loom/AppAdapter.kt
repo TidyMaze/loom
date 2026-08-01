@@ -129,6 +129,7 @@ class AppAdapter(
         }
 
         holder.itemView.setOnClickListener { v ->
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
             v.animate()
                 .scaleX(0.96f).scaleY(0.96f)
                 .setDuration(80)
@@ -137,7 +138,8 @@ class AppAdapter(
                     onClick(entry)
                 }.start()
         }
-        holder.itemView.setOnLongClickListener {
+        holder.itemView.setOnLongClickListener { v ->
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
             onLongClickItem(entry)
             true
         }
