@@ -29,6 +29,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         findViewById<TextView>(R.id.btn_grid_columns).setOnClickListener { pickGridColumns() }
+        findViewById<TextView>(R.id.btn_icon_scale).setOnClickListener { pickIconScale() }
         findViewById<TextView>(R.id.btn_clear_usage).setOnClickListener { confirmClearUsage() }
         findViewById<TextView>(R.id.btn_reset_all).setOnClickListener { confirmResetAll() }
         findViewById<TextView>(R.id.btn_usage_access).setOnClickListener { UsageStatsSync.openSettings(this) }
@@ -42,6 +43,8 @@ class SettingsActivity : AppCompatActivity() {
         super.onResume()
         val cols = gridStore.getColumnCount()
         findViewById<TextView>(R.id.grid_columns_status).text = "$cols columns"
+        val scale = gridStore.getIconScale().replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.ROOT) else it.toString() }
+        findViewById<TextView>(R.id.icon_scale_status).text = "$scale (${gridStore.getIconSizeDp()}dp)"
         val usageGranted = UsageStatsSync.hasPermission(this)
         findViewById<TextView>(R.id.usage_access_status).text =
             if (usageGranted) "✓ Granted — captures system-wide app launches"
@@ -101,6 +104,25 @@ class SettingsActivity : AppCompatActivity() {
                 val newCols = which + 3
                 gridStore.setColumnCount(newCols)
                 findViewById<TextView>(R.id.grid_columns_status).text = "$newCols columns"
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun pickIconScale() {
+        val options = arrayOf("Compact (36dp)", "Medium (44dp - Default)", "Spacious (54dp)")
+        val keys = arrayOf("compact", "medium", "spacious")
+        val current = gridStore.getIconScale()
+        val selectedIndex = keys.indexOf(current).coerceAtLeast(1)
+
+        AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+            .setTitle("Select Icon Size")
+            .setSingleChoiceItems(options, selectedIndex) { dialog, which ->
+                val newScale = keys[which]
+                gridStore.setIconScale(newScale)
+                val label = newScale.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.ROOT) else it.toString() }
+                findViewById<TextView>(R.id.icon_scale_status).text = "$label (${gridStore.getIconSizeDp()}dp)"
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel", null)
