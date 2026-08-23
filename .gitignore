@@ -19,5 +19,6 @@ reports/
 usage_log.json
 usage_log.json.tmp
 phone_log.json
-
-
+# Python
+*.pyc
+__pycache__/

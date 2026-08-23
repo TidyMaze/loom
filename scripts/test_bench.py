@@ -82,7 +82,7 @@ def test_ema_analytical_matches_incremental():
 
 def test_evaluate_no_lookahead():
     seen_sizes = []
-    def spy_scorer(events, hour, dow, now_ms):
+    def spy_scorer(events, hour, dow, now_ms, target_ev=None):
         seen_sizes.append(len(events))
         return {e["packageName"]: 1.0 for e in events}
 
@@ -102,8 +102,9 @@ def test_evaluate_returns_expected_keys():
          "timestampMillis": i*60_000, "hour": 10, "dayOfWeek": 1}
         for i in range(70)
     ]
-    r = bench.evaluate(events, lambda evs,h,d,t: {e["packageName"]: 1.0 for e in evs}, min_hist=10)
+    r = bench.evaluate(events, lambda evs,h,d,t,target=None: {e["packageName"]: 1.0 for e in evs}, min_hist=10)
     assert {"n","@1","@3","@5","@10","mrr","lift","rr_list"} <= set(r.keys())
+
     assert r["n"] > 0
     assert len(r["rr_list"]) == r["n"]
 
