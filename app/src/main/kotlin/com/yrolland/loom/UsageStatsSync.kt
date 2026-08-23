@@ -95,46 +95,39 @@ object UsageStatsSync {
             "com.oneplus.launcher",                     // OnePlus
         )
 
-        // One-time clean: purge launcher entries + collapse rapid same-pkg duplicates
-        // (ACTIVITY_RESUMED fires on every in-app Activity transition, not just launches).
-        // Idempotent on subsequent runs.
-        val withoutLaunchers = existing.filter { it.packageName !in launcherPkgs }
-        val sorted = withoutLaunchers.sortedBy { it.timestampMillis }
-        val collapsed = ArrayList<UsageEvent>(sorted.size)
-        for (e in sorted) {
-            val prev = collapsed.lastOrNull()
-            // Skip exact duplicates and rapid same-pkg events within DEDUP_WINDOW_MS
-            if (prev != null && prev.packageName == e.packageName &&
-                e.timestampMillis - prev.timestampMillis < DEDUP_WINDOW_MS) continue
-            collapsed.add(e)
-        }
+        // One-time clean: filter launcher entries using stream-aware collapsing
+        val collapsed = collapseEvents(existing, ownPkg, launcherPkgs)
         val purgedCount = existing.size - collapsed.size
         if (purgedCount > 0) {
             store.replaceAll(collapsed)
-            recentByPkg.clear()
-            for (e in collapsed) {
-                if (now - e.timestampMillis <= 24 * 3_600_000) {
-                    recentByPkg.getOrPut(e.packageName) { ArrayList() }.add(e.timestampMillis)
-                }
-            }
             Log.d("UsageStatsSync", "cleaned $purgedCount stale events (launcher + duplicates)")
         }
 
-        val toAdd = ArrayList<UsageEvent>()
+        // Pull raw events and process with stream-aware collapse
+        val rawBatch = ArrayList<UsageEvent>()
         val ev = UsageEvents.Event()
         while (events.hasNextEvent()) {
             events.getNextEvent(ev)
             if (ev.eventType != UsageEvents.Event.ACTIVITY_RESUMED) continue
             val pkg = ev.packageName ?: continue
-            if (pkg == ownPkg) continue
             if (skipPrefixes.any { pkg == it || pkg.startsWith("$it.") }) continue
-            if (pkg in launcherPkgs) continue
-            // Dedupe against recent events within DEDUP_WINDOW_MS
-            val nearby = recentByPkg[pkg]
-            if (nearby != null && nearby.any { kotlin.math.abs(it - ev.timeStamp) <= DEDUP_WINDOW_MS }) continue
-            toAdd.add(UsageEvent(pkg, ev.timeStamp))
-            // Update local dedup index so consecutive duplicates in this batch are also filtered
-            recentByPkg.getOrPut(pkg) { ArrayList() }.add(ev.timeStamp)
+            rawBatch.add(UsageEvent(pkg, ev.timeStamp))
+        }
+
+        val lastStoredPkg = collapsed.lastOrNull()?.packageName
+        val lastStoredMs = collapsed.lastOrNull()?.timestampMillis ?: 0L
+
+        val batchToCollapse = ArrayList<UsageEvent>()
+        if (lastStoredPkg != null) {
+            batchToCollapse.add(UsageEvent(lastStoredPkg, lastStoredMs))
+        }
+        batchToCollapse.addAll(rawBatch)
+
+        val collapsedBatch = collapseEvents(batchToCollapse, ownPkg, launcherPkgs)
+        val toAdd = if (lastStoredPkg != null && collapsedBatch.isNotEmpty()) {
+            collapsedBatch.drop(1)
+        } else {
+            collapsedBatch
         }
 
         if (toAdd.isNotEmpty()) {
@@ -143,5 +136,48 @@ object UsageStatsSync {
         prefs.edit().putLong(KEY_LAST_SYNC, now).apply()
         Log.d("UsageStatsSync", "synced ${toAdd.size} new events (window: ${(now - start) / 1000}s)")
         return toAdd.size
+    }
+
+    /**
+     * Collapses in-app activity transitions while preserving legitimate app launches
+     * even if opened in quick succession after returning to launcher/home.
+     */
+    fun collapseEvents(
+        events: List<UsageEvent>,
+        ownPackage: String? = null,
+        launcherPackages: Set<String> = setOf(
+            "com.google.android.apps.nexuslauncher",
+            "com.android.launcher",
+            "com.android.launcher3",
+            "com.sec.android.app.launcher",
+            "com.miui.home",
+            "com.huawei.android.launcher",
+            "com.oneplus.launcher"
+        )
+    ): List<UsageEvent> {
+        val sorted = events.sortedBy { it.timestampMillis }
+        val result = ArrayList<UsageEvent>(sorted.size)
+        var lastPkg: String? = null
+        var lastMs: Long = 0L
+
+        for (e in sorted) {
+            val pkg = e.packageName
+            val isLauncher = (ownPackage != null && pkg == ownPackage) || pkg in launcherPackages
+            if (isLauncher) {
+                // Return to home/launcher breaks any in-app activity transition stream
+                lastPkg = null
+                continue
+            }
+
+            if (pkg == lastPkg && e.timestampMillis - lastMs < DEDUP_WINDOW_MS) {
+                // Rapid consecutive activity transition within same app without returning home
+                continue
+            }
+
+            result.add(e)
+            lastPkg = pkg
+            lastMs = e.timestampMillis
+        }
+        return result
     }
 }

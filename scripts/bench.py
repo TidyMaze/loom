@@ -33,23 +33,23 @@ from typing import Callable
 
 V14 = dict(
     # Core scoring
-    hour_sigma      = 2.5928,
-    decay_hl        = 45.7858,   # days — main decay half-life
-    recency_h       = 0.8139,    # hours — short recency scale
-    trans_decay     = 4.1375,    # days — transition table decay
-    session_ms      = 60_000,    # session window (ms)
-    trans_smooth    = 19.4291,   # Laplace smoothing for transition probs
-    burst_gap_ms    = 23_000,    # collapse same-pkg events within this gap
-    ctx_min         = 8,         # phase-1 gate: min events with ctx to qualify
-    w_ctx           = 3.3898,
-    w_rec           = 1.6941,
-    w_trans         = 3.0689,
-    w_trans2        = 0.3933,
-    w_r8            = 3.5607,
-    w_r24           = 3.4230,
-    w_r168          = 0.4464,
-    self_pen        = 20.2377,
-    self_hl_min     = 5.1103,
+    hour_sigma      = 2.2035,
+    decay_hl        = 10.7516,   # days — main decay half-life
+    recency_h       = 0.5048,    # hours — short recency scale
+    trans_decay     = 24.6941,   # days — transition table decay
+    session_ms      = 70_000,    # session window (ms)
+    trans_smooth    = 1.9016,    # Laplace smoothing for transition probs
+    burst_gap_ms    = 25_000,    # collapse same-pkg events within this gap
+    ctx_min         = 2,         # phase-1 gate: min events with ctx to qualify
+    w_ctx           = 1.8234,
+    w_rec           = 3.5373,
+    w_trans         = 5.1687,
+    w_trans2        = 3.3636,
+    w_r8            = 4.8793,
+    w_r24           = 0.9228,
+    w_r168          = 3.8755,
+    self_pen        = 0.0083,
+    self_hl_min     = 112.4804,
     # Phase-1 context (audio/device/charging/secsSinceResume)
     w_audio         = 0.04,
     w_device        = 1.91,
