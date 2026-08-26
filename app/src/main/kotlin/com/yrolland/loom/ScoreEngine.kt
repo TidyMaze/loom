@@ -11,41 +11,47 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // v14 — Optuna TPE retune on 4617 events; MRR 0.2283→0.3493 (+53%) vs v13+ctx params.
-    // Key changes: shorter burst gap, longer session window, stronger w_ctx/w_trans/w_r168,
-    //              weaker w_rec/w_trans2, all ctx features positive, tighter notif_scale.
-    private const val HOUR_SIGMA = 2.20f
+    // v16 - Dual-Regime (In-Session vs Cold-Start) architecture retuned on 10,472 events.
+    // In-Session: Markov 2-gram and 1-gram dominate with tight smoothing.
+    // Cold-Start: Weekly habit (168h), short recency (30m), Gaussian hour, daily and 8h circadians dominate.
+    private const val HOUR_SIGMA = 2.53f
     private const val DECAY_HALF_LIFE_DAYS = 10.75f
     private const val RECENCY_HOURS = 0.50f
     private const val TRANSITION_DECAY_DAYS = 24.69f
     private const val SESSION_MS = 70_000L
-    private const val TRANSITION_SMOOTH = 1.90f
     private const val BURST_GAP_MS = 25_000L
     private const val CTX_MIN_EVENTS = 2
 
-    private const val W_CONTEXT = 1.82f
-    private const val W_RECENCY = 3.54f
-    private const val W_TRANSITION = 5.17f
-    private const val W_TRANSITION_2 = 3.36f
+    // In-Session Weights
+    private const val W_IN_TRANSITION_2 = 9.74f
+    private const val W_IN_TRANSITION = 8.28f
+    private const val W_IN_TRANS_SMOOTH = 1.15f
+    private const val W_IN_REC_8H = 1.82f
+    private const val W_IN_REC_168H = 1.36f
+    private const val W_IN_RECENCY = 1.07f
+    private const val W_IN_CONTEXT = 1.00f
 
-    private const val W_REC_8H = 4.88f
-    private const val W_REC_24H = 0.92f
-    private const val W_REC_168H = 3.88f
+    // Cold-Start / Resumption Weights
+    private const val W_COLD_REC_168H = 9.57f
+    private const val W_COLD_RECENCY = 5.35f
+    private const val W_COLD_CONTEXT = 3.27f
+    private const val W_COLD_REC_24H = 2.68f
+    private const val W_COLD_REC_8H = 2.52f
+    private const val W_COLD_BAT = 3.25f
+    private const val W_COLD_CAL = 1.42f
+    private const val W_COLD_DEVICE = 0.94f
+    private const val W_COLD_SR = 0.71f
 
-    private const val SELF_PENALTY = 0.01f
+    private const val SELF_PENALTY = 0.00f
     private const val SELF_PENALTY_HL_MIN = 112.48f
 
     private const val W_AUDIO = 0.04f
-    private const val W_DEVICE = 1.91f
     private const val W_CHARGING = 1.42f
-    private const val W_SR = 1.59f
     private const val SR_HALF_LIFE_SECS = 903.04f
     private const val PHASE1_SMOOTH = 4.50f
 
-    // Phase-3 context features (notif / calendar / battery / dwell) — v14 retune on 4617 events
+    // Phase-3 context features
     private const val W_NOTIF = 0.79f
-    private const val W_CAL = 3.32f
-    private const val W_BAT = 5.31f
     private const val W_DWELL = 1.25f
     private const val W_CAT_TRANS = 1.20f
     private const val BAT_SCALE = 60.48f    // exp(-|Δbat%| / BAT_SCALE)
@@ -124,9 +130,9 @@ object ScoreEngine {
 
             if (row != null && row.isNotEmpty()) {
                 val sumWeights = row.values.sum()
-                val denom = sumWeights + TRANSITION_SMOOTH * nApps
+                val denom = sumWeights + W_IN_TRANS_SMOOTH * nApps
                 for (pkg in byPkg.keys) {
-                    transScores[pkg] = ((row[pkg] ?: 0f) + TRANSITION_SMOOTH) / denom
+                    transScores[pkg] = ((row[pkg] ?: 0f) + W_IN_TRANS_SMOOTH) / denom
                 }
             }
         }
@@ -317,23 +323,36 @@ object ScoreEngine {
 
         val lastCategory = if (inSession) appCategories[lastEvent.packageName] ?: -1 else -1
 
+        // Select regime-specific weights
+        val wCtx = if (inSession) W_IN_CONTEXT else W_COLD_CONTEXT
+        val wRec = if (inSession) W_IN_RECENCY else W_COLD_RECENCY
+        val wR8 = if (inSession) W_IN_REC_8H else W_COLD_REC_8H
+        val wR24 = if (inSession) 0.50f else W_COLD_REC_24H
+        val wR168 = if (inSession) W_IN_REC_168H else W_COLD_REC_168H
+        val wTrans = if (inSession) W_IN_TRANSITION else 0f
+        val wTrans2 = if (inSession) W_IN_TRANSITION_2 else 0f
+        val wDev = if (inSession) 0.50f else W_COLD_DEVICE
+        val wSr = if (inSession) 0.50f else W_COLD_SR
+        val wCal = if (inSession) 0.50f else W_COLD_CAL
+        val wBat = if (inSession) 1.00f else W_COLD_BAT
+
         val breakdowns: HashMap<String, FloatArray>? = if (DEBUG_LOG) HashMap(byPkg.size) else null
         val scores = byPkg.keys.associateWith { pkg ->
-            val pCtx = W_CONTEXT * (ctxRaw[pkg] ?: 0f) / mC
-            val pRec = W_RECENCY * (recRaw[pkg] ?: 0f) / mR
-            val pR8 = W_REC_8H * (rec8Raw[pkg] ?: 0f) / m8
-            val pR24 = W_REC_24H * (rec24Raw[pkg] ?: 0f) / m24
-            val pR168 = W_REC_168H * (rec168Raw[pkg] ?: 0f) / m168
-            val pT = W_TRANSITION * (transRaw[pkg] ?: 0f) / mT
-            val pT2 = W_TRANSITION_2 * (trans2Raw[pkg] ?: 0f) / mT2
+            val pCtx = wCtx * (ctxRaw[pkg] ?: 0f) / mC
+            val pRec = wRec * (recRaw[pkg] ?: 0f) / mR
+            val pR8 = wR8 * (rec8Raw[pkg] ?: 0f) / m8
+            val pR24 = wR24 * (rec24Raw[pkg] ?: 0f) / m24
+            val pR168 = wR168 * (rec168Raw[pkg] ?: 0f) / m168
+            val pT = if (wTrans > 0) wTrans * (transRaw[pkg] ?: 0f) / mT else 0f
+            val pT2 = if (wTrans2 > 0) wTrans2 * (trans2Raw[pkg] ?: 0f) / mT2 else 0f
             val pA = if (useCtxFeats) W_AUDIO * (audRaw[pkg] ?: 0f) / mA else 0f
-            val pD = if (useCtxFeats) W_DEVICE * (devRaw[pkg] ?: 0f) / mD else 0f
+            val pD = if (useCtxFeats) wDev * (devRaw[pkg] ?: 0f) / mD else 0f
             val pCh = if (useCtxFeats) W_CHARGING * (chgRaw[pkg] ?: 0f) / mCh else 0f
-            val pSr = if (useCtxFeats) W_SR * (srRaw[pkg] ?: 0f) / mSr else 0f
+            val pSr = if (useCtxFeats) wSr * (srRaw[pkg] ?: 0f) / mSr else 0f
             val curNotif = currentNotifCounts[pkg] ?: 0
             val pNo = if (curNotif > 0) W_NOTIF * ln(1f + curNotif) else 0f
-            val pCal = if (useCtx3Feats && curCal != null) W_CAL * (calRaw[pkg] ?: 0.5f) / mCa else 0f
-            val pBat = if (useCtx3Feats) W_BAT * (batRaw[pkg] ?: 0.5f) / mBa else 0f
+            val pCal = if (useCtx3Feats && curCal != null) wCal * (calRaw[pkg] ?: 0.5f) / mCa else 0f
+            val pBat = if (useCtx3Feats) wBat * (batRaw[pkg] ?: 0.5f) / mBa else 0f
             val pDwell = if (useCtx3Feats && curDwell != null) W_DWELL * (dwellRaw[pkg] ?: 0.5f) / mDw else 0f
             val pkgCategory = appCategories[pkg] ?: -1
             val pCatTrans = if (inSession && lastCategory != -1 && lastCategory == pkgCategory) W_CAT_TRANS else 0f
