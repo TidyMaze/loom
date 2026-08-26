@@ -29,35 +29,83 @@ import time
 from pathlib import Path
 from typing import Callable
 
-# ─── v14 hyperparameters (mirror ScoreEngine.kt) ────────────────────────────
+# ─── v16 hyperparameters (mirror ScoreEngine.kt v16 Dual-Regime) ──────────────
 
-V14 = dict(
-    # Core scoring
+V16_IN = dict(
+    hour_sigma      = 2.5283,
+    decay_hl        = 10.7516,
+    recency_h       = 0.5048,
+    trans_decay     = 24.6941,
+    session_ms      = 70_000,
+    trans_smooth    = 1.1458,
+    burst_gap_ms    = 25_000,
+    ctx_min         = 2,
+    w_ctx           = 0.9984,
+    w_rec           = 1.0723,
+    w_trans         = 8.2760,
+    w_trans2        = 9.7385,
+    w_r8            = 1.8151,
+    w_r24           = 0.5000,
+    w_r168          = 1.3568,
+    self_pen        = 0.0000,
+    self_hl_min     = 112.4804,
+    w_audio         = 0.04,
+    w_device        = 0.50,
+    w_charging      = 1.42,
+    w_sr            = 0.50,
+    sr_hl_secs      = 903.04,
+    phase1_smooth   = 4.50,
+    w_notif         = 0.79,
+    w_cal           = 0.50,
+    w_bat           = 1.00,
+    w_cat_trans     = 1.20,
+    bat_scale       = 60.48,
+    cal_scale       = 1741.40,
+    ctx3_min        = 11,
+    ctx3_smooth     = 0.375,
+)
+
+V16_COLD = dict(V16_IN)
+V16_COLD.update(dict(
+    w_ctx           = 3.2691,
+    w_rec           = 5.3538,
+    w_trans         = 0.0000,
+    w_trans2        = 0.0000,
+    w_r8            = 2.5227,
+    w_r24           = 2.6751,
+    w_r168          = 9.5687,
+    w_bat           = 3.2513,
+    w_cal           = 1.4203,
+    w_device        = 0.9407,
+    w_sr            = 0.7066,
+))
+
+V16 = V16_IN
+
+V15 = dict(
     hour_sigma      = 2.2035,
-    decay_hl        = 10.7516,   # days — main decay half-life
-    recency_h       = 0.5048,    # hours — short recency scale
-    trans_decay     = 24.6941,   # days — transition table decay
-    session_ms      = 70_000,    # session window (ms)
-    trans_smooth    = 1.9016,    # Laplace smoothing for transition probs
-    burst_gap_ms    = 25_000,    # collapse same-pkg events within this gap
-    ctx_min         = 2,         # phase-1 gate: min events with ctx to qualify
-    w_ctx           = 1.8234,
-    w_rec           = 3.5373,
-    w_trans         = 5.1687,
-    w_trans2        = 3.3636,
-    w_r8            = 4.8793,
-    w_r24           = 0.9228,
-    w_r168          = 3.8755,
+    decay_hl        = 10.7516,
+    recency_h       = 0.5048,
+    trans_decay     = 24.6941,
+    session_ms      = 70_000,
+    trans_smooth    = 1.9016,
+    burst_gap_ms    = 25_000,
+    ctx_min         = 2,
+    w_ctx           = 0.2924,
+    w_rec           = 5.7759,
+    w_trans         = 3.1978,
+    w_trans2        = 4.9098,
+    w_r8            = 0.8073,
+    w_r24           = 0.7369,
+    w_r168          = 2.0725,
     self_pen        = 0.0083,
     self_hl_min     = 112.4804,
-    # Phase-1 context (audio/device/charging/secsSinceResume)
     w_audio         = 0.04,
     w_device        = 1.91,
     w_charging      = 1.42,
     w_sr            = 1.59,
     sr_hl_secs      = 903.04,
     phase1_smooth   = 4.50,
-    # Phase-3 context (notif / calendar / battery)
     w_notif         = 0.79,
     w_cal           = 3.32,
     w_bat           = 5.31,
@@ -67,6 +115,12 @@ V14 = dict(
     ctx3_min        = 11,
     ctx3_smooth     = 0.375,
 )
+
+V14 = dict(V15)
+V14.update(dict(
+    w_ctx=1.8234, w_rec=3.5373, w_trans=5.1687, w_trans2=3.3636,
+    w_r8=4.8793, w_r24=0.9228, w_r168=3.8755
+))
 
 # ─── shared math helpers ─────────────────────────────────────────────────────
 
@@ -587,10 +641,31 @@ def wilcoxon_p(rr_a: list, rr_b: list) -> float:
         return float("nan")
 
 
+def score_v16(events: list, now_hour: int, now_dow: int, now_ms: int,
+              target_ev: dict = None, p_in: dict = None, p_cold: dict = None) -> dict:
+    """ScoreEngine.kt v16 Dual-Regime (In-Session vs Cold-Start)."""
+    if not events:
+        return {}
+    p_in = p_in or V16_IN
+    p_cold = p_cold or V16_COLD
+    last_e = events[-1]
+    in_session = (now_ms - last_e["timestampMillis"]) <= int(p_in["session_ms"])
+    p = p_in if in_session else p_cold
+    return score_v14(events, now_hour, now_dow, now_ms, target_ev, p)
+
+
+def score_v15(events: list, now_hour: int, now_dow: int, now_ms: int,
+              target_ev: dict = None, p: dict = None) -> dict:
+    """ScoreEngine.kt v15 - previous retune."""
+    return score_v14(events, now_hour, now_dow, now_ms, target_ev, p or V15)
+
+
 # ─── model registry ──────────────────────────────────────────────────────────
 
 MODELS = [
-    ("v14 (deployed)", score_v14),
+    ("v16 (deployed dual-regime)", score_v16),
+    ("v15 (previous single-regime)", score_v15),
+    ("v14 (baseline)", score_v14),
     ("bigram Markov",  score_bigram),
     ("RRF ensemble",   score_rrf),
     ("recency",        score_recency),

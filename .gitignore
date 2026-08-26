@@ -22,3 +22,7 @@ phone_log.json
 # Python
 *.pyc
 __pycache__/
+
+# Tool & test artifacts
+.playwright-mcp/
+dashboard*.png

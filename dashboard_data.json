@@ -1,0 +1,3705 @@
+{
+  "summary": {
+    "total_events": 10472,
+    "evaluated_samples": 10422,
+    "warmup_samples": 50,
+    "unique_apps": 99,
+    "start_date": "2026-05-07 18:11",
+    "end_date": "2026-08-26 18:50",
+    "recall_1": 31.8,
+    "recall_3": 55.6,
+    "recall_5": 68.8,
+    "recall_10": 83.1,
+    "mrr": 0.4833,
+    "lift": 9.24
+  },
+  "top_apps": [
+    {
+      "pkg": "com.android.chrome",
+      "count": 1807,
+      "pct": 17.3
+    },
+    {
+      "pkg": "com.google.android.googlequicksearchbox",
+      "count": 830,
+      "pct": 7.9
+    },
+    {
+      "pkg": "com.google.android.youtube",
+      "count": 777,
+      "pct": 7.4
+    },
+    {
+      "pkg": "com.instagram.android",
+      "count": 618,
+      "pct": 5.9
+    },
+    {
+      "pkg": "com.facebook.orca",
+      "count": 600,
+      "pct": 5.7
+    },
+    {
+      "pkg": "com.google.android.apps.messaging",
+      "count": 559,
+      "pct": 5.3
+    },
+    {
+      "pkg": "com.spotify.music",
+      "count": 451,
+      "pct": 4.3
+    },
+    {
+      "pkg": "com.whatsapp",
+      "count": 416,
+      "pct": 4.0
+    },
+    {
+      "pkg": "com.google.android.apps.maps",
+      "count": 411,
+      "pct": 3.9
+    },
+    {
+      "pkg": "com.google.android.calendar",
+      "count": 402,
+      "pct": 3.8
+    },
+    {
+      "pkg": "com.google.android.gm",
+      "count": 390,
+      "pct": 3.7
+    },
+    {
+      "pkg": "com.google.android.apps.dynamite",
+      "count": 380,
+      "pct": 3.6
+    }
+  ],
+  "top_transitions": [
+    {
+      "from": "com.google.android.googlequicksearchbox",
+      "to": "com.android.chrome",
+      "count": 267
+    },
+    {
+      "from": "com.android.chrome",
+      "to": "com.google.android.googlequicksearchbox",
+      "count": 181
+    },
+    {
+      "from": "com.android.chrome",
+      "to": "com.google.android.gm",
+      "count": 116
+    },
+    {
+      "from": "com.google.android.gm",
+      "to": "com.android.chrome",
+      "count": 99
+    },
+    {
+      "from": "com.google.android.apps.bard",
+      "to": "com.google.android.googlequicksearchbox",
+      "count": 86
+    },
+    {
+      "from": "com.android.chrome",
+      "to": "com.facebook.orca",
+      "count": 52
+    },
+    {
+      "from": "com.whatsapp",
+      "to": "com.android.chrome",
+      "count": 51
+    },
+    {
+      "from": "com.android.chrome",
+      "to": "com.google.android.youtube",
+      "count": 49
+    },
+    {
+      "from": "com.facebook.orca",
+      "to": "com.android.chrome",
+      "count": 47
+    },
+    {
+      "from": "com.whatsapp",
+      "to": "com.facebook.orca",
+      "count": 46
+    }
+  ],
+  "hourly_dist": {
+    "com.android.chrome": [
+      87,
+      39,
+      28,
+      23,
+      21,
+      7,
+      4,
+      60,
+      104,
+      106,
+      126,
+      72,
+      114,
+      90,
+      73,
+      91,
+      64,
+      57,
+      91,
+      123,
+      115,
+      96,
+      92,
+      124
+    ],
+    "com.google.android.googlequicksearchbox": [
+      46,
+      20,
+      12,
+      9,
+      5,
+      5,
+      4,
+      33,
+      48,
+      41,
+      46,
+      30,
+      45,
+      50,
+      40,
+      26,
+      53,
+      17,
+      46,
+      57,
+      61,
+      48,
+      49,
+      39
+    ],
+    "com.google.android.youtube": [
+      92,
+      33,
+      25,
+      14,
+      6,
+      5,
+      3,
+      41,
+      79,
+      44,
+      37,
+      20,
+      17,
+      11,
+      0,
+      7,
+      15,
+      16,
+      30,
+      37,
+      36,
+      30,
+      61,
+      118
+    ],
+    "com.instagram.android": [
+      24,
+      15,
+      6,
+      6,
+      7,
+      4,
+      1,
+      10,
+      16,
+      26,
+      26,
+      30,
+      30,
+      27,
+      12,
+      18,
+      10,
+      32,
+      49,
+      36,
+      47,
+      56,
+      64,
+      66
+    ],
+    "com.facebook.orca": [
+      17,
+      8,
+      1,
+      1,
+      0,
+      1,
+      1,
+      15,
+      19,
+      10,
+      29,
+      40,
+      53,
+      23,
+      25,
+      18,
+      16,
+      31,
+      42,
+      47,
+      57,
+      49,
+      56,
+      41
+    ],
+    "com.google.android.apps.messaging": [
+      13,
+      3,
+      3,
+      2,
+      0,
+      0,
+      1,
+      2,
+      7,
+      22,
+      26,
+      20,
+      45,
+      30,
+      27,
+      21,
+      32,
+      50,
+      89,
+      55,
+      41,
+      31,
+      23,
+      16
+    ],
+    "com.spotify.music": [
+      36,
+      21,
+      4,
+      8,
+      0,
+      3,
+      0,
+      8,
+      31,
+      51,
+      28,
+      36,
+      9,
+      23,
+      13,
+      1,
+      6,
+      2,
+      46,
+      29,
+      16,
+      9,
+      19,
+      52
+    ],
+    "com.whatsapp": [
+      11,
+      4,
+      6,
+      1,
+      1,
+      1,
+      0,
+      4,
+      2,
+      5,
+      18,
+      14,
+      40,
+      25,
+      16,
+      12,
+      28,
+      26,
+      23,
+      61,
+      51,
+      25,
+      11,
+      31
+    ],
+    "com.google.android.apps.maps": [
+      2,
+      2,
+      4,
+      1,
+      0,
+      0,
+      0,
+      1,
+      14,
+      24,
+      17,
+      27,
+      45,
+      45,
+      23,
+      42,
+      22,
+      26,
+      24,
+      23,
+      22,
+      18,
+      19,
+      10
+    ],
+    "com.google.android.calendar": [
+      10,
+      4,
+      1,
+      4,
+      1,
+      1,
+      3,
+      6,
+      20,
+      57,
+      33,
+      14,
+      42,
+      24,
+      7,
+      7,
+      9,
+      12,
+      35,
+      30,
+      28,
+      22,
+      15,
+      17
+    ],
+    "com.google.android.gm": [
+      17,
+      7,
+      4,
+      12,
+      17,
+      3,
+      9,
+      12,
+      35,
+      53,
+      12,
+      12,
+      30,
+      18,
+      14,
+      21,
+      11,
+      10,
+      27,
+      20,
+      15,
+      9,
+      9,
+      13
+    ],
+    "com.google.android.apps.dynamite": [
+      11,
+      14,
+      12,
+      20,
+      14,
+      5,
+      2,
+      8,
+      20,
+      54,
+      11,
+      7,
+      42,
+      19,
+      5,
+      13,
+      13,
+      5,
+      28,
+      21,
+      8,
+      17,
+      11,
+      20
+    ]
+  },
+  "timeline": [
+    {
+      "date": "09/05",
+      "sample_idx": 50,
+      "r1": 30.8,
+      "r5": 69.2,
+      "mrr": 0.4769
+    },
+    {
+      "date": "11/05",
+      "sample_idx": 570,
+      "r1": 23.1,
+      "r5": 57.7,
+      "mrr": 0.3926
+    },
+    {
+      "date": "13/05",
+      "sample_idx": 1090,
+      "r1": 34.6,
+      "r5": 65.4,
+      "mrr": 0.4763
+    },
+    {
+      "date": "15/05",
+      "sample_idx": 1610,
+      "r1": 38.5,
+      "r5": 80.8,
+      "mrr": 0.5518
+    },
+    {
+      "date": "18/05",
+      "sample_idx": 2130,
+      "r1": 15.4,
+      "r5": 61.5,
+      "mrr": 0.3793
+    },
+    {
+      "date": "25/05",
+      "sample_idx": 2650,
+      "r1": 19.2,
+      "r5": 57.7,
+      "mrr": 0.392
+    },
+    {
+      "date": "03/06",
+      "sample_idx": 3170,
+      "r1": 11.5,
+      "r5": 57.7,
+      "mrr": 0.3159
+    },
+    {
+      "date": "12/06",
+      "sample_idx": 3690,
+      "r1": 19.2,
+      "r5": 65.4,
+      "mrr": 0.3772
+    },
+    {
+      "date": "20/06",
+      "sample_idx": 4210,
+      "r1": 30.8,
+      "r5": 73.1,
+      "mrr": 0.4788
+    },
+    {
+      "date": "22/06",
+      "sample_idx": 4730,
+      "r1": 38.5,
+      "r5": 80.8,
+      "mrr": 0.526
+    },
+    {
+      "date": "26/06",
+      "sample_idx": 5250,
+      "r1": 42.3,
+      "r5": 76.9,
+      "mrr": 0.5909
+    },
+    {
+      "date": "28/07",
+      "sample_idx": 5770,
+      "r1": 34.6,
+      "r5": 69.2,
+      "mrr": 0.5128
+    },
+    {
+      "date": "30/07",
+      "sample_idx": 6290,
+      "r1": 23.1,
+      "r5": 80.8,
+      "mrr": 0.4551
+    },
+    {
+      "date": "02/08",
+      "sample_idx": 6810,
+      "r1": 11.5,
+      "r5": 61.5,
+      "mrr": 0.3176
+    },
+    {
+      "date": "06/08",
+      "sample_idx": 7330,
+      "r1": 26.9,
+      "r5": 53.8,
+      "mrr": 0.3931
+    },
+    {
+      "date": "10/08",
+      "sample_idx": 7850,
+      "r1": 30.8,
+      "r5": 73.1,
+      "mrr": 0.5002
+    },
+    {
+      "date": "13/08",
+      "sample_idx": 8370,
+      "r1": 26.9,
+      "r5": 61.5,
+      "mrr": 0.421
+    },
+    {
+      "date": "17/08",
+      "sample_idx": 8890,
+      "r1": 19.2,
+      "r5": 61.5,
+      "mrr": 0.388
+    },
+    {
+      "date": "20/08",
+      "sample_idx": 9410,
+      "r1": 19.2,
+      "r5": 53.8,
+      "mrr": 0.3835
+    },
+    {
+      "date": "24/08",
+      "sample_idx": 9930,
+      "r1": 23.1,
+      "r5": 73.1,
+      "mrr": 0.4569
+    },
+    {
+      "date": "26/08",
+      "sample_idx": 10450,
+      "r1": 50.0,
+      "r5": 50.0,
+      "mrr": 0.525
+    }
+  ],
+  "weights": [
+    {
+      "name": "Contexte Batterie",
+      "key": "w_bat",
+      "weight": 5.31,
+      "desc": "Niveau de batterie actuel (scaling gaussien)",
+      "cat": "Contexte Syst\u00e8me"
+    },
+    {
+      "name": "Transitions Markov (1-gram)",
+      "key": "w_trans",
+      "weight": 5.1687,
+      "desc": "Probabilit\u00e9 de transition app pr\u00e9c. -> app cible (< 70s)",
+      "cat": "Transitions"
+    },
+    {
+      "name": "P\u00e9riodicit\u00e9 8h",
+      "key": "w_r8",
+      "weight": 4.8793,
+      "desc": "Cycle de routine quotidienne",
+      "cat": "P\u00e9riodicit\u00e9"
+    },
+    {
+      "name": "P\u00e9riodicit\u00e9 168h (semaine)",
+      "key": "w_r168",
+      "weight": 3.8755,
+      "desc": "M\u00eame jour de semaine et m\u00eame cr\u00e9neau",
+      "cat": "P\u00e9riodicit\u00e9"
+    },
+    {
+      "name": "R\u00e9cence courte (30 min)",
+      "key": "w_rec",
+      "weight": 3.5373,
+      "desc": "D\u00e9croissance rapide demi-vie 0.5h",
+      "cat": "R\u00e9cence"
+    },
+    {
+      "name": "Transitions Markov (2-gram)",
+      "key": "w_trans2",
+      "weight": 3.3636,
+      "desc": "S\u00e9quence app A -> B -> C",
+      "cat": "Transitions"
+    },
+    {
+      "name": "Contexte Agenda / Calendrier",
+      "key": "w_cal",
+      "weight": 3.32,
+      "desc": "Proximit\u00e9 temporelle \u00e9v\u00e9nement agenda",
+      "cat": "Contexte Syst\u00e8me"
+    },
+    {
+      "name": "Type de p\u00e9riph\u00e9rique audio",
+      "key": "w_device",
+      "weight": 1.91,
+      "desc": "Casque Bluetooth / \u00c9couteurs vs Speaker",
+      "cat": "Contexte Mat\u00e9riel"
+    },
+    {
+      "name": "Contexte Temporel Global",
+      "key": "w_ctx",
+      "weight": 1.8234,
+      "desc": "Heure gaussienne + weekday/weekend",
+      "cat": "Contexte Temporel"
+    },
+    {
+      "name": "Sortie de veille (sr)",
+      "key": "w_sr",
+      "weight": 1.59,
+      "desc": "Secondes \u00e9coul\u00e9es depuis d\u00e9verrouillage",
+      "cat": "Contexte Mat\u00e9riel"
+    },
+    {
+      "name": "En charge (Charging)",
+      "key": "w_charging",
+      "weight": 1.42,
+      "desc": "\u00c9tat de charge batterie",
+      "cat": "Contexte Mat\u00e9riel"
+    },
+    {
+      "name": "Temps dwell app pr\u00e9c.",
+      "key": "w_dwell",
+      "weight": 1.25,
+      "desc": "Dur\u00e9e pass\u00e9e sur l application pr\u00e9c\u00e9dente",
+      "cat": "Contexte Syst\u00e8me"
+    },
+    {
+      "name": "P\u00e9riodicit\u00e9 24h",
+      "key": "w_r24",
+      "weight": 0.9228,
+      "desc": "M\u00eame heure la veille",
+      "cat": "P\u00e9riodicit\u00e9"
+    },
+    {
+      "name": "Notifications r\u00e9centes",
+      "key": "w_notif",
+      "weight": 0.79,
+      "desc": "Derni\u00e8re notification re\u00e7ue",
+      "cat": "Contexte Syst\u00e8me"
+    },
+    {
+      "name": "Audio actif",
+      "key": "w_audio",
+      "weight": 0.04,
+      "desc": "Lecture audio en cours en arri\u00e8re-plan",
+      "cat": "Contexte Mat\u00e9riel"
+    }
+  ],
+  "benchmark": [
+    {
+      "name": "v16 (deployed dual-regime)",
+      "r1": 31.8,
+      "r3": 57.1,
+      "r5": 68.8,
+      "r10": 83.1,
+      "mrr": 0.4833,
+      "lift": 9.24,
+      "status": "Production v16"
+    },
+    {
+      "name": "bigram Markov",
+      "r1": 31.4,
+      "r3": 56.5,
+      "r5": 68.7,
+      "r10": 82.6,
+      "mrr": 0.4792,
+      "lift": 9.16,
+      "status": "Candidat S\u00e9quentiel"
+    },
+    {
+      "name": "RRF ensemble",
+      "r1": 29.7,
+      "r3": 56.4,
+      "r5": 69.0,
+      "r10": 83.4,
+      "mrr": 0.4698,
+      "lift": 8.98,
+      "status": "Ensemble Fusion"
+    },
+    {
+      "name": "v15 (single-regime)",
+      "r1": 29.2,
+      "r3": 55.7,
+      "r5": 67.8,
+      "r10": 81.9,
+      "mrr": 0.4636,
+      "lift": 8.86,
+      "status": "Pr\u00e9c\u00e9dent v15"
+    },
+    {
+      "name": "v14 (baseline initiale)",
+      "r1": 29.1,
+      "r3": 55.6,
+      "r5": 68.0,
+      "r10": 82.3,
+      "mrr": 0.4625,
+      "lift": 8.84,
+      "status": "Baseline v14"
+    },
+    {
+      "name": "recency baseline",
+      "r1": 23.2,
+      "r3": 53.6,
+      "r5": 64.6,
+      "r10": 79.4,
+      "mrr": 0.4242,
+      "lift": 8.11,
+      "status": "Baseline Na\u00efve"
+    }
+  ],
+  "clustering": {
+    "silhouette_score": 0.209,
+    "pca_variance_ratio": [
+      0.356,
+      0.246
+    ],
+    "clusters": [
+      {
+        "id": 1,
+        "title": "Navigation, Recherche & Multim\u00e9dia",
+        "icon": "\ud83c\udf10",
+        "description": "Piliers du quotidien \u00e0 tr\u00e8s fort volume, \u00e9coute audio et recherche d'informations.",
+        "timing": "Continu & Weekend",
+        "color": "#10b981",
+        "app_count": 31,
+        "total_launches": 7107,
+        "launch_share": 67.9,
+        "avg_morning": 21.2,
+        "avg_evening": 46.9,
+        "avg_weekend": 28.3,
+        "avg_audio": 11.8,
+        "top_apps": [
+          "Chrome",
+          "Google Search",
+          "Messenger",
+          "Messages SMS",
+          "WhatsApp",
+          "Google Maps"
+        ],
+        "apps": [
+          {
+            "pkg": "com.android.chrome",
+            "name": "Chrome",
+            "count": 1807,
+            "morning_pct": 26.1,
+            "afternoon_pct": 27.1,
+            "evening_pct": 46.8,
+            "weekend_pct": 37.2,
+            "audio_pct": 24.7,
+            "starter_pct": 49.1,
+            "peak_hour": 10,
+            "cluster": 1,
+            "x": -0.07,
+            "y": 0.17,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.googlequicksearchbox",
+            "name": "Google Search",
+            "count": 830,
+            "morning_pct": 24.3,
+            "afternoon_pct": 27.8,
+            "evening_pct": 47.8,
+            "weekend_pct": 43.0,
+            "audio_pct": 21.4,
+            "starter_pct": 46.4,
+            "peak_hour": 20,
+            "cluster": 1,
+            "x": -0.31,
+            "y": 0.05,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.facebook.orca",
+            "name": "Messenger",
+            "count": 600,
+            "morning_pct": 19.0,
+            "afternoon_pct": 27.7,
+            "evening_pct": 53.3,
+            "weekend_pct": 35.0,
+            "audio_pct": 14.2,
+            "starter_pct": 53.2,
+            "peak_hour": 20,
+            "cluster": 1,
+            "x": 0.01,
+            "y": -0.34,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.messaging",
+            "name": "Messages SMS",
+            "count": 559,
+            "morning_pct": 14.0,
+            "afternoon_pct": 36.7,
+            "evening_pct": 49.4,
+            "weekend_pct": 33.6,
+            "audio_pct": 16.5,
+            "starter_pct": 63.1,
+            "peak_hour": 18,
+            "cluster": 1,
+            "x": 0.06,
+            "y": -1.07,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.whatsapp",
+            "name": "WhatsApp",
+            "count": 416,
+            "morning_pct": 10.3,
+            "afternoon_pct": 35.3,
+            "evening_pct": 54.3,
+            "weekend_pct": 32.7,
+            "audio_pct": 23.4,
+            "starter_pct": 55.8,
+            "peak_hour": 19,
+            "cluster": 1,
+            "x": 0.41,
+            "y": -1.05,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.maps",
+            "name": "Google Maps",
+            "count": 411,
+            "morning_pct": 20.2,
+            "afternoon_pct": 49.4,
+            "evening_pct": 30.4,
+            "weekend_pct": 20.9,
+            "audio_pct": 12.4,
+            "starter_pct": 66.7,
+            "peak_hour": 12,
+            "cluster": 1,
+            "x": -0.86,
+            "y": -1.23,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.calendar",
+            "name": "Google Calendar",
+            "count": 402,
+            "morning_pct": 33.1,
+            "afternoon_pct": 25.1,
+            "evening_pct": 41.8,
+            "weekend_pct": 20.4,
+            "audio_pct": 16.1,
+            "starter_pct": 55.2,
+            "peak_hour": 9,
+            "cluster": 1,
+            "x": -0.17,
+            "y": 0.52,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.gm",
+            "name": "Gmail",
+            "count": 390,
+            "morning_pct": 34.1,
+            "afternoon_pct": 26.7,
+            "evening_pct": 39.2,
+            "weekend_pct": 27.2,
+            "audio_pct": 17.2,
+            "starter_pct": 50.3,
+            "peak_hour": 9,
+            "cluster": 1,
+            "x": -0.51,
+            "y": 0.58,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.dynamite",
+            "name": "Google Chat",
+            "count": 380,
+            "morning_pct": 26.8,
+            "afternoon_pct": 25.5,
+            "evening_pct": 47.6,
+            "weekend_pct": 18.4,
+            "audio_pct": 22.3,
+            "starter_pct": 68.7,
+            "peak_hour": 9,
+            "cluster": 1,
+            "x": 0.68,
+            "y": 0.01,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.weather",
+            "name": "Weather",
+            "count": 138,
+            "morning_pct": 28.3,
+            "afternoon_pct": 26.1,
+            "evening_pct": 45.7,
+            "weekend_pct": 23.2,
+            "audio_pct": 10.5,
+            "starter_pct": 41.3,
+            "peak_hour": 8,
+            "cluster": 1,
+            "x": -0.56,
+            "y": 0.4,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.photos",
+            "name": "Google Photos",
+            "count": 115,
+            "morning_pct": 10.4,
+            "afternoon_pct": 29.6,
+            "evening_pct": 60.0,
+            "weekend_pct": 39.1,
+            "audio_pct": 8.8,
+            "starter_pct": 40.9,
+            "peak_hour": 19,
+            "cluster": 1,
+            "x": -0.22,
+            "y": -0.72,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.boursorama.android.clients",
+            "name": "Clients",
+            "count": 111,
+            "morning_pct": 20.7,
+            "afternoon_pct": 26.1,
+            "evening_pct": 53.2,
+            "weekend_pct": 19.8,
+            "audio_pct": 18.3,
+            "starter_pct": 48.6,
+            "peak_hour": 18,
+            "cluster": 1,
+            "x": 0.32,
+            "y": -0.05,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.twitter.android",
+            "name": "X (Twitter)",
+            "count": 111,
+            "morning_pct": 50.5,
+            "afternoon_pct": 8.1,
+            "evening_pct": 41.4,
+            "weekend_pct": 45.9,
+            "audio_pct": 9.1,
+            "starter_pct": 64.9,
+            "peak_hour": 9,
+            "cluster": 1,
+            "x": -0.49,
+            "y": 1.77,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.tradingview.tradingviewapp",
+            "name": "TradingView",
+            "count": 102,
+            "morning_pct": 12.7,
+            "afternoon_pct": 40.2,
+            "evening_pct": 47.1,
+            "weekend_pct": 10.8,
+            "audio_pct": 19.0,
+            "starter_pct": 57.8,
+            "peak_hour": 12,
+            "cluster": 1,
+            "x": 0.27,
+            "y": -1.08,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.docs",
+            "name": "Google Drive",
+            "count": 101,
+            "morning_pct": 37.6,
+            "afternoon_pct": 27.7,
+            "evening_pct": 34.7,
+            "weekend_pct": 15.8,
+            "audio_pct": 22.6,
+            "starter_pct": 53.5,
+            "peak_hour": 9,
+            "cluster": 1,
+            "x": -0.29,
+            "y": 0.75,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.openai.chatgpt",
+            "name": "ChatGPT",
+            "count": 85,
+            "morning_pct": 20.0,
+            "afternoon_pct": 37.6,
+            "evening_pct": 42.4,
+            "weekend_pct": 18.8,
+            "audio_pct": 19.4,
+            "starter_pct": 52.9,
+            "peak_hour": 12,
+            "cluster": 1,
+            "x": -0.18,
+            "y": -0.56,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.gms",
+            "name": "Google Services",
+            "count": 81,
+            "morning_pct": 9.9,
+            "afternoon_pct": 34.6,
+            "evening_pct": 55.6,
+            "weekend_pct": 28.4,
+            "audio_pct": 0.0,
+            "starter_pct": 28.4,
+            "peak_hour": 12,
+            "cluster": 1,
+            "x": -0.91,
+            "y": -0.75,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "org.telegram.messenger",
+            "name": "Messenger",
+            "count": 76,
+            "morning_pct": 17.1,
+            "afternoon_pct": 32.9,
+            "evening_pct": 50.0,
+            "weekend_pct": 50.0,
+            "audio_pct": 18.8,
+            "starter_pct": 73.7,
+            "peak_hour": 19,
+            "cluster": 1,
+            "x": 0.17,
+            "y": -0.97,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.android.settings",
+            "name": "Param\u00e8tres",
+            "count": 74,
+            "morning_pct": 18.9,
+            "afternoon_pct": 12.2,
+            "evening_pct": 68.9,
+            "weekend_pct": 36.5,
+            "audio_pct": 0.0,
+            "starter_pct": 43.2,
+            "peak_hour": 22,
+            "cluster": 1,
+            "x": 0.19,
+            "y": 0.28,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.photopicker",
+            "name": "Photopicker",
+            "count": 54,
+            "morning_pct": 13.0,
+            "afternoon_pct": 33.3,
+            "evening_pct": 53.7,
+            "weekend_pct": 18.5,
+            "audio_pct": 0.0,
+            "starter_pct": 22.2,
+            "peak_hour": 21,
+            "cluster": 1,
+            "x": -0.96,
+            "y": -0.41,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.dialer",
+            "name": "T\u00e9l\u00e9phone",
+            "count": 47,
+            "morning_pct": 17.0,
+            "afternoon_pct": 55.3,
+            "evening_pct": 27.7,
+            "weekend_pct": 23.4,
+            "audio_pct": 0.0,
+            "starter_pct": 78.7,
+            "peak_hour": 15,
+            "cluster": 1,
+            "x": -1.26,
+            "y": -1.87,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.airbnb.android",
+            "name": "Android",
+            "count": 37,
+            "morning_pct": 32.4,
+            "afternoon_pct": 27.0,
+            "evening_pct": 40.5,
+            "weekend_pct": 10.8,
+            "audio_pct": 21.4,
+            "starter_pct": 59.5,
+            "peak_hour": 10,
+            "cluster": 1,
+            "x": 0.2,
+            "y": 0.42,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.waze",
+            "name": "Waze",
+            "count": 29,
+            "morning_pct": 27.6,
+            "afternoon_pct": 24.1,
+            "evening_pct": 48.3,
+            "weekend_pct": 48.3,
+            "audio_pct": 16.7,
+            "starter_pct": 58.6,
+            "peak_hour": 19,
+            "cluster": 1,
+            "x": -0.22,
+            "y": 0.12,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.android.intentresolver",
+            "name": "Intentresolver",
+            "count": 28,
+            "morning_pct": 21.4,
+            "afternoon_pct": 21.4,
+            "evening_pct": 57.1,
+            "weekend_pct": 28.6,
+            "audio_pct": 0.0,
+            "starter_pct": 32.1,
+            "peak_hour": 11,
+            "cluster": 1,
+            "x": -0.61,
+            "y": 0.27,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.walletnfcrel",
+            "name": "Google Wallet",
+            "count": 25,
+            "morning_pct": 0.0,
+            "afternoon_pct": 60.0,
+            "evening_pct": 40.0,
+            "weekend_pct": 32.0,
+            "audio_pct": 0.0,
+            "starter_pct": 4.0,
+            "peak_hour": 12,
+            "cluster": 1,
+            "x": -2.57,
+            "y": -1.82,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.apps.nbu.files",
+            "name": "Files",
+            "count": 21,
+            "morning_pct": 23.8,
+            "afternoon_pct": 38.1,
+            "evening_pct": 38.1,
+            "weekend_pct": 47.6,
+            "audio_pct": 15.4,
+            "starter_pct": 47.6,
+            "peak_hour": 11,
+            "cluster": 1,
+            "x": -1.16,
+            "y": -0.42,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.github.android",
+            "name": "GitHub",
+            "count": 21,
+            "morning_pct": 19.0,
+            "afternoon_pct": 47.6,
+            "evening_pct": 33.3,
+            "weekend_pct": 23.8,
+            "audio_pct": 0.0,
+            "starter_pct": 42.9,
+            "peak_hour": 13,
+            "cluster": 1,
+            "x": -1.73,
+            "y": -0.94,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "co.staycation.staycationapp",
+            "name": "Staycationapp",
+            "count": 16,
+            "morning_pct": 25.0,
+            "afternoon_pct": 50.0,
+            "evening_pct": 25.0,
+            "weekend_pct": 6.2,
+            "audio_pct": 0.0,
+            "starter_pct": 62.5,
+            "peak_hour": 12,
+            "cluster": 1,
+            "x": -1.42,
+            "y": -0.95,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.coinmarketcap.android",
+            "name": "Android",
+            "count": 15,
+            "morning_pct": 26.7,
+            "afternoon_pct": 13.3,
+            "evening_pct": 60.0,
+            "weekend_pct": 0.0,
+            "audio_pct": 0.0,
+            "starter_pct": 60.0,
+            "peak_hour": 18,
+            "cluster": 1,
+            "x": 0.75,
+            "y": 0.51,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "fr.geovelo",
+            "name": "Geovelo",
+            "count": 13,
+            "morning_pct": 0.0,
+            "afternoon_pct": 30.8,
+            "evening_pct": 69.2,
+            "weekend_pct": 30.8,
+            "audio_pct": 9.1,
+            "starter_pct": 46.2,
+            "peak_hour": 17,
+            "cluster": 1,
+            "x": 0.5,
+            "y": -1.36,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          },
+          {
+            "pkg": "com.google.android.keep",
+            "name": "Keep",
+            "count": 12,
+            "morning_pct": 16.7,
+            "afternoon_pct": 33.3,
+            "evening_pct": 50.0,
+            "weekend_pct": 50.0,
+            "audio_pct": 10.0,
+            "starter_pct": 58.3,
+            "peak_hour": 11,
+            "cluster": 1,
+            "x": -0.5,
+            "y": -0.82,
+            "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+            "color": "#10b981"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Messagerie & Social R\u00e9flexe",
+        "icon": "\ud83d\udcac",
+        "description": "Applications de communication instantan\u00e9e avec forte fr\u00e9quence en fin de journ\u00e9e et soir\u00e9e.",
+        "timing": "Soir\u00e9e (18h-23h)",
+        "color": "#06b6d4",
+        "app_count": 17,
+        "total_launches": 3127,
+        "launch_share": 29.9,
+        "avg_morning": 20.7,
+        "avg_evening": 65.3,
+        "avg_weekend": 28.6,
+        "avg_audio": 28.6,
+        "top_apps": [
+          "YouTube",
+          "Instagram",
+          "Spotify",
+          "Facebook",
+          "Claude",
+          "Play Store"
+        ],
+        "apps": [
+          {
+            "pkg": "com.google.android.youtube",
+            "name": "YouTube",
+            "count": 777,
+            "morning_pct": 28.8,
+            "afternoon_pct": 8.5,
+            "evening_pct": 62.7,
+            "weekend_pct": 31.8,
+            "audio_pct": 14.2,
+            "starter_pct": 65.1,
+            "peak_hour": 23,
+            "cluster": 2,
+            "x": 1.0,
+            "y": 0.69,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.instagram.android",
+            "name": "Instagram",
+            "count": 618,
+            "morning_pct": 17.6,
+            "afternoon_pct": 20.9,
+            "evening_pct": 61.5,
+            "weekend_pct": 30.7,
+            "audio_pct": 19.2,
+            "starter_pct": 64.1,
+            "peak_hour": 23,
+            "cluster": 2,
+            "x": 0.99,
+            "y": -0.29,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.spotify.music",
+            "name": "Spotify",
+            "count": 451,
+            "morning_pct": 34.1,
+            "afternoon_pct": 12.0,
+            "evening_pct": 53.9,
+            "weekend_pct": 31.0,
+            "audio_pct": 41.5,
+            "starter_pct": 74.9,
+            "peak_hour": 23,
+            "cluster": 2,
+            "x": 1.73,
+            "y": 0.85,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.facebook.katana",
+            "name": "Facebook",
+            "count": 232,
+            "morning_pct": 13.8,
+            "afternoon_pct": 17.2,
+            "evening_pct": 69.0,
+            "weekend_pct": 36.6,
+            "audio_pct": 14.0,
+            "starter_pct": 60.8,
+            "peak_hour": 21,
+            "cluster": 2,
+            "x": 1.03,
+            "y": -0.36,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.anthropic.claude",
+            "name": "Claude",
+            "count": 200,
+            "morning_pct": 29.0,
+            "afternoon_pct": 22.5,
+            "evening_pct": 48.5,
+            "weekend_pct": 50.5,
+            "audio_pct": 34.2,
+            "starter_pct": 67.5,
+            "peak_hour": 10,
+            "cluster": 2,
+            "x": 0.59,
+            "y": 0.21,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.android.vending",
+            "name": "Play Store",
+            "count": 132,
+            "morning_pct": 20.5,
+            "afternoon_pct": 14.4,
+            "evening_pct": 65.2,
+            "weekend_pct": 32.6,
+            "audio_pct": 20.0,
+            "starter_pct": 48.5,
+            "peak_hour": 19,
+            "cluster": 2,
+            "x": 0.87,
+            "y": 0.32,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.google.android.GoogleCamera",
+            "name": "Cam\u00e9ra",
+            "count": 115,
+            "morning_pct": 17.4,
+            "afternoon_pct": 24.3,
+            "evening_pct": 58.3,
+            "weekend_pct": 29.6,
+            "audio_pct": 60.0,
+            "starter_pct": 45.2,
+            "peak_hour": 21,
+            "cluster": 2,
+            "x": 1.82,
+            "y": 0.09,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.google.android.apps.bard",
+            "name": "Gemini",
+            "count": 99,
+            "morning_pct": 26.3,
+            "afternoon_pct": 17.2,
+            "evening_pct": 56.6,
+            "weekend_pct": 36.4,
+            "audio_pct": 33.7,
+            "starter_pct": 44.4,
+            "peak_hour": 8,
+            "cluster": 2,
+            "x": 0.74,
+            "y": 0.66,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.niksoftware.snapseed",
+            "name": "Snapseed",
+            "count": 86,
+            "morning_pct": 0.0,
+            "afternoon_pct": 33.7,
+            "evening_pct": 66.3,
+            "weekend_pct": 19.8,
+            "audio_pct": 33.3,
+            "starter_pct": 82.6,
+            "peak_hour": 13,
+            "cluster": 2,
+            "x": 2.21,
+            "y": -1.85,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.google.android.deskclock",
+            "name": "Deskclock",
+            "count": 84,
+            "morning_pct": 33.3,
+            "afternoon_pct": 2.4,
+            "evening_pct": 64.3,
+            "weekend_pct": 20.2,
+            "audio_pct": 35.5,
+            "starter_pct": 67.9,
+            "peak_hour": 7,
+            "cluster": 2,
+            "x": 2.16,
+            "y": 1.27,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.fitbit.FitbitMobile",
+            "name": "Fitbitmobile",
+            "count": 75,
+            "morning_pct": 29.3,
+            "afternoon_pct": 14.7,
+            "evening_pct": 56.0,
+            "weekend_pct": 49.3,
+            "audio_pct": 34.4,
+            "starter_pct": 58.7,
+            "peak_hour": 23,
+            "cluster": 2,
+            "x": 0.86,
+            "y": 0.65,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "fr.playsoft.teleloisirs",
+            "name": "T\u00e9l\u00e9-Loisirs",
+            "count": 75,
+            "morning_pct": 4.0,
+            "afternoon_pct": 5.3,
+            "evening_pct": 90.7,
+            "weekend_pct": 22.7,
+            "audio_pct": 20.4,
+            "starter_pct": 54.7,
+            "peak_hour": 19,
+            "cluster": 2,
+            "x": 2.56,
+            "y": -0.27,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.caisseepargne.android.mobilebanking",
+            "name": "Mobilebanking",
+            "count": 57,
+            "morning_pct": 10.5,
+            "afternoon_pct": 15.8,
+            "evening_pct": 73.7,
+            "weekend_pct": 15.8,
+            "audio_pct": 25.0,
+            "starter_pct": 68.4,
+            "peak_hour": 3,
+            "cluster": 2,
+            "x": 2.21,
+            "y": -0.47,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.amazon.mShop.android.shopping",
+            "name": "Shopping",
+            "count": 56,
+            "morning_pct": 21.4,
+            "afternoon_pct": 14.3,
+            "evening_pct": 64.3,
+            "weekend_pct": 26.8,
+            "audio_pct": 45.8,
+            "starter_pct": 39.3,
+            "peak_hour": 22,
+            "cluster": 2,
+            "x": 1.63,
+            "y": 0.69,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.coinbase.android",
+            "name": "Android",
+            "count": 27,
+            "morning_pct": 14.8,
+            "afternoon_pct": 14.8,
+            "evening_pct": 70.4,
+            "weekend_pct": 22.2,
+            "audio_pct": 11.1,
+            "starter_pct": 55.6,
+            "peak_hour": 21,
+            "cluster": 2,
+            "x": 1.16,
+            "y": -0.11,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.radioplayer.mobile",
+            "name": "Mobile",
+            "count": 24,
+            "morning_pct": 45.8,
+            "afternoon_pct": 0.0,
+            "evening_pct": 54.2,
+            "weekend_pct": 4.2,
+            "audio_pct": 30.0,
+            "starter_pct": 66.7,
+            "peak_hour": 8,
+            "cluster": 2,
+            "x": 1.74,
+            "y": 2.05,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          },
+          {
+            "pkg": "com.netflix.mediaclient",
+            "name": "Netflix",
+            "count": 19,
+            "morning_pct": 5.3,
+            "afternoon_pct": 0.0,
+            "evening_pct": 94.7,
+            "weekend_pct": 26.3,
+            "audio_pct": 14.3,
+            "starter_pct": 57.9,
+            "peak_hour": 19,
+            "cluster": 2,
+            "x": 2.62,
+            "y": -0.11,
+            "cluster_title": "Messagerie & Social R\u00e9flexe",
+            "color": "#06b6d4"
+          }
+        ]
+      },
+      {
+        "id": 0,
+        "title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "icon": "\ud83c\udf19",
+        "description": "Applications sp\u00e9cialis\u00e9es ou consult\u00e9es ponctuellement le weekend et tard en soir\u00e9e.",
+        "timing": "Weekend & Soir\u00e9e",
+        "color": "#f59e0b",
+        "app_count": 4,
+        "total_launches": 55,
+        "launch_share": 0.5,
+        "avg_morning": 58.6,
+        "avg_evening": 26.6,
+        "avg_weekend": 48.0,
+        "avg_audio": 0.0,
+        "top_apps": [
+          "Android",
+          "Documentsui",
+          "Feedly",
+          "Magazines"
+        ],
+        "apps": [
+          {
+            "pkg": "com.suno.android",
+            "name": "Android",
+            "count": 16,
+            "morning_pct": 56.2,
+            "afternoon_pct": 12.5,
+            "evening_pct": 31.2,
+            "weekend_pct": 68.8,
+            "audio_pct": 0.0,
+            "starter_pct": 31.2,
+            "peak_hour": 11,
+            "cluster": 0,
+            "x": -2.53,
+            "y": 2.3,
+            "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+            "color": "#f59e0b"
+          },
+          {
+            "pkg": "com.google.android.documentsui",
+            "name": "Documentsui",
+            "count": 15,
+            "morning_pct": 53.3,
+            "afternoon_pct": 13.3,
+            "evening_pct": 33.3,
+            "weekend_pct": 73.3,
+            "audio_pct": 0.0,
+            "starter_pct": 0.0,
+            "peak_hour": 10,
+            "cluster": 0,
+            "x": -3.24,
+            "y": 2.58,
+            "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+            "color": "#f59e0b"
+          },
+          {
+            "pkg": "com.devhd.feedly",
+            "name": "Feedly",
+            "count": 12,
+            "morning_pct": 75.0,
+            "afternoon_pct": 25.0,
+            "evening_pct": 0.0,
+            "weekend_pct": 16.7,
+            "audio_pct": 0.0,
+            "starter_pct": 16.7,
+            "peak_hour": 10,
+            "cluster": 0,
+            "x": -3.65,
+            "y": 3.24,
+            "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+            "color": "#f59e0b"
+          },
+          {
+            "pkg": "com.google.android.apps.magazines",
+            "name": "Magazines",
+            "count": 12,
+            "morning_pct": 50.0,
+            "afternoon_pct": 8.3,
+            "evening_pct": 41.7,
+            "weekend_pct": 33.3,
+            "audio_pct": 0.0,
+            "starter_pct": 33.3,
+            "peak_hour": 21,
+            "cluster": 0,
+            "x": -1.31,
+            "y": 2.21,
+            "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+            "color": "#f59e0b"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "icon": "\ud83c\udf19",
+        "description": "Applications sp\u00e9cialis\u00e9es ou consult\u00e9es ponctuellement le weekend et tard en soir\u00e9e.",
+        "timing": "Weekend & Soir\u00e9e",
+        "color": "#f59e0b",
+        "app_count": 1,
+        "total_launches": 13,
+        "launch_share": 0.1,
+        "avg_morning": 0.0,
+        "avg_evening": 15.4,
+        "avg_weekend": 92.3,
+        "avg_audio": 0.0,
+        "top_apps": [
+          "Android"
+        ],
+        "apps": [
+          {
+            "pkg": "com.tribab.tricount.android",
+            "name": "Android",
+            "count": 13,
+            "morning_pct": 0.0,
+            "afternoon_pct": 84.6,
+            "evening_pct": 15.4,
+            "weekend_pct": 92.3,
+            "audio_pct": 0.0,
+            "starter_pct": 61.5,
+            "peak_hour": 17,
+            "cluster": 3,
+            "x": -3.76,
+            "y": -3.8,
+            "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+            "color": "#f59e0b"
+          }
+        ]
+      }
+    ],
+    "apps": [
+      {
+        "pkg": "com.android.chrome",
+        "name": "Chrome",
+        "count": 1807,
+        "morning_pct": 26.1,
+        "afternoon_pct": 27.1,
+        "evening_pct": 46.8,
+        "weekend_pct": 37.2,
+        "audio_pct": 24.7,
+        "starter_pct": 49.1,
+        "peak_hour": 10,
+        "cluster": 1,
+        "x": -0.07,
+        "y": 0.17,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.googlequicksearchbox",
+        "name": "Google Search",
+        "count": 830,
+        "morning_pct": 24.3,
+        "afternoon_pct": 27.8,
+        "evening_pct": 47.8,
+        "weekend_pct": 43.0,
+        "audio_pct": 21.4,
+        "starter_pct": 46.4,
+        "peak_hour": 20,
+        "cluster": 1,
+        "x": -0.31,
+        "y": 0.05,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.youtube",
+        "name": "YouTube",
+        "count": 777,
+        "morning_pct": 28.8,
+        "afternoon_pct": 8.5,
+        "evening_pct": 62.7,
+        "weekend_pct": 31.8,
+        "audio_pct": 14.2,
+        "starter_pct": 65.1,
+        "peak_hour": 23,
+        "cluster": 2,
+        "x": 1.0,
+        "y": 0.69,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.instagram.android",
+        "name": "Instagram",
+        "count": 618,
+        "morning_pct": 17.6,
+        "afternoon_pct": 20.9,
+        "evening_pct": 61.5,
+        "weekend_pct": 30.7,
+        "audio_pct": 19.2,
+        "starter_pct": 64.1,
+        "peak_hour": 23,
+        "cluster": 2,
+        "x": 0.99,
+        "y": -0.29,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.facebook.orca",
+        "name": "Messenger",
+        "count": 600,
+        "morning_pct": 19.0,
+        "afternoon_pct": 27.7,
+        "evening_pct": 53.3,
+        "weekend_pct": 35.0,
+        "audio_pct": 14.2,
+        "starter_pct": 53.2,
+        "peak_hour": 20,
+        "cluster": 1,
+        "x": 0.01,
+        "y": -0.34,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.apps.messaging",
+        "name": "Messages SMS",
+        "count": 559,
+        "morning_pct": 14.0,
+        "afternoon_pct": 36.7,
+        "evening_pct": 49.4,
+        "weekend_pct": 33.6,
+        "audio_pct": 16.5,
+        "starter_pct": 63.1,
+        "peak_hour": 18,
+        "cluster": 1,
+        "x": 0.06,
+        "y": -1.07,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.spotify.music",
+        "name": "Spotify",
+        "count": 451,
+        "morning_pct": 34.1,
+        "afternoon_pct": 12.0,
+        "evening_pct": 53.9,
+        "weekend_pct": 31.0,
+        "audio_pct": 41.5,
+        "starter_pct": 74.9,
+        "peak_hour": 23,
+        "cluster": 2,
+        "x": 1.73,
+        "y": 0.85,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.whatsapp",
+        "name": "WhatsApp",
+        "count": 416,
+        "morning_pct": 10.3,
+        "afternoon_pct": 35.3,
+        "evening_pct": 54.3,
+        "weekend_pct": 32.7,
+        "audio_pct": 23.4,
+        "starter_pct": 55.8,
+        "peak_hour": 19,
+        "cluster": 1,
+        "x": 0.41,
+        "y": -1.05,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.apps.maps",
+        "name": "Google Maps",
+        "count": 411,
+        "morning_pct": 20.2,
+        "afternoon_pct": 49.4,
+        "evening_pct": 30.4,
+        "weekend_pct": 20.9,
+        "audio_pct": 12.4,
+        "starter_pct": 66.7,
+        "peak_hour": 12,
+        "cluster": 1,
+        "x": -0.86,
+        "y": -1.23,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.calendar",
+        "name": "Google Calendar",
+        "count": 402,
+        "morning_pct": 33.1,
+        "afternoon_pct": 25.1,
+        "evening_pct": 41.8,
+        "weekend_pct": 20.4,
+        "audio_pct": 16.1,
+        "starter_pct": 55.2,
+        "peak_hour": 9,
+        "cluster": 1,
+        "x": -0.17,
+        "y": 0.52,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.gm",
+        "name": "Gmail",
+        "count": 390,
+        "morning_pct": 34.1,
+        "afternoon_pct": 26.7,
+        "evening_pct": 39.2,
+        "weekend_pct": 27.2,
+        "audio_pct": 17.2,
+        "starter_pct": 50.3,
+        "peak_hour": 9,
+        "cluster": 1,
+        "x": -0.51,
+        "y": 0.58,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.apps.dynamite",
+        "name": "Google Chat",
+        "count": 380,
+        "morning_pct": 26.8,
+        "afternoon_pct": 25.5,
+        "evening_pct": 47.6,
+        "weekend_pct": 18.4,
+        "audio_pct": 22.3,
+        "starter_pct": 68.7,
+        "peak_hour": 9,
+        "cluster": 1,
+        "x": 0.68,
+        "y": 0.01,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.facebook.katana",
+        "name": "Facebook",
+        "count": 232,
+        "morning_pct": 13.8,
+        "afternoon_pct": 17.2,
+        "evening_pct": 69.0,
+        "weekend_pct": 36.6,
+        "audio_pct": 14.0,
+        "starter_pct": 60.8,
+        "peak_hour": 21,
+        "cluster": 2,
+        "x": 1.03,
+        "y": -0.36,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.anthropic.claude",
+        "name": "Claude",
+        "count": 200,
+        "morning_pct": 29.0,
+        "afternoon_pct": 22.5,
+        "evening_pct": 48.5,
+        "weekend_pct": 50.5,
+        "audio_pct": 34.2,
+        "starter_pct": 67.5,
+        "peak_hour": 10,
+        "cluster": 2,
+        "x": 0.59,
+        "y": 0.21,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.apps.weather",
+        "name": "Weather",
+        "count": 138,
+        "morning_pct": 28.3,
+        "afternoon_pct": 26.1,
+        "evening_pct": 45.7,
+        "weekend_pct": 23.2,
+        "audio_pct": 10.5,
+        "starter_pct": 41.3,
+        "peak_hour": 8,
+        "cluster": 1,
+        "x": -0.56,
+        "y": 0.4,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.android.vending",
+        "name": "Play Store",
+        "count": 132,
+        "morning_pct": 20.5,
+        "afternoon_pct": 14.4,
+        "evening_pct": 65.2,
+        "weekend_pct": 32.6,
+        "audio_pct": 20.0,
+        "starter_pct": 48.5,
+        "peak_hour": 19,
+        "cluster": 2,
+        "x": 0.87,
+        "y": 0.32,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.GoogleCamera",
+        "name": "Cam\u00e9ra",
+        "count": 115,
+        "morning_pct": 17.4,
+        "afternoon_pct": 24.3,
+        "evening_pct": 58.3,
+        "weekend_pct": 29.6,
+        "audio_pct": 60.0,
+        "starter_pct": 45.2,
+        "peak_hour": 21,
+        "cluster": 2,
+        "x": 1.82,
+        "y": 0.09,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.apps.photos",
+        "name": "Google Photos",
+        "count": 115,
+        "morning_pct": 10.4,
+        "afternoon_pct": 29.6,
+        "evening_pct": 60.0,
+        "weekend_pct": 39.1,
+        "audio_pct": 8.8,
+        "starter_pct": 40.9,
+        "peak_hour": 19,
+        "cluster": 1,
+        "x": -0.22,
+        "y": -0.72,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.boursorama.android.clients",
+        "name": "Clients",
+        "count": 111,
+        "morning_pct": 20.7,
+        "afternoon_pct": 26.1,
+        "evening_pct": 53.2,
+        "weekend_pct": 19.8,
+        "audio_pct": 18.3,
+        "starter_pct": 48.6,
+        "peak_hour": 18,
+        "cluster": 1,
+        "x": 0.32,
+        "y": -0.05,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.twitter.android",
+        "name": "X (Twitter)",
+        "count": 111,
+        "morning_pct": 50.5,
+        "afternoon_pct": 8.1,
+        "evening_pct": 41.4,
+        "weekend_pct": 45.9,
+        "audio_pct": 9.1,
+        "starter_pct": 64.9,
+        "peak_hour": 9,
+        "cluster": 1,
+        "x": -0.49,
+        "y": 1.77,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.tradingview.tradingviewapp",
+        "name": "TradingView",
+        "count": 102,
+        "morning_pct": 12.7,
+        "afternoon_pct": 40.2,
+        "evening_pct": 47.1,
+        "weekend_pct": 10.8,
+        "audio_pct": 19.0,
+        "starter_pct": 57.8,
+        "peak_hour": 12,
+        "cluster": 1,
+        "x": 0.27,
+        "y": -1.08,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.apps.docs",
+        "name": "Google Drive",
+        "count": 101,
+        "morning_pct": 37.6,
+        "afternoon_pct": 27.7,
+        "evening_pct": 34.7,
+        "weekend_pct": 15.8,
+        "audio_pct": 22.6,
+        "starter_pct": 53.5,
+        "peak_hour": 9,
+        "cluster": 1,
+        "x": -0.29,
+        "y": 0.75,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.apps.bard",
+        "name": "Gemini",
+        "count": 99,
+        "morning_pct": 26.3,
+        "afternoon_pct": 17.2,
+        "evening_pct": 56.6,
+        "weekend_pct": 36.4,
+        "audio_pct": 33.7,
+        "starter_pct": 44.4,
+        "peak_hour": 8,
+        "cluster": 2,
+        "x": 0.74,
+        "y": 0.66,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.niksoftware.snapseed",
+        "name": "Snapseed",
+        "count": 86,
+        "morning_pct": 0.0,
+        "afternoon_pct": 33.7,
+        "evening_pct": 66.3,
+        "weekend_pct": 19.8,
+        "audio_pct": 33.3,
+        "starter_pct": 82.6,
+        "peak_hour": 13,
+        "cluster": 2,
+        "x": 2.21,
+        "y": -1.85,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.openai.chatgpt",
+        "name": "ChatGPT",
+        "count": 85,
+        "morning_pct": 20.0,
+        "afternoon_pct": 37.6,
+        "evening_pct": 42.4,
+        "weekend_pct": 18.8,
+        "audio_pct": 19.4,
+        "starter_pct": 52.9,
+        "peak_hour": 12,
+        "cluster": 1,
+        "x": -0.18,
+        "y": -0.56,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.deskclock",
+        "name": "Deskclock",
+        "count": 84,
+        "morning_pct": 33.3,
+        "afternoon_pct": 2.4,
+        "evening_pct": 64.3,
+        "weekend_pct": 20.2,
+        "audio_pct": 35.5,
+        "starter_pct": 67.9,
+        "peak_hour": 7,
+        "cluster": 2,
+        "x": 2.16,
+        "y": 1.27,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.gms",
+        "name": "Google Services",
+        "count": 81,
+        "morning_pct": 9.9,
+        "afternoon_pct": 34.6,
+        "evening_pct": 55.6,
+        "weekend_pct": 28.4,
+        "audio_pct": 0.0,
+        "starter_pct": 28.4,
+        "peak_hour": 12,
+        "cluster": 1,
+        "x": -0.91,
+        "y": -0.75,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "org.telegram.messenger",
+        "name": "Messenger",
+        "count": 76,
+        "morning_pct": 17.1,
+        "afternoon_pct": 32.9,
+        "evening_pct": 50.0,
+        "weekend_pct": 50.0,
+        "audio_pct": 18.8,
+        "starter_pct": 73.7,
+        "peak_hour": 19,
+        "cluster": 1,
+        "x": 0.17,
+        "y": -0.97,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.fitbit.FitbitMobile",
+        "name": "Fitbitmobile",
+        "count": 75,
+        "morning_pct": 29.3,
+        "afternoon_pct": 14.7,
+        "evening_pct": 56.0,
+        "weekend_pct": 49.3,
+        "audio_pct": 34.4,
+        "starter_pct": 58.7,
+        "peak_hour": 23,
+        "cluster": 2,
+        "x": 0.86,
+        "y": 0.65,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "fr.playsoft.teleloisirs",
+        "name": "T\u00e9l\u00e9-Loisirs",
+        "count": 75,
+        "morning_pct": 4.0,
+        "afternoon_pct": 5.3,
+        "evening_pct": 90.7,
+        "weekend_pct": 22.7,
+        "audio_pct": 20.4,
+        "starter_pct": 54.7,
+        "peak_hour": 19,
+        "cluster": 2,
+        "x": 2.56,
+        "y": -0.27,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.android.settings",
+        "name": "Param\u00e8tres",
+        "count": 74,
+        "morning_pct": 18.9,
+        "afternoon_pct": 12.2,
+        "evening_pct": 68.9,
+        "weekend_pct": 36.5,
+        "audio_pct": 0.0,
+        "starter_pct": 43.2,
+        "peak_hour": 22,
+        "cluster": 1,
+        "x": 0.19,
+        "y": 0.28,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.caisseepargne.android.mobilebanking",
+        "name": "Mobilebanking",
+        "count": 57,
+        "morning_pct": 10.5,
+        "afternoon_pct": 15.8,
+        "evening_pct": 73.7,
+        "weekend_pct": 15.8,
+        "audio_pct": 25.0,
+        "starter_pct": 68.4,
+        "peak_hour": 3,
+        "cluster": 2,
+        "x": 2.21,
+        "y": -0.47,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.amazon.mShop.android.shopping",
+        "name": "Shopping",
+        "count": 56,
+        "morning_pct": 21.4,
+        "afternoon_pct": 14.3,
+        "evening_pct": 64.3,
+        "weekend_pct": 26.8,
+        "audio_pct": 45.8,
+        "starter_pct": 39.3,
+        "peak_hour": 22,
+        "cluster": 2,
+        "x": 1.63,
+        "y": 0.69,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.photopicker",
+        "name": "Photopicker",
+        "count": 54,
+        "morning_pct": 13.0,
+        "afternoon_pct": 33.3,
+        "evening_pct": 53.7,
+        "weekend_pct": 18.5,
+        "audio_pct": 0.0,
+        "starter_pct": 22.2,
+        "peak_hour": 21,
+        "cluster": 1,
+        "x": -0.96,
+        "y": -0.41,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.dialer",
+        "name": "T\u00e9l\u00e9phone",
+        "count": 47,
+        "morning_pct": 17.0,
+        "afternoon_pct": 55.3,
+        "evening_pct": 27.7,
+        "weekend_pct": 23.4,
+        "audio_pct": 0.0,
+        "starter_pct": 78.7,
+        "peak_hour": 15,
+        "cluster": 1,
+        "x": -1.26,
+        "y": -1.87,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.airbnb.android",
+        "name": "Android",
+        "count": 37,
+        "morning_pct": 32.4,
+        "afternoon_pct": 27.0,
+        "evening_pct": 40.5,
+        "weekend_pct": 10.8,
+        "audio_pct": 21.4,
+        "starter_pct": 59.5,
+        "peak_hour": 10,
+        "cluster": 1,
+        "x": 0.2,
+        "y": 0.42,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.waze",
+        "name": "Waze",
+        "count": 29,
+        "morning_pct": 27.6,
+        "afternoon_pct": 24.1,
+        "evening_pct": 48.3,
+        "weekend_pct": 48.3,
+        "audio_pct": 16.7,
+        "starter_pct": 58.6,
+        "peak_hour": 19,
+        "cluster": 1,
+        "x": -0.22,
+        "y": 0.12,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.android.intentresolver",
+        "name": "Intentresolver",
+        "count": 28,
+        "morning_pct": 21.4,
+        "afternoon_pct": 21.4,
+        "evening_pct": 57.1,
+        "weekend_pct": 28.6,
+        "audio_pct": 0.0,
+        "starter_pct": 32.1,
+        "peak_hour": 11,
+        "cluster": 1,
+        "x": -0.61,
+        "y": 0.27,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.coinbase.android",
+        "name": "Android",
+        "count": 27,
+        "morning_pct": 14.8,
+        "afternoon_pct": 14.8,
+        "evening_pct": 70.4,
+        "weekend_pct": 22.2,
+        "audio_pct": 11.1,
+        "starter_pct": 55.6,
+        "peak_hour": 21,
+        "cluster": 2,
+        "x": 1.16,
+        "y": -0.11,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.apps.walletnfcrel",
+        "name": "Google Wallet",
+        "count": 25,
+        "morning_pct": 0.0,
+        "afternoon_pct": 60.0,
+        "evening_pct": 40.0,
+        "weekend_pct": 32.0,
+        "audio_pct": 0.0,
+        "starter_pct": 4.0,
+        "peak_hour": 12,
+        "cluster": 1,
+        "x": -2.57,
+        "y": -1.82,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.radioplayer.mobile",
+        "name": "Mobile",
+        "count": 24,
+        "morning_pct": 45.8,
+        "afternoon_pct": 0.0,
+        "evening_pct": 54.2,
+        "weekend_pct": 4.2,
+        "audio_pct": 30.0,
+        "starter_pct": 66.7,
+        "peak_hour": 8,
+        "cluster": 2,
+        "x": 1.74,
+        "y": 2.05,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.google.android.apps.nbu.files",
+        "name": "Files",
+        "count": 21,
+        "morning_pct": 23.8,
+        "afternoon_pct": 38.1,
+        "evening_pct": 38.1,
+        "weekend_pct": 47.6,
+        "audio_pct": 15.4,
+        "starter_pct": 47.6,
+        "peak_hour": 11,
+        "cluster": 1,
+        "x": -1.16,
+        "y": -0.42,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.github.android",
+        "name": "GitHub",
+        "count": 21,
+        "morning_pct": 19.0,
+        "afternoon_pct": 47.6,
+        "evening_pct": 33.3,
+        "weekend_pct": 23.8,
+        "audio_pct": 0.0,
+        "starter_pct": 42.9,
+        "peak_hour": 13,
+        "cluster": 1,
+        "x": -1.73,
+        "y": -0.94,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.netflix.mediaclient",
+        "name": "Netflix",
+        "count": 19,
+        "morning_pct": 5.3,
+        "afternoon_pct": 0.0,
+        "evening_pct": 94.7,
+        "weekend_pct": 26.3,
+        "audio_pct": 14.3,
+        "starter_pct": 57.9,
+        "peak_hour": 19,
+        "cluster": 2,
+        "x": 2.62,
+        "y": -0.11,
+        "cluster_title": "Messagerie & Social R\u00e9flexe",
+        "color": "#06b6d4"
+      },
+      {
+        "pkg": "com.suno.android",
+        "name": "Android",
+        "count": 16,
+        "morning_pct": 56.2,
+        "afternoon_pct": 12.5,
+        "evening_pct": 31.2,
+        "weekend_pct": 68.8,
+        "audio_pct": 0.0,
+        "starter_pct": 31.2,
+        "peak_hour": 11,
+        "cluster": 0,
+        "x": -2.53,
+        "y": 2.3,
+        "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "color": "#f59e0b"
+      },
+      {
+        "pkg": "co.staycation.staycationapp",
+        "name": "Staycationapp",
+        "count": 16,
+        "morning_pct": 25.0,
+        "afternoon_pct": 50.0,
+        "evening_pct": 25.0,
+        "weekend_pct": 6.2,
+        "audio_pct": 0.0,
+        "starter_pct": 62.5,
+        "peak_hour": 12,
+        "cluster": 1,
+        "x": -1.42,
+        "y": -0.95,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.documentsui",
+        "name": "Documentsui",
+        "count": 15,
+        "morning_pct": 53.3,
+        "afternoon_pct": 13.3,
+        "evening_pct": 33.3,
+        "weekend_pct": 73.3,
+        "audio_pct": 0.0,
+        "starter_pct": 0.0,
+        "peak_hour": 10,
+        "cluster": 0,
+        "x": -3.24,
+        "y": 2.58,
+        "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "color": "#f59e0b"
+      },
+      {
+        "pkg": "com.coinmarketcap.android",
+        "name": "Android",
+        "count": 15,
+        "morning_pct": 26.7,
+        "afternoon_pct": 13.3,
+        "evening_pct": 60.0,
+        "weekend_pct": 0.0,
+        "audio_pct": 0.0,
+        "starter_pct": 60.0,
+        "peak_hour": 18,
+        "cluster": 1,
+        "x": 0.75,
+        "y": 0.51,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "fr.geovelo",
+        "name": "Geovelo",
+        "count": 13,
+        "morning_pct": 0.0,
+        "afternoon_pct": 30.8,
+        "evening_pct": 69.2,
+        "weekend_pct": 30.8,
+        "audio_pct": 9.1,
+        "starter_pct": 46.2,
+        "peak_hour": 17,
+        "cluster": 1,
+        "x": 0.5,
+        "y": -1.36,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.tribab.tricount.android",
+        "name": "Android",
+        "count": 13,
+        "morning_pct": 0.0,
+        "afternoon_pct": 84.6,
+        "evening_pct": 15.4,
+        "weekend_pct": 92.3,
+        "audio_pct": 0.0,
+        "starter_pct": 61.5,
+        "peak_hour": 17,
+        "cluster": 3,
+        "x": -3.76,
+        "y": -3.8,
+        "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "color": "#f59e0b"
+      },
+      {
+        "pkg": "com.devhd.feedly",
+        "name": "Feedly",
+        "count": 12,
+        "morning_pct": 75.0,
+        "afternoon_pct": 25.0,
+        "evening_pct": 0.0,
+        "weekend_pct": 16.7,
+        "audio_pct": 0.0,
+        "starter_pct": 16.7,
+        "peak_hour": 10,
+        "cluster": 0,
+        "x": -3.65,
+        "y": 3.24,
+        "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "color": "#f59e0b"
+      },
+      {
+        "pkg": "com.google.android.keep",
+        "name": "Keep",
+        "count": 12,
+        "morning_pct": 16.7,
+        "afternoon_pct": 33.3,
+        "evening_pct": 50.0,
+        "weekend_pct": 50.0,
+        "audio_pct": 10.0,
+        "starter_pct": 58.3,
+        "peak_hour": 11,
+        "cluster": 1,
+        "x": -0.5,
+        "y": -0.82,
+        "cluster_title": "Navigation, Recherche & Multim\u00e9dia",
+        "color": "#10b981"
+      },
+      {
+        "pkg": "com.google.android.apps.magazines",
+        "name": "Magazines",
+        "count": 12,
+        "morning_pct": 50.0,
+        "afternoon_pct": 8.3,
+        "evening_pct": 41.7,
+        "weekend_pct": 33.3,
+        "audio_pct": 0.0,
+        "starter_pct": 33.3,
+        "peak_hour": 21,
+        "cluster": 0,
+        "x": -1.31,
+        "y": 2.21,
+        "cluster_title": "M\u00e9dias & Outils Sp\u00e9cifiques",
+        "color": "#f59e0b"
+      }
+    ]
+  },
+  "feature_importance": {
+    "total_weight": 53.76,
+    "features": [
+      {
+        "name": "Transitions Markov 2-gram (In-Session)",
+        "key": "W_IN_TRANSITION_2",
+        "weight": 9.7385,
+        "cat": "Transitions",
+        "desc": "S\u00e9quence d ordre 2 (A -> B -> C) au sein de la session active (< 70s). Poids maximal en session.",
+        "category_type": "In-Session Regime",
+        "importance_pct": 18.1,
+        "rank": 1
+      },
+      {
+        "name": "P\u00e9riodicit\u00e9 168h (Cold-Start)",
+        "key": "W_COLD_REC_168H",
+        "weight": 9.5687,
+        "cat": "P\u00e9riodicit\u00e9",
+        "desc": "R\u00e9currence hebdomadaire exacte lors du d\u00e9verrouillage / reprise. Poids maximal hors session.",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 17.8,
+        "rank": 2
+      },
+      {
+        "name": "Transitions Markov 1-gram (In-Session)",
+        "key": "W_IN_TRANSITION",
+        "weight": 8.276,
+        "cat": "Transitions",
+        "desc": "Probabilit\u00e9 de transition s\u00e9quentielle 1-gram app n-1 -> cible en session.",
+        "category_type": "In-Session Regime",
+        "importance_pct": 15.4,
+        "rank": 3
+      },
+      {
+        "name": "R\u00e9cence courte (Cold-Start)",
+        "key": "W_COLD_RECENCY",
+        "weight": 5.3538,
+        "cat": "R\u00e9cence",
+        "desc": "Inertie de reprise d application active r\u00e9cemment (demi-vie 0.5h).",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 10.0,
+        "rank": 4
+      },
+      {
+        "name": "Contexte Temporel Global (Cold-Start)",
+        "key": "W_COLD_CONTEXT",
+        "weight": 3.2691,
+        "cat": "Contexte Temporel",
+        "desc": "Cr\u00e9neau horaire gaussien (sigma=2.53h) et jour ouvr\u00e9/weekend au d\u00e9verrouillage.",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 6.1,
+        "rank": 5
+      },
+      {
+        "name": "Contexte Batterie (Cold-Start)",
+        "key": "W_COLD_BAT",
+        "weight": 3.2513,
+        "cat": "Contexte Syst\u00e8me",
+        "desc": "Corr\u00e9lation niveau de charge batterie vs historique de lancement.",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 6.0,
+        "rank": 6
+      },
+      {
+        "name": "P\u00e9riodicit\u00e9 24h (Cold-Start)",
+        "key": "W_COLD_REC_24H",
+        "weight": 2.6751,
+        "cat": "P\u00e9riodicit\u00e9",
+        "desc": "M\u00eame heure de la journ\u00e9e la veille lors d une reprise.",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 5.0,
+        "rank": 7
+      },
+      {
+        "name": "P\u00e9riodicit\u00e9 8h (Cold-Start)",
+        "key": "W_COLD_REC_8H",
+        "weight": 2.5227,
+        "cat": "P\u00e9riodicit\u00e9",
+        "desc": "Cycle circadien 8h (matin / midi / soir) hors session.",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 4.7,
+        "rank": 8
+      },
+      {
+        "name": "P\u00e9riodicit\u00e9 8h (In-Session)",
+        "key": "W_IN_REC_8H",
+        "weight": 1.8151,
+        "cat": "P\u00e9riodicit\u00e9",
+        "desc": "Inertie de cr\u00e9neau horaire en cours de session.",
+        "category_type": "In-Session Regime",
+        "importance_pct": 3.4,
+        "rank": 9
+      },
+      {
+        "name": "Contexte Agenda / Calendrier",
+        "key": "W_COLD_CAL",
+        "weight": 1.4203,
+        "cat": "Contexte Syst\u00e8me",
+        "desc": "Proximit\u00e9 temporelle \u00e9v\u00e9nement agenda.",
+        "category_type": "Cold-Start Regime",
+        "importance_pct": 2.6,
+        "rank": 10
+      },
+      {
+        "name": "P\u00e9riodicit\u00e9 168h (In-Session)",
+        "key": "W_IN_REC_168H",
+        "weight": 1.3568,
+        "cat": "P\u00e9riodicit\u00e9",
+        "desc": "Rappel d habitude hebdomadaire en cours de session.",
+        "category_type": "In-Session Regime",
+        "importance_pct": 2.5,
+        "rank": 11
+      },
+      {
+        "name": "R\u00e9cence courte (In-Session)",
+        "key": "W_IN_RECENCY",
+        "weight": 1.0723,
+        "cat": "R\u00e9cence",
+        "desc": "R\u00e9cence att\u00e9nu\u00e9e en session pour laisser priorit\u00e9 aux transitions Markov.",
+        "category_type": "In-Session Regime",
+        "importance_pct": 2.0,
+        "rank": 12
+      },
+      {
+        "name": "Contexte Temporel (In-Session)",
+        "key": "W_IN_CONTEXT",
+        "weight": 0.9984,
+        "cat": "Contexte Temporel",
+        "desc": "Heure g\u00e9n\u00e9rale en cours de session.",
+        "category_type": "In-Session Regime",
+        "importance_pct": 1.9,
+        "rank": 13
+      },
+      {
+        "name": "P\u00e9riph\u00e9rique Audio (Device)",
+        "key": "W_COLD_DEVICE",
+        "weight": 0.9407,
+        "cat": "Contexte Mat\u00e9riel",
+        "desc": "Casque Bluetooth / \u00e9couteurs vs haut-parleur.",
+        "category_type": "Hardware / State",
+        "importance_pct": 1.7,
+        "rank": 14
+      },
+      {
+        "name": "Notifications R\u00e9centes",
+        "key": "W_NOTIF",
+        "weight": 0.79,
+        "cat": "Contexte Syst\u00e8me",
+        "desc": "Package de la notification active.",
+        "category_type": "Contextual Trigger",
+        "importance_pct": 1.5,
+        "rank": 15
+      },
+      {
+        "name": "Temps sortie de veille (sr)",
+        "key": "W_COLD_SR",
+        "weight": 0.7066,
+        "cat": "Contexte Mat\u00e9riel",
+        "desc": "Secondes \u00e9coul\u00e9es depuis d\u00e9verrouillage \u00e9cran.",
+        "category_type": "Hardware / State",
+        "importance_pct": 1.3,
+        "rank": 16
+      }
+    ],
+    "categories": [
+      {
+        "category": "Transitions",
+        "weight": 18.01,
+        "share_pct": 33.5
+      },
+      {
+        "category": "P\u00e9riodicit\u00e9",
+        "weight": 17.94,
+        "share_pct": 33.4
+      },
+      {
+        "category": "R\u00e9cence",
+        "weight": 6.43,
+        "share_pct": 12.0
+      },
+      {
+        "category": "Contexte Syst\u00e8me",
+        "weight": 5.46,
+        "share_pct": 10.2
+      },
+      {
+        "category": "Contexte Temporel",
+        "weight": 4.27,
+        "share_pct": 7.9
+      },
+      {
+        "category": "Contexte Mat\u00e9riel",
+        "weight": 1.65,
+        "share_pct": 3.1
+      }
+    ]
+  },
+  "advanced_ds": {
+    "app2vec_similarities": {
+      "Messages SMS": [
+        {
+          "pkg": "com.facebook.katana",
+          "name": "Facebook",
+          "similarity": 0.973
+        },
+        {
+          "pkg": "com.waze",
+          "name": "Waze",
+          "similarity": 0.935
+        },
+        {
+          "pkg": "com.boursorama.android.clients",
+          "name": "clients",
+          "similarity": 0.932
+        },
+        {
+          "pkg": "com.google.android.youtube",
+          "name": "YouTube",
+          "similarity": 0.929
+        }
+      ],
+      "Google Maps": [
+        {
+          "pkg": "com.android.intentresolver",
+          "name": "intentresolver",
+          "similarity": 0.977
+        },
+        {
+          "pkg": "com.google.android.GoogleCamera",
+          "name": "Cam\u00e9ra",
+          "similarity": 0.974
+        },
+        {
+          "pkg": "com.amazon.mShop.android.shopping",
+          "name": "shopping",
+          "similarity": 0.951
+        },
+        {
+          "pkg": "com.coinbase.android",
+          "name": "android",
+          "similarity": 0.949
+        }
+      ],
+      "T\u00e9l\u00e9phone": [
+        {
+          "pkg": "com.google.android.calendar",
+          "name": "Google Calendar",
+          "similarity": 0.88
+        },
+        {
+          "pkg": "fr.playsoft.teleloisirs",
+          "name": "T\u00e9l\u00e9-Loisirs",
+          "similarity": 0.831
+        },
+        {
+          "pkg": "com.caisseepargne.android.mobilebanking",
+          "name": "mobilebanking",
+          "similarity": 0.816
+        },
+        {
+          "pkg": "com.anthropic.claude",
+          "name": "Claude",
+          "similarity": 0.789
+        }
+      ],
+      "WhatsApp": [
+        {
+          "pkg": "com.google.android.apps.nbu.files",
+          "name": "files",
+          "similarity": 0.951
+        },
+        {
+          "pkg": "com.suno.android",
+          "name": "android",
+          "similarity": 0.944
+        },
+        {
+          "pkg": "com.facebook.katana",
+          "name": "Facebook",
+          "similarity": 0.935
+        },
+        {
+          "pkg": "org.telegram.messenger",
+          "name": "messenger",
+          "similarity": 0.934
+        }
+      ],
+      "Google Chat": [
+        {
+          "pkg": "com.boursorama.android.clients",
+          "name": "clients",
+          "similarity": 0.904
+        },
+        {
+          "pkg": "com.tradingview.tradingviewapp",
+          "name": "TradingView",
+          "similarity": 0.871
+        },
+        {
+          "pkg": "com.openai.chatgpt",
+          "name": "ChatGPT",
+          "similarity": 0.87
+        },
+        {
+          "pkg": "com.google.android.documentsui",
+          "name": "documentsui",
+          "similarity": 0.87
+        }
+      ],
+      "Google Calendar": [
+        {
+          "pkg": "com.anthropic.claude",
+          "name": "Claude",
+          "similarity": 0.953
+        },
+        {
+          "pkg": "com.caisseepargne.android.mobilebanking",
+          "name": "mobilebanking",
+          "similarity": 0.944
+        },
+        {
+          "pkg": "org.telegram.messenger",
+          "name": "messenger",
+          "similarity": 0.927
+        },
+        {
+          "pkg": "com.google.android.dialer",
+          "name": "T\u00e9l\u00e9phone",
+          "similarity": 0.88
+        }
+      ],
+      "Gmail": [
+        {
+          "pkg": "com.google.android.gms",
+          "name": "Google Services",
+          "similarity": 0.992
+        },
+        {
+          "pkg": "com.google.android.apps.magazines",
+          "name": "magazines",
+          "similarity": 0.986
+        },
+        {
+          "pkg": "com.google.android.googlequicksearchbox",
+          "name": "Google Search",
+          "similarity": 0.982
+        },
+        {
+          "pkg": "com.devhd.feedly",
+          "name": "Feedly",
+          "similarity": 0.978
+        }
+      ],
+      "Messenger": [
+        {
+          "pkg": "fr.playsoft.teleloisirs",
+          "name": "T\u00e9l\u00e9-Loisirs",
+          "similarity": 0.972
+        },
+        {
+          "pkg": "com.boursorama.android.clients",
+          "name": "clients",
+          "similarity": 0.915
+        },
+        {
+          "pkg": "com.google.android.keep",
+          "name": "keep",
+          "similarity": 0.906
+        },
+        {
+          "pkg": "com.google.android.apps.maps",
+          "name": "Google Maps",
+          "similarity": 0.895
+        }
+      ],
+      "Google Search": [
+        {
+          "pkg": "com.google.android.gms",
+          "name": "Google Services",
+          "similarity": 0.985
+        },
+        {
+          "pkg": "com.google.android.gm",
+          "name": "Gmail",
+          "similarity": 0.982
+        },
+        {
+          "pkg": "com.devhd.feedly",
+          "name": "Feedly",
+          "similarity": 0.98
+        },
+        {
+          "pkg": "com.google.android.apps.magazines",
+          "name": "magazines",
+          "similarity": 0.969
+        }
+      ],
+      "Chrome": [
+        {
+          "pkg": "com.google.android.apps.weather",
+          "name": "weather",
+          "similarity": 0.91
+        },
+        {
+          "pkg": "com.google.android.apps.bard",
+          "name": "Gemini",
+          "similarity": 0.862
+        },
+        {
+          "pkg": "com.google.android.deskclock",
+          "name": "deskclock",
+          "similarity": 0.834
+        },
+        {
+          "pkg": "com.coinmarketcap.android",
+          "name": "android",
+          "similarity": 0.714
+        }
+      ]
+    },
+    "pagerank_network": [
+      {
+        "name": "Chrome",
+        "pkg": "com.android.chrome",
+        "pagerank": 17.1,
+        "in_degree": 907,
+        "out_degree": 777,
+        "hub_score": 0.86
+      },
+      {
+        "name": "Google Search",
+        "pkg": "com.google.android.googlequicksearchbox",
+        "pagerank": 8.18,
+        "in_degree": 441,
+        "out_degree": 469,
+        "hub_score": 1.06
+      },
+      {
+        "name": "YouTube",
+        "pkg": "com.google.android.youtube",
+        "pagerank": 5.74,
+        "in_degree": 268,
+        "out_degree": 149,
+        "hub_score": 0.55
+      },
+      {
+        "name": "Messenger",
+        "pkg": "com.facebook.orca",
+        "pagerank": 5.4,
+        "in_degree": 275,
+        "out_degree": 264,
+        "hub_score": 0.96
+      },
+      {
+        "name": "Instagram",
+        "pkg": "com.instagram.android",
+        "pagerank": 4.58,
+        "in_degree": 220,
+        "out_degree": 202,
+        "hub_score": 0.91
+      },
+      {
+        "name": "WhatsApp",
+        "pkg": "com.whatsapp",
+        "pagerank": 4.03,
+        "in_degree": 184,
+        "out_degree": 214,
+        "hub_score": 1.16
+      },
+      {
+        "name": "Messages SMS",
+        "pkg": "com.google.android.apps.messaging",
+        "pagerank": 3.92,
+        "in_degree": 202,
+        "out_degree": 245,
+        "hub_score": 1.21
+      },
+      {
+        "name": "Gmail",
+        "pkg": "com.google.android.gm",
+        "pagerank": 3.77,
+        "in_degree": 189,
+        "out_degree": 208,
+        "hub_score": 1.09
+      },
+      {
+        "name": "Google Calendar",
+        "pkg": "com.google.android.calendar",
+        "pagerank": 3.66,
+        "in_degree": 179,
+        "out_degree": 246,
+        "hub_score": 1.37
+      },
+      {
+        "name": "Google Maps",
+        "pkg": "com.google.android.apps.maps",
+        "pagerank": 2.58,
+        "in_degree": 129,
+        "out_degree": 137,
+        "hub_score": 1.05
+      }
+    ],
+    "concept_drift": {
+      "hour_wasserstein_distance": 0.556,
+      "app_drifts": [
+        {
+          "name": "docs",
+          "h1_pct": 0.48,
+          "h2_pct": 1.45,
+          "trend": "En hausse",
+          "change_pct": 204.0
+        },
+        {
+          "name": "Google Maps",
+          "h1_pct": 2.25,
+          "h2_pct": 5.6,
+          "trend": "En hausse",
+          "change_pct": 148.3
+        },
+        {
+          "name": "Google Chat",
+          "h1_pct": 7.26,
+          "h2_pct": 0.0,
+          "trend": "En baisse",
+          "change_pct": -100.0
+        },
+        {
+          "name": "Claude",
+          "h1_pct": 3.82,
+          "h2_pct": 0.0,
+          "trend": "En baisse",
+          "change_pct": -100.0
+        },
+        {
+          "name": "clients",
+          "h1_pct": 1.78,
+          "h2_pct": 0.34,
+          "trend": "En baisse",
+          "change_pct": -80.6
+        },
+        {
+          "name": "WhatsApp",
+          "h1_pct": 6.21,
+          "h2_pct": 1.74,
+          "trend": "En baisse",
+          "change_pct": -72.0
+        },
+        {
+          "name": "T\u00e9l\u00e9phone",
+          "h1_pct": 0.69,
+          "h2_pct": 0.21,
+          "trend": "En baisse",
+          "change_pct": -69.4
+        },
+        {
+          "name": "Gmail",
+          "h1_pct": 2.88,
+          "h2_pct": 4.56,
+          "trend": "En hausse",
+          "change_pct": 58.3
+        }
+      ]
+    },
+    "uncertainty_entropy": [
+      {
+        "hour": "00h",
+        "entropy": 4.18,
+        "confidence_pct": 27.4
+      },
+      {
+        "hour": "01h",
+        "entropy": 4.17,
+        "confidence_pct": 27.5
+      },
+      {
+        "hour": "02h",
+        "entropy": 3.91,
+        "confidence_pct": 32.0
+      },
+      {
+        "hour": "03h",
+        "entropy": 3.93,
+        "confidence_pct": 31.8
+      },
+      {
+        "hour": "04h",
+        "entropy": 3.36,
+        "confidence_pct": 41.7
+      },
+      {
+        "hour": "05h",
+        "entropy": 3.84,
+        "confidence_pct": 33.2
+      },
+      {
+        "hour": "06h",
+        "entropy": 3.64,
+        "confidence_pct": 36.7
+      },
+      {
+        "hour": "07h",
+        "entropy": 4.05,
+        "confidence_pct": 29.6
+      },
+      {
+        "hour": "08h",
+        "entropy": 4.22,
+        "confidence_pct": 26.8
+      },
+      {
+        "hour": "09h",
+        "entropy": 4.17,
+        "confidence_pct": 27.5
+      },
+      {
+        "hour": "10h",
+        "entropy": 4.34,
+        "confidence_pct": 24.6
+      },
+      {
+        "hour": "11h",
+        "entropy": 4.56,
+        "confidence_pct": 20.8
+      },
+      {
+        "hour": "12h",
+        "entropy": 4.61,
+        "confidence_pct": 19.9
+      },
+      {
+        "hour": "13h",
+        "entropy": 4.46,
+        "confidence_pct": 22.6
+      },
+      {
+        "hour": "14h",
+        "entropy": 4.3,
+        "confidence_pct": 25.2
+      },
+      {
+        "hour": "15h",
+        "entropy": 4.04,
+        "confidence_pct": 29.9
+      },
+      {
+        "hour": "16h",
+        "entropy": 4.18,
+        "confidence_pct": 27.4
+      },
+      {
+        "hour": "17h",
+        "entropy": 4.36,
+        "confidence_pct": 24.2
+      },
+      {
+        "hour": "18h",
+        "entropy": 4.64,
+        "confidence_pct": 19.3
+      },
+      {
+        "hour": "19h",
+        "entropy": 4.75,
+        "confidence_pct": 17.4
+      },
+      {
+        "hour": "20h",
+        "entropy": 4.53,
+        "confidence_pct": 21.3
+      },
+      {
+        "hour": "21h",
+        "entropy": 4.71,
+        "confidence_pct": 18.2
+      },
+      {
+        "hour": "22h",
+        "entropy": 4.57,
+        "confidence_pct": 20.7
+      },
+      {
+        "hour": "23h",
+        "entropy": 4.31,
+        "confidence_pct": 25.1
+      }
+    ],
+    "rfm_segmentation": [
+      {
+        "name": "Chrome",
+        "pkg": "com.android.chrome",
+        "recency_days": 0.0,
+        "frequency": 1807,
+        "avg_dwell_sec": 792.9,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Google Search",
+        "pkg": "com.google.android.googlequicksearchbox",
+        "recency_days": 0.2,
+        "frequency": 830,
+        "avg_dwell_sec": 1670.6,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "YouTube",
+        "pkg": "com.google.android.youtube",
+        "recency_days": 0.4,
+        "frequency": 777,
+        "avg_dwell_sec": 1134.6,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Instagram",
+        "pkg": "com.instagram.android",
+        "recency_days": 0.0,
+        "frequency": 618,
+        "avg_dwell_sec": 898.3,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Messenger",
+        "pkg": "com.facebook.orca",
+        "recency_days": 0.8,
+        "frequency": 600,
+        "avg_dwell_sec": 626.1,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Messages SMS",
+        "pkg": "com.google.android.apps.messaging",
+        "recency_days": 1.0,
+        "frequency": 559,
+        "avg_dwell_sec": 1170.3,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Spotify",
+        "pkg": "com.spotify.music",
+        "recency_days": 0.0,
+        "frequency": 451,
+        "avg_dwell_sec": 2020.3,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "WhatsApp",
+        "pkg": "com.whatsapp",
+        "recency_days": 5.0,
+        "frequency": 416,
+        "avg_dwell_sec": 277.6,
+        "segment": "Application Fid\u00e8le",
+        "color": "#6366f1"
+      },
+      {
+        "name": "Google Maps",
+        "pkg": "com.google.android.apps.maps",
+        "recency_days": 0.0,
+        "frequency": 411,
+        "avg_dwell_sec": 822.9,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Google Calendar",
+        "pkg": "com.google.android.calendar",
+        "recency_days": 0.0,
+        "frequency": 402,
+        "avg_dwell_sec": 1178.9,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Gmail",
+        "pkg": "com.google.android.gm",
+        "recency_days": 0.0,
+        "frequency": 390,
+        "avg_dwell_sec": 341.0,
+        "segment": "Champion Quotidien",
+        "color": "#10b981"
+      },
+      {
+        "name": "Google Chat",
+        "pkg": "com.google.android.apps.dynamite",
+        "recency_days": 72.0,
+        "frequency": 380,
+        "avg_dwell_sec": 30.0,
+        "segment": "En Sommeil (Churn)",
+        "color": "#f59e0b"
+      }
+    ],
+    "soft_gmm": [
+      {
+        "name": "Messages SMS",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 53.8,
+        "distribution": [
+          53.8,
+          0.0,
+          46.2
+        ]
+      },
+      {
+        "name": "Google Maps",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 66.1,
+        "distribution": [
+          66.1,
+          0.0,
+          33.9
+        ]
+      },
+      {
+        "name": "T\u00e9l\u00e9phone",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 69.9,
+        "distribution": [
+          69.9,
+          0.0,
+          30.1
+        ]
+      },
+      {
+        "name": "WhatsApp",
+        "primary_context": "Mobilit\u00e9 & Weekend",
+        "confidence": 54.2,
+        "distribution": [
+          45.8,
+          0.0,
+          54.2
+        ]
+      },
+      {
+        "name": "Google Chat",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 77.4,
+        "distribution": [
+          77.4,
+          0.0,
+          22.6
+        ]
+      },
+      {
+        "name": "Google Calendar",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 97.3,
+        "distribution": [
+          97.3,
+          0.0,
+          2.7
+        ]
+      },
+      {
+        "name": "Gmail",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 89.9,
+        "distribution": [
+          89.9,
+          0.0,
+          10.1
+        ]
+      },
+      {
+        "name": "Messenger",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 51.3,
+        "distribution": [
+          51.3,
+          0.0,
+          48.7
+        ]
+      },
+      {
+        "name": "Google Search",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 90.2,
+        "distribution": [
+          90.2,
+          0.0,
+          9.8
+        ]
+      },
+      {
+        "name": "Chrome",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 86.2,
+        "distribution": [
+          86.2,
+          0.0,
+          13.8
+        ]
+      },
+      {
+        "name": "clients",
+        "primary_context": "Mobilit\u00e9 & Weekend",
+        "confidence": 50.4,
+        "distribution": [
+          49.6,
+          0.0,
+          50.4
+        ]
+      },
+      {
+        "name": "Claude",
+        "primary_context": "Routine Matin / Travail",
+        "confidence": 98.3,
+        "distribution": [
+          98.3,
+          0.0,
+          1.7
+        ]
+      }
+    ],
+    "anomaly_detection": {
+      "analyzed_events": 3000,
+      "anomalies_detected": 90,
+      "anomaly_rate_pct": 3.0
+    },
+    "session_chains": [
+      {
+        "step1": "Google Search",
+        "step2": "Chrome",
+        "step3": "Google Search",
+        "count": 139
+      },
+      {
+        "step1": "Chrome",
+        "step2": "Google Search",
+        "step3": "Chrome",
+        "count": 130
+      },
+      {
+        "step1": "Chrome",
+        "step2": "Gmail",
+        "step3": "Chrome",
+        "count": 27
+      },
+      {
+        "step1": "Chrome",
+        "step2": "photopicker",
+        "step3": "Chrome",
+        "count": 26
+      },
+      {
+        "step1": "Chrome",
+        "step2": "WhatsApp",
+        "step3": "Chrome",
+        "count": 21
+      },
+      {
+        "step1": "Gmail",
+        "step2": "Chrome",
+        "step3": "Gmail",
+        "count": 18
+      },
+      {
+        "step1": "WhatsApp",
+        "step2": "Chrome",
+        "step3": "WhatsApp",
+        "count": 17
+      },
+      {
+        "step1": "Gemini",
+        "step2": "Google Search",
+        "step3": "Chrome",
+        "count": 16
+      }
+    ],
+    "circadian_rhythm": [
+      {
+        "slot": "Matin \u00c9veil",
+        "time": "07h30 - 09h00",
+        "dominant": "Gmail, Chrome, Google Chat",
+        "intensity": 84
+      },
+      {
+        "slot": "Midi Pause",
+        "time": "12h00 - 13h30",
+        "dominant": "YouTube, Google Maps, Feedly",
+        "intensity": 72
+      },
+      {
+        "slot": "Apr\u00e8s-Midi",
+        "time": "14h30 - 17h00",
+        "dominant": "Chrome, TradingView, Maps",
+        "intensity": 65
+      },
+      {
+        "slot": "Prime Time Soir\u00e9e",
+        "time": "18h30 - 22h00",
+        "dominant": "WhatsApp, Instagram, T\u00e9l\u00e9-Loisirs, Messenger",
+        "intensity": 96
+      },
+      {
+        "slot": "Nuit Calme",
+        "time": "23h00 - 06h00",
+        "dominant": "Spotify (Sleep), Alarme",
+        "intensity": 18
+      }
+    ],
+    "xai_waterfall": [
+      {
+        "factor": "Base Prior Fr\u00e9quence",
+        "contribution": "+0.25",
+        "direction": "positive"
+      },
+      {
+        "factor": "Transition Markov (post-Instagram)",
+        "contribution": "+0.38",
+        "direction": "positive"
+      },
+      {
+        "factor": "Contexte Heure (20h en soir\u00e9e)",
+        "contribution": "+0.22",
+        "direction": "positive"
+      },
+      {
+        "factor": "Batterie (72% similaire historique)",
+        "contribution": "+0.11",
+        "direction": "positive"
+      },
+      {
+        "factor": "P\u00e9nalit\u00e9 Auto-R\u00e9p\u00e9tition",
+        "contribution": "-0.02",
+        "direction": "negative"
+      },
+      {
+        "factor": "Score Final Pr\u00e9dit",
+        "contribution": "0.94 (Rang #1)",
+        "direction": "total"
+      }
+    ]
+  }
+}
