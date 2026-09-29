@@ -176,6 +176,58 @@ class ScoreEngineTest {
         assertTrue("e should score reasonably high due to unigram fallback", scores3["com.e"]!! > 0f)
     }
 
+    /**
+     * A -> B pairs at the current hour on Sundays make the Markov row after A point at B. C is the
+     * weekly habit at that hour and was launched just before A, so recency and hour features point at C.
+     * The hour feature sums over launches, so C needs more Sunday launches than A and A needs
+     * off-hour launches: otherwise A itself, the most recent app, beats C in the cold-start regime.
+     * The last event is A at FIXED_NOW; only the gap between it and "now" changes between tests.
+     */
+    private fun markovVersusHabitHistory(): List<UsageEvent> {
+        val events = mutableListOf<UsageEvent>()
+        for (week in 1..6) {
+            val sunday = FIXED_NOW - TimeUnit.DAYS.toMillis(7L * week)
+            repeat(4) { pair ->
+                val start = sunday + TimeUnit.MINUTES.toMillis(10L * pair)
+                events += event("com.a", start)
+                events += event("com.b", start + TimeUnit.SECONDS.toMillis(30))
+            }
+            repeat(6) { visit -> events += event("com.c", sunday + TimeUnit.MINUTES.toMillis(40L + 3 * visit)) }
+        }
+        for (day in 1..10) {
+            val night = FIXED_NOW - TimeUnit.DAYS.toMillis(day.toLong()) - TimeUnit.HOURS.toMillis(15)
+            events += event("com.a", night)
+        }
+        events += event("com.c", FIXED_NOW - TimeUnit.SECONDS.toMillis(20))
+        events += event("com.a", FIXED_NOW)
+        return events
+    }
+
+    private fun topAfterGap(gapMs: Long): Pair<String, Map<String, Float>> {
+        val scores = ScoreEngine.score(
+            markovVersusHabitHistory(),
+            currentHour = 18,
+            currentDayOfWeek = 7,
+            nowMillis = FIXED_NOW + gapMs
+        )
+        return scores.maxByOrNull { it.value }!!.key to scores
+    }
+
+    @Test
+    fun `regime switches from Markov to weekly habit across the 70 second session gap`() {
+        val (inSessionTop, inSessionScores) = topAfterGap(69_000L)
+        assertEquals("69 s after A is in-session: Markov (A -> B) must win, scores=$inSessionScores", "com.b", inSessionTop)
+
+        val (coldTop, coldScores) = topAfterGap(71_000L)
+        assertEquals("71 s after A is cold-start: weekly habit and recency must win, scores=$coldScores", "com.c", coldTop)
+    }
+
+    @Test
+    fun `session gap of exactly 70 seconds is still in-session`() {
+        val (top, scores) = topAfterGap(70_000L)
+        assertEquals("the in-session comparison is inclusive (<=), scores=$scores", "com.b", top)
+    }
+
     @Test
     fun `direct notification boost increases score`() {
         val events = listOf(
