@@ -11,7 +11,7 @@ object ScoreEngine {
      *  View with: adb logcat -s ScoreEngine */
     private const val DEBUG_LOG = false
 
-    // v16 - Dual-Regime (In-Session vs Cold-Start) architecture retuned on 10,472 events.
+    // v17 - Dual-Regime (In-Session vs Cold-Start) architecture, weights retuned per regime with scripts/bench.py --tune.
     // In-Session: Markov 2-gram and 1-gram dominate with tight smoothing.
     // Cold-Start: Weekly habit (168h), short recency (30m), Gaussian hour, daily and 8h circadians dominate.
     private const val HOUR_SIGMA = 2.53f
@@ -23,26 +23,26 @@ object ScoreEngine {
     private const val CTX_MIN_EVENTS = 2
 
     // In-Session Weights
-    private const val W_IN_TRANSITION_2 = 9.74f
-    private const val W_IN_TRANSITION = 8.28f
-    private const val W_IN_TRANS_SMOOTH = 1.15f
-    private const val W_IN_REC_8H = 1.82f
-    private const val W_IN_REC_168H = 1.36f
-    private const val W_IN_RECENCY = 1.07f
-    private const val W_IN_CONTEXT = 1.00f
+    private const val W_IN_TRANSITION_2 = 14.11f
+    private const val W_IN_TRANSITION = 9.68f
+    private const val W_IN_TRANS_SMOOTH = 1.31f
+    private const val W_IN_REC_8H = 0.67f
+    private const val W_IN_REC_168H = 1.57f
+    private const val W_IN_RECENCY = 4.17f
+    private const val W_IN_CONTEXT = 0.30f
 
     // Cold-Start / Resumption Weights
-    private const val W_COLD_REC_168H = 9.57f
-    private const val W_COLD_RECENCY = 5.35f
-    private const val W_COLD_CONTEXT = 3.27f
-    private const val W_COLD_REC_24H = 2.68f
-    private const val W_COLD_REC_8H = 2.52f
-    private const val W_COLD_BAT = 3.25f
-    private const val W_COLD_CAL = 1.42f
-    private const val W_COLD_DEVICE = 0.94f
-    private const val W_COLD_SR = 0.71f
+    private const val W_COLD_REC_168H = 8.38f
+    private const val W_COLD_RECENCY = 5.92f
+    private const val W_COLD_CONTEXT = 0.54f
+    private const val W_COLD_REC_24H = 4.21f
+    private const val W_COLD_REC_8H = 2.93f
+    private const val W_COLD_BAT = 1.24f
+    private const val W_COLD_CAL = 4.19f
+    private const val W_COLD_DEVICE = 1.08f
+    private const val W_COLD_SR = 0.60f
 
-    private const val SELF_PENALTY = 0.00f
+    private const val SELF_PENALTY = 0.38f
     private const val SELF_PENALTY_HL_MIN = 112.48f
 
     private const val W_AUDIO = 0.04f
