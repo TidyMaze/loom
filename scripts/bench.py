@@ -10,10 +10,14 @@ Usage (via uv):
 Options:
   --data FILE        usage_log.json path (default: usage_log.json in cwd)
   --benchmark        Benchmark all models (default when --tune not given)
-  --tune             Optuna HP search on train split, report on held-out test
-  --apply            Write best Optuna params to ScoreEngine.kt (use with --tune)
+  --tune             One Optuna study per regime (in-session, cold) on the train split,
+                     then v16 vs candidate on the held-out test, scored once
+  --study-dir DIR    Optuna sqlite dir, required with --tune, resume-safe (keep it outside the repo)
+  --regime R         in | cold | both: tune one regime (train only) or both plus the test (default: both)
+  --apply            Disabled (exits non-zero): the tuner prints a Kotlin block instead
   --split FLOAT      Train fraction for tune/eval (default: 0.8)
-  --trials N         Optuna trials (default: 200)
+  --trials N         Optuna trials per study, total including resumed ones (default: 200)
+  --tune-stride N    Score every Nth train target per trial (default: 2)
   --min-hist N       Walk-forward warmup events (default: 50)
   --stats            Show bootstrap CI + Wilcoxon p-values vs v14
 """
@@ -23,11 +27,15 @@ import collections
 import json
 import math
 import random
-import re
 import sys
 import time
 from pathlib import Path
-from typing import Callable
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, Callable, Iterator, NamedTuple, NoReturn, TypedDict
+
+if TYPE_CHECKING:
+    from optuna import Study, Trial
+    from optuna.trial import FrozenTrial
 
 # ─── v16 hyperparameters (mirror ScoreEngine.kt v16 Dual-Regime) ──────────────
 
@@ -564,22 +572,53 @@ def score_rrf(events: list, now_hour: int, now_dow: int, now_ms: int,
 
 # ─── evaluation harness ──────────────────────────────────────────────────────
 
-def evaluate(events: list, score_fn: Callable, min_hist: int = 50) -> dict:
+Event = dict[str, Any]   # one usage_log.json row, the deserialization boundary
+Selector = Callable[[list[Event], Event, int], bool]   # (history, target, i) -> keep this target?
+EvalResult = TypedDict("EvalResult", {
+    "n": int, "@1": float, "@3": float, "@5": float, "@10": float,
+    "mrr": float, "lift": float, "rr_list": list[float],
+}, total=False)   # empty when no target was scored
+
+# ScoreEngine.kt SESSION_MS: a target is in-session iff its gap to the previous event is <= this.
+IN_SESSION_MS = int(V16_IN["session_ms"])
+
+
+def is_in_session(history: list[Event], target: Event) -> bool:
+    """Regime of a target, same comparison as ScoreEngine.kt inSession (inclusive)."""
+    return bool(target["timestampMillis"] - history[-1]["timestampMillis"] <= IN_SESSION_MS)
+
+
+def iter_targets(events: list[Event], min_hist: int = 50, start: int = 0,
+                 end: int | None = None, stride: int = 1,
+                 select: Selector | None = None) -> Iterator[tuple[int, list[Event], Event]]:
+    """Walk-forward targets of a time-sorted log, as (i, history, target).
+
+    The history is always events[:i] of the full log: start/end/stride/select only choose
+    which targets are scored, never what a target gets to see.
     """
-    Walk-forward CV: score_fn only receives events[:i] — no lookahead.
+    stop = len(events) if end is None else min(end, len(events))
+    for i in range(max(min_hist, start), stop, stride):
+        history = events[:i]
+        if select is None or select(history, events[i], i):
+            yield i, history, events[i]
+
+
+def evaluate(events: list[Event], score_fn: Callable[..., dict[str, float]], min_hist: int = 50,
+             start: int = 0, end: int | None = None, stride: int = 1,
+             select: Selector | None = None) -> EvalResult:
+    """
+    Walk-forward CV: score_fn only receives events[:i], no lookahead, never thinned.
+    Targets are range(max(min_hist, start), end, stride), optionally filtered by select.
     Returns @1/@3/@5/@10/MRR/lift/rr_list.
     """
     events = sorted(events, key=lambda e: e["timestampMillis"])
-    all_pkgs = list({e["packageName"] for e in events})
+    all_pkgs = sorted({e["packageName"] for e in events})   # sorted: score ties must not depend on hash order
     n_apps = len(all_pkgs)
     hits = {1: 0, 3: 0, 5: 0, 10: 0}
     rr_list = []
     count = 0
 
-    for i, target in enumerate(events):
-        if i < min_hist:
-            continue
-        history = events[:i]
+    for _, history, target in iter_targets(events, min_hist, start, end, stride, select):
         scores  = score_fn(
             history,
             target.get("hour", 0),
@@ -725,118 +764,243 @@ def run_benchmark(events: list, min_hist: int = 50, show_stats: bool = False) ->
 
 # ─── Optuna tune mode ────────────────────────────────────────────────────────
 
-def run_tune(events: list, train_frac: float = 0.8, n_trials: int = 200,
-             min_hist: int = 50, tune_stride: int = 4) -> tuple:
-    """
-    Tune v14 HPs on train split only; report final metrics on held-out test.
-    Returns best params dict (all V14 keys, with tuned values replaced).
-    """
+# Search spaces per regime (bounds from scripts/test_dual_regime.py). Frozen, never searched:
+# session_ms, burst_gap_ms, hour_sigma, decay_hl, recency_h and everything not listed here.
+SPACES: dict[str, dict[str, tuple[float, float]]] = {
+    "in": {
+        "w_trans": (2.0, 20.0), "w_trans2": (2.0, 15.0), "trans_smooth": (0.05, 1.5),
+        "w_rec": (0.5, 8.0), "w_r8": (0.1, 2.0), "w_r168": (0.1, 2.0),
+        "w_ctx": (0.0, 1.0), "self_pen": (0.0, 0.4),
+    },
+    "cold": {
+        "w_ctx": (0.5, 6.0), "w_r8": (0.5, 8.0), "w_r24": (0.5, 5.0), "w_r168": (1.0, 10.0),
+        "w_rec": (0.5, 6.0), "w_bat": (1.0, 10.0), "w_cal": (0.5, 6.0),
+        "w_device": (0.5, 5.0), "w_sr": (0.5, 5.0),
+    },
+}
+BASE: dict[str, dict[str, float]] = {"in": V16_IN, "cold": V16_COLD}
+
+# Python param -> ScoreEngine.kt constant, per regime (self_pen is one shared constant).
+KOTLIN_NAMES: dict[str, dict[str, str]] = {
+    "in": {
+        "w_trans": "W_IN_TRANSITION", "w_trans2": "W_IN_TRANSITION_2",
+        "trans_smooth": "W_IN_TRANS_SMOOTH", "w_rec": "W_IN_RECENCY", "w_r8": "W_IN_REC_8H",
+        "w_r168": "W_IN_REC_168H", "w_ctx": "W_IN_CONTEXT", "self_pen": "SELF_PENALTY",
+    },
+    "cold": {
+        "w_ctx": "W_COLD_CONTEXT", "w_r8": "W_COLD_REC_8H", "w_r24": "W_COLD_REC_24H",
+        "w_r168": "W_COLD_REC_168H", "w_rec": "W_COLD_RECENCY", "w_bat": "W_COLD_BAT",
+        "w_cal": "W_COLD_CAL", "w_device": "W_COLD_DEVICE", "w_sr": "W_COLD_SR",
+    },
+}
+
+_INT_PARAMS = {"ctx_min", "ctx3_min"}
+
+
+def round_params(p: dict[str, float]) -> dict[str, float]:
+    """Shipped precision: Kotlin constants carry 2 decimals, *_ms and event counts are integers."""
+    return {k: int(round(v)) if k.endswith("_ms") or k in _INT_PARAMS else round(v, 2)
+            for k, v in p.items()}
+
+
+def offline_params(p: dict[str, float]) -> dict[str, float]:
+    """Params as shipped, minus the notification boost: it reads the target's own notificationCount."""
+    return {**round_params(p), "w_notif": 0.0}
+
+
+def kotlin_block(regime: str, params: dict[str, float]) -> str:
+    """The tuned constants of one regime as `private const val` lines for ScoreEngine.kt."""
+    names = KOTLIN_NAMES[regime]
+    return "\n".join(f"private const val {names[k]} = {params[k]:.2f}f" for k in SPACES[regime])
+
+
+class Acceptance(NamedTuple):
+    d_mrr: float
+    ci_lo: float
+    ci_hi: float
+    d_at1: float
+    d_at5: float
+    p_value: float
+    d_mrr_in: float
+    d_mrr_cold: float
+    checks: dict[str, bool]
+
+    @property
+    def accepted(self) -> bool:
+        return all(self.checks.values())
+
+
+def _mean_delta(rr_base: list[float], rr_cand: list[float], in_session: list[bool], want: bool) -> float:
+    idx = [i for i, flag in enumerate(in_session) if flag == want]
+    return sum(rr_cand[i] - rr_base[i] for i in idx) / len(idx) if idx else 0.0
+
+
+def acceptance(base: EvalResult, cand: EvalResult, in_session: list[bool],
+               n_boot: int = 2000, seed: int = 0) -> Acceptance:
+    """Ship rule on the test targets: every check must hold (candidate = cand, v16 = base)."""
+    rr_base, rr_cand = base["rr_list"], cand["rr_list"]
+    random.seed(seed)
+    lo, hi = bootstrap_ci(rr_base, rr_cand, n_boot=n_boot)
+    p_value = wilcoxon_p(rr_base, rr_cand)
+    d_at1, d_at5 = cand["@1"] - base["@1"], cand["@5"] - base["@5"]
+    d_in = _mean_delta(rr_base, rr_cand, in_session, True)
+    d_cold = _mean_delta(rr_base, rr_cand, in_session, False)
+    eps = 1e-9
+    checks = {
+        "ci_lo>0": lo > 0,
+        "hit1>=0": d_at1 >= -eps,
+        "hit5>=-0.3pp": d_at5 >= -0.3 - eps,
+        "wilcoxon<0.05": p_value < 0.05,
+        "regime dMRR>=-0.005": d_in >= -0.005 and d_cold >= -0.005,
+    }
+    return Acceptance(cand["mrr"] - base["mrr"], lo, hi, d_at1, d_at5, p_value, d_in, d_cold, checks)
+
+
+def _import_optuna() -> ModuleType:
     try:
-        import optuna                                  # type: ignore
-        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        import optuna
     except ImportError:
-        print("optuna not installed. Run: uv pip install optuna", file=sys.stderr)
-        sys.exit(1)
+        sys.exit("optuna not installed. Run: uv run --with optuna --with scipy python3 scripts/bench.py ...")
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    return optuna
 
+
+def _regime_selector(regime: str) -> Selector:
+    want = regime == "in"
+    return lambda history, target, i: is_in_session(history, target) == want
+
+
+def _regime_counts(events: list[Event], min_hist: int, start: int, end: int | None,
+                   stride: int) -> tuple[int, int]:
+    """(in-session, cold) target counts of a window."""
+    flags = [is_in_session(h, t) for _, h, t in iter_targets(events, min_hist, start, end, stride)]
+    return sum(flags), len(flags) - sum(flags)
+
+
+def _tune_regime(regime: str, events: list[Event], split: int, n_trials: int, min_hist: int,
+                 tune_stride: int, study_dir: Path) -> dict[str, float]:
+    """One resumable Optuna study on the regime's train targets [min_hist, split).
+
+    Trial 0 is v16 itself. The score is the MRR of the shipped-precision params on the
+    regime's targets, history always the full log before each target. Returns the best
+    params at shipped precision.
+    """
+    optuna = _import_optuna()
+    space, base, select = SPACES[regime], BASE[regime], _regime_selector(regime)
+    db = study_dir / f"tune_{regime}.db"
+    study_dir.mkdir(parents=True, exist_ok=True)
+    study = optuna.create_study(
+        study_name=f"loom_{regime}", storage=f"sqlite:///{db}", load_if_exists=True,
+        direction="maximize", sampler=optuna.samplers.TPESampler(seed=0))
+
+    fingerprint = (f"n={len(events)} last_ts={events[-1]['timestampMillis']} split={split} "
+                   f"min_hist={min_hist} stride={tune_stride}")
+    stored = study.user_attrs.get("fingerprint")
+    if stored is None:
+        study.set_user_attr("fingerprint", fingerprint)
+    elif stored != fingerprint:
+        sys.exit(f"stale study {db}: built on [{stored}], now [{fingerprint}]. Use a new --study-dir.")
+    if not study.trials:
+        study.enqueue_trial({k: float(base[k]) for k in space})
+
+    def objective(trial: "Trial") -> float:
+        suggested = {k: trial.suggest_float(k, lo, hi) for k, (lo, hi) in space.items()}
+        p = offline_params({**base, **suggested})
+        fn = lambda h, hr, d, t, target=None: score_v14(h, hr, d, t, target, p)
+        r = evaluate(events, fn, min_hist, start=min_hist, end=split, stride=tune_stride, select=select)
+        return r.get("mrr", 0.0)
+
+    def log_trial(study: "Study", trial: "FrozenTrial") -> None:
+        assert trial.value is not None and trial.datetime_start and trial.datetime_complete
+        secs = (trial.datetime_complete - trial.datetime_start).total_seconds()
+        print(f"[{regime}] trial {trial.number:>3}  mrr={trial.value:.4f}  "
+              f"best={study.best_value:.4f}  {secs:.0f}s", flush=True)
+
+    done = sum(t.state == optuna.trial.TrialState.COMPLETE for t in study.trials)
+    print(f"[{regime}] {done}/{n_trials} trials already in {db}", flush=True)
+    study.optimize(objective, n_trials=max(0, n_trials - done), callbacks=[log_trial])
+    if not any(t.state == optuna.trial.TrialState.COMPLETE for t in study.trials):
+        sys.exit(f"[{regime}] no completed trial in {db}")
+    print(f"[{regime}] best train mrr={study.best_value:.4f} (trial {study.best_trial.number})", flush=True)
+    return offline_params({**base, **study.best_params})
+
+
+def _report_test(events: list[Event], split: int, min_hist: int,
+                 best: dict[str, dict[str, float]]) -> None:
+    """Score v16 and the candidate once on the test targets [split, N), full history, and gate."""
+    def arm(p_in: dict[str, float], p_cold: dict[str, float]) -> Callable[..., dict[str, float]]:
+        return lambda h, hr, d, t, target=None: score_v16(h, hr, d, t, target, p_in, p_cold)
+
+    base_p = {r: offline_params(BASE[r]) for r in SPACES}
+    r_base = evaluate(events, arm(base_p["in"], base_p["cold"]), min_hist, start=split)
+    r_cand = evaluate(events, arm(best["in"], best["cold"]), min_hist, start=split)
+    flags = [is_in_session(h, t) for _, h, t in iter_targets(events, min_hist, split)]
+    acc = acceptance(r_base, r_cand, flags)
+
+    print("\n=== Held-out test (both arms: shipped precision, w_notif=0) ===")
+    _print_table([("v16 (as shipped)", r_base), ("candidate", r_cand)])
+    print(f"\ntest targets n={r_cand['n']}")
+    print(f"ΔMRR={acc.d_mrr:+.4f}  95% CI=[{acc.ci_lo:+.4f}, {acc.ci_hi:+.4f}]  Wilcoxon p={acc.p_value:.4f}"
+          f"  Δ@1={acc.d_at1:+.2f}pp  Δ@5={acc.d_at5:+.2f}pp")
+    print(f"regime ΔMRR: in-session {acc.d_mrr_in:+.4f} ({sum(flags)} targets)  "
+          f"cold {acc.d_mrr_cold:+.4f} ({len(flags) - sum(flags)} targets)")
+    for check, ok in acc.checks.items():
+        print(f"  {'pass' if ok else 'FAIL'}  {check}")
+    print("\nTuned params (v16 -> candidate):")
+    for regime, space in SPACES.items():
+        for k in space:
+            print(f"  [{regime}] {k:<13} {base_p[regime][k]} -> {best[regime][k]}")
+    if not acc.accepted:
+        failed = ", ".join(c for c, ok in acc.checks.items() if not ok)
+        print(f"\nVERDICT: REJECT, keep v16 (failed: {failed})")
+        return
+    print("\nVERDICT: ACCEPT (all checks passed). Kotlin block, paste by hand into ScoreEngine.kt:")
+    for regime, space in SPACES.items():
+        if any(best[regime][k] != base_p[regime][k] for k in space):
+            print(f"\n// candidate, {regime} regime\n{kotlin_block(regime, best[regime])}")
+
+
+def run_tune(events: list[Event], train_frac: float = 0.8, n_trials: int = 200,
+             min_hist: int = 50, tune_stride: int = 2, study_dir: Path | None = None,
+             regime: str = "both") -> dict[str, dict[str, float]]:
+    """
+    Tune v16 per regime on train targets [min_hist, split); with regime="both" also score
+    v16 vs the candidate on test targets [split, N) once. Every target sees the full log
+    before it. Returns the best params per regime tuned, at shipped precision.
+    """
+    if study_dir is None:
+        sys.exit("run_tune needs a study_dir (Optuna sqlite, outside the repo)")
+    random.seed(0)
     events = sorted(events, key=lambda e: e["timestampMillis"])
-    split  = int(len(events) * train_frac)
-    train  = events[:split]
-    test   = events[split:]
-    print(f"Train: {len(train)} events  |  Test: {len(test)} events")
+    split = int(len(events) * train_frac)
+    regimes = tuple(SPACES) if regime == "both" else (regime,)
 
-    # Subsample train for Optuna inner loop (stride reduces n_eval_points N×, same history)
-    # This keeps the history window intact (events[:i] always uses full train),
-    # but skips evaluation targets — trades accuracy for speed.
-    train_eval = train[::tune_stride] if tune_stride > 1 else train
-    print(f"Optuna eval stride={tune_stride}: {len(train_eval)} eval points per trial "
-          f"(~{len(train_eval)*26//1000}min estimated)")
+    tr_in, tr_cold = _regime_counts(events, min_hist, min_hist, split, 1)
+    ps_in, ps_cold = _regime_counts(events, min_hist, min_hist, split, tune_stride)
+    te_in, te_cold = _regime_counts(events, min_hist, split, None, 1)
+    print(f"train: in-session={tr_in} cold={tr_cold}  (per trial at stride {tune_stride}: "
+          f"in-session={ps_in} cold={ps_cold})")
+    print(f"test: in-session={te_in} cold={te_cold}  (events {split}..{len(events)})", flush=True)
+    per_trial = {"in": ps_in, "cold": ps_cold}
+    empty = [r for r in regimes if per_trial[r] == 0]
+    if empty:
+        sys.exit(f"no train targets for regime {empty}: the study would be uniform")
+    if regime == "both" and 0 in (te_in, te_cold):
+        sys.exit("a regime has no test targets: the gate cannot be evaluated")
 
-    # Frozen ctx params: too sparse / complex for reliable offline tuning
-    _FROZEN = {k: V14[k] for k in (
-        "w_audio", "w_device", "w_charging", "w_sr", "sr_hl_secs", "phase1_smooth",
-        "w_notif", "w_cal", "w_bat", "w_cat_trans", "bat_scale", "cal_scale",
-        "ctx3_min", "ctx3_smooth",
-    )}
-
-    def objective(trial) -> float:
-        p = {
-            "hour_sigma":   trial.suggest_float("hour_sigma",   0.5,  5.0),
-            "decay_hl":     trial.suggest_float("decay_hl",     3.0, 60.0),
-            "recency_h":    trial.suggest_float("recency_h",    0.5, 10.0),
-            "trans_decay":  trial.suggest_float("trans_decay",  1.0, 30.0),
-            "session_ms":   trial.suggest_int  ("session_ms",   60_000, 600_000, step=10_000),
-            "trans_smooth": trial.suggest_float("trans_smooth", 0.5, 20.0),
-            "burst_gap_ms": trial.suggest_int  ("burst_gap_ms", 1_000, 30_000, step=500),
-            "ctx_min":      trial.suggest_int  ("ctx_min",      1, 20),
-            "w_ctx":        trial.suggest_float("w_ctx",        0.0,  5.0),
-            "w_rec":        trial.suggest_float("w_rec",        0.0,  5.0),
-            "w_trans":      trial.suggest_float("w_trans",      0.0,  8.0),
-            "w_trans2":     trial.suggest_float("w_trans2",     0.0,  4.0),
-            "w_r8":         trial.suggest_float("w_r8",         0.0,  5.0),
-            "w_r24":        trial.suggest_float("w_r24",        0.0,  5.0),
-            "w_r168":       trial.suggest_float("w_r168",       0.0,  5.0),
-            "self_pen":     trial.suggest_float("self_pen",     0.0, 50.0),
-            "self_hl_min":  trial.suggest_float("self_hl_min",  5.0, 120.0),
-            **_FROZEN,
-        }
-        fn = lambda evs, h, d, t, target_ev=None: score_v14(evs, h, d, t, target_ev, p)
-        # Use strided train events — history is still events[:i] for each target i
-        r  = evaluate(train_eval, fn, min_hist=min_hist // tune_stride)
-        return -r.get("mrr", 0.0)
-
-    study = optuna.create_study(sampler=optuna.samplers.TPESampler(seed=42))
-    study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
-
-    best_p = {**V14, **study.best_params}
-    best_p["session_ms"]   = int(best_p["session_ms"])
-    best_p["burst_gap_ms"] = int(best_p["burst_gap_ms"])
-    best_p["ctx_min"]      = int(best_p["ctx_min"])
-
-    print(f"\nBest train MRR (strided): {-study.best_value:.4f}")
-
-    fn_cur  = score_v14
-    fn_new  = lambda evs, h, d, t, target_ev=None: score_v14(evs, h, d, t, target_ev, best_p)
-
-    # Full test-set evaluation: all models vs retuned v14
-    print("\n=== Held-out test set (ALL models) ===")
-    results = []
-    for name, fn in [("v14 current", fn_cur), ("v14 retuned", fn_new),
-                     ("bigram Markov", score_bigram), ("RRF ensemble", score_rrf),
-                     ("recency", score_recency)]:
-        r = evaluate(test, fn, min_hist=0)
-        results.append((name, r))
-        print(f"  [{name}] @1={r.get('@1',0):.1f}%  MRR={r.get('mrr',0):.4f}", flush=True)
-    _print_table(results)
-
-    # Check if retuned v14 genuinely beats current v14 (bootstrap CI lower bound > 0)
-    rr_cur = results[0][1].get("rr_list", [])
-    rr_new = results[1][1].get("rr_list", [])
-    improved = False
-    if rr_cur and rr_new and len(rr_cur) == len(rr_new):
-        lo, hi = bootstrap_ci(rr_cur, rr_new)
-        p_val  = wilcoxon_p(rr_cur, rr_new)
-        delta  = results[1][1]["mrr"] - results[0][1]["mrr"]
-        sig    = "✓ SIGNIFICANT" if lo > 0 else "✗ Not significant"
-        print(f"\nv14 retuned vs current: ΔMRR={delta:+.4f}  "
-              f"95% CI=[{lo:+.4f}, {hi:+.4f}]  p={p_val:.4f}  {sig}")
-        improved = lo > 0  # only if CI lower bound strictly positive
-
-    if improved:
-        print("\n✓ Retuned v14 is significantly better — params will be applied.")
-        print("\n=== Changed params (vs current V14) ===")
-        for k, v in best_p.items():
-            if V14.get(k) != v:
-                print(f"  {k:<20} {V14.get(k)} → {v:.4f}" if isinstance(v, float)
-                      else f"  {k:<20} {V14.get(k)} → {v}")
+    best = {r: _tune_regime(r, events, split, n_trials, min_hist, tune_stride, study_dir)
+            for r in regimes}
+    if regime == "both":
+        _report_test(events, split, min_hist, best)
     else:
-        print("\n✗ Retuned v14 not significantly better — skipping apply.")
+        print("\ntrain only. Run --regime both on the same --study-dir to score the test once.")
+    return best
 
-    return best_p, improved
 
+# ─── apply params to ScoreEngine.kt: disabled ───────────────────────────────
 
-# ─── apply params to ScoreEngine.kt ─────────────────────────────────────────
-
-# Mapping: Python param name → (Kotlin constant name, value suffix)
+# Mapping: Python param name → (Kotlin constant name, value suffix). Dead: it names v14's
+# single-regime constants (W_CONTEXT, W_TRANSITION...), the v16 file has W_IN_* / W_COLD_*.
 _PARAM_MAP = {
     "hour_sigma":   ("HOUR_SIGMA",              "f"),
     "decay_hl":     ("DECAY_HALF_LIFE_DAYS",    "f"),
@@ -858,28 +1022,11 @@ _PARAM_MAP = {
 }
 
 
-def apply_params(params: dict, kt_path: Path) -> None:
-    """Write all tunable Optuna params back to ScoreEngine.kt via regex."""
-    text = kt_path.read_text()
-    for py_key, (kt_name, suffix) in _PARAM_MAP.items():
-        val = params.get(py_key)
-        if val is None:
-            continue
-        if suffix == "f":
-            val_str = f"{float(val):.2f}f"
-        elif suffix == "L":
-            val_str = f"{int(val):_}L"
-        else:
-            val_str = str(int(val))
-        pattern  = rf"(private const val {kt_name}\s*=\s*)[^\n]+"
-        new_text = re.sub(pattern, rf"\g<1>{val_str}", text)
-        if new_text == text:
-            print(f"  ⚠ Could not patch {kt_name}")
-        else:
-            text = new_text
-            print(f"  ✓ {kt_name} = {val_str}")
-    kt_path.write_text(text)
-    print(f"\nUpdated {kt_path}")
+KT_PATH = Path(__file__).parent.parent / "app/src/main/kotlin/com/yrolland/loom/ScoreEngine.kt"
+
+
+def apply_params(params: dict[str, float], kt_path: Path) -> NoReturn:
+    sys.exit("disabled: _PARAM_MAP targets v14")
 
 
 # ─── main ────────────────────────────────────────────────────────────────────
@@ -893,18 +1040,29 @@ def main() -> None:
     parser.add_argument("--benchmark",   action="store_true",
                         help="Benchmark all models")
     parser.add_argument("--tune",        action="store_true",
-                        help="Optuna HP search on train split, report on held-out test")
+                        help="One Optuna study per regime on the train split, then v16 vs candidate on the test")
+    parser.add_argument("--study-dir",   type=Path, default=None, dest="study_dir",
+                        help="Optuna sqlite dir, required with --tune; resume-safe, keep it outside the repo")
+    parser.add_argument("--regime",      choices=("in", "cold", "both"), default="both",
+                        help="Tune one regime (train only) or both and score the test once")
     parser.add_argument("--apply",       action="store_true",
-                        help="Write best params to ScoreEngine.kt ONLY if significantly better")
+                        help="Disabled: exits non-zero. The tuner prints a Kotlin block instead")
     parser.add_argument("--split",       type=float, default=0.8,
                         help="Train fraction for tune/eval split")
-    parser.add_argument("--trials",      type=int,   default=200)
-    parser.add_argument("--tune-stride", type=int,   default=4, dest="tune_stride",
-                        help="Eval every Nth train event in Optuna (speeds up ~Nx, default 4)")
+    parser.add_argument("--trials",      type=int,   default=200,
+                        help="Optuna trials per study, including trials already in --study-dir")
+    parser.add_argument("--tune-stride", type=int,   default=2, dest="tune_stride",
+                        help="Score every Nth train target per trial (speeds up ~Nx)")
     parser.add_argument("--min-hist",    type=int,   default=50, dest="min_hist")
     parser.add_argument("--stats",       action="store_true",
                         help="Bootstrap CI + Wilcoxon vs v14")
     args = parser.parse_args()
+
+    if args.apply:
+        apply_params({}, KT_PATH)   # exits: fail before any hours of tuning
+    if args.tune and args.study_dir is None:
+        parser.error("--tune needs --study-dir (Optuna sqlite dir, outside the repo)")
+    random.seed(0)
 
     data_path = Path(args.data)
     if not data_path.exists():
@@ -919,22 +1077,15 @@ def main() -> None:
         run_benchmark(events, min_hist=args.min_hist, show_stats=args.stats)
 
     if args.tune:
-        best, improved = run_tune(
+        run_tune(
             events,
             train_frac=args.split,
             n_trials=args.trials,
             min_hist=args.min_hist,
             tune_stride=args.tune_stride,
+            study_dir=args.study_dir,
+            regime=args.regime,
         )
-        if args.apply:
-            if improved:
-                kt_path = (Path(__file__).parent.parent /
-                           "app/src/main/kotlin/com/yrolland/loom/ScoreEngine.kt")
-                print(f"\nApplying to {kt_path} …")
-                apply_params(best, kt_path)
-                print("\n✓ ScoreEngine.kt updated — ready to build + deploy.")
-            else:
-                print("\n⚠ --apply given but skipped: retuned model not significantly better.")
 
 
 if __name__ == "__main__":
