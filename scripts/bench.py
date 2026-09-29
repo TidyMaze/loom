@@ -11,7 +11,7 @@ Options:
   --data FILE        usage_log.json path (default: usage_log.json in cwd)
   --benchmark        Benchmark all models (default when --tune not given)
   --tune             One Optuna study per regime (in-session, cold) on the train split,
-                     then v16 vs candidate on the held-out test, scored once
+                     then v17 vs candidate on the held-out test, scored once
   --study-dir DIR    Optuna sqlite dir, required with --tune, resume-safe (keep it outside the repo)
   --regime R         in | cold | both: tune one regime (train only) or both plus the test (default: both)
   --apply            Disabled (exits non-zero): the tuner prints a Kotlin block instead
@@ -24,6 +24,7 @@ Options:
 
 import argparse
 import collections
+import functools
 import json
 import math
 import random
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
     from optuna import Study, Trial
     from optuna.trial import FrozenTrial
 
-# ─── v16 hyperparameters (mirror ScoreEngine.kt v16 Dual-Regime) ──────────────
+# ─── v16 hyperparameters (previous dual-regime model, kept for --benchmark) ───
 
 V16_IN = dict(
     hour_sigma      = 2.5283,
@@ -89,6 +90,34 @@ V16_COLD.update(dict(
 ))
 
 V16 = V16_IN
+
+# ─── v17 hyperparameters (mirror ScoreEngine.kt v17 Dual-Regime) ──────────────
+# V16 with the constants retuned by --tune, at the 2 decimals ScoreEngine.kt ships.
+
+V17_IN = {**V16_IN, **dict(
+    trans_smooth    = 1.31,
+    w_ctx           = 0.30,
+    w_rec           = 4.17,
+    w_trans         = 9.68,
+    w_trans2        = 14.11,
+    w_r8            = 0.67,
+    w_r168          = 1.57,
+    self_pen        = 0.38,
+)}
+
+V17_COLD = {**V17_IN, **dict(
+    w_ctx           = 0.54,
+    w_rec           = 5.92,
+    w_trans         = 0.0000,
+    w_trans2        = 0.0000,
+    w_r8            = 2.93,
+    w_r24           = 4.21,
+    w_r168          = 8.38,
+    w_bat           = 1.24,
+    w_cal           = 4.19,
+    w_device        = 1.08,
+    w_sr            = 0.60,
+)}
 
 V15 = dict(
     hour_sigma      = 2.2035,
@@ -580,7 +609,7 @@ EvalResult = TypedDict("EvalResult", {
 }, total=False)   # empty when no target was scored
 
 # ScoreEngine.kt SESSION_MS: a target is in-session iff its gap to the previous event is <= this.
-IN_SESSION_MS = int(V16_IN["session_ms"])
+IN_SESSION_MS = int(V17_IN["session_ms"])
 
 
 def is_in_session(history: list[Event], target: Event) -> bool:
@@ -693,6 +722,10 @@ def score_v16(events: list, now_hour: int, now_dow: int, now_ms: int,
     return score_v14(events, now_hour, now_dow, now_ms, target_ev, p)
 
 
+# ScoreEngine.kt v17 Dual-Regime: the v16 blend with the v17 constants.
+score_v17 = functools.partial(score_v16, p_in=V17_IN, p_cold=V17_COLD)
+
+
 def score_v15(events: list, now_hour: int, now_dow: int, now_ms: int,
               target_ev: dict = None, p: dict = None) -> dict:
     """ScoreEngine.kt v15 - previous retune."""
@@ -702,7 +735,8 @@ def score_v15(events: list, now_hour: int, now_dow: int, now_ms: int,
 # ─── model registry ──────────────────────────────────────────────────────────
 
 MODELS = [
-    ("v16 (deployed dual-regime)", score_v16),
+    ("v17 (deployed dual-regime)", score_v17),
+    ("v16 (previous dual-regime)", score_v16),
     ("v15 (previous single-regime)", score_v15),
     ("v14 (baseline)", score_v14),
     ("bigram Markov",  score_bigram),
@@ -778,7 +812,7 @@ SPACES: dict[str, dict[str, tuple[float, float]]] = {
         "w_device": (0.5, 5.0), "w_sr": (0.5, 5.0),
     },
 }
-BASE: dict[str, dict[str, float]] = {"in": V16_IN, "cold": V16_COLD}
+BASE: dict[str, dict[str, float]] = {"in": V17_IN, "cold": V17_COLD}
 
 # Python param -> ScoreEngine.kt constant, per regime (self_pen is one shared constant).
 KOTLIN_NAMES: dict[str, dict[str, str]] = {
@@ -837,7 +871,7 @@ def _mean_delta(rr_base: list[float], rr_cand: list[float], in_session: list[boo
 
 def acceptance(base: EvalResult, cand: EvalResult, in_session: list[bool],
                n_boot: int = 2000, seed: int = 0) -> Acceptance:
-    """Ship rule on the test targets: every check must hold (candidate = cand, v16 = base)."""
+    """Ship rule on the test targets: every check must hold (candidate = cand, shipped model = base)."""
     rr_base, rr_cand = base["rr_list"], cand["rr_list"]
     random.seed(seed)
     lo, hi = bootstrap_ci(rr_base, rr_cand, n_boot=n_boot)
@@ -881,7 +915,7 @@ def _tune_regime(regime: str, events: list[Event], split: int, n_trials: int, mi
                  tune_stride: int, study_dir: Path) -> dict[str, float]:
     """One resumable Optuna study on the regime's train targets [min_hist, split).
 
-    Trial 0 is v16 itself. The score is the MRR of the shipped-precision params on the
+    Trial 0 is the shipped model (BASE) itself. The score is the MRR of the shipped-precision params on the
     regime's targets, history always the full log before each target. Returns the best
     params at shipped precision.
     """
@@ -927,7 +961,7 @@ def _tune_regime(regime: str, events: list[Event], split: int, n_trials: int, mi
 
 def _report_test(events: list[Event], split: int, min_hist: int,
                  best: dict[str, dict[str, float]]) -> None:
-    """Score v16 and the candidate once on the test targets [split, N), full history, and gate."""
+    """Score v17 and the candidate once on the test targets [split, N), full history, and gate."""
     def arm(p_in: dict[str, float], p_cold: dict[str, float]) -> Callable[..., dict[str, float]]:
         return lambda h, hr, d, t, target=None: score_v16(h, hr, d, t, target, p_in, p_cold)
 
@@ -938,7 +972,7 @@ def _report_test(events: list[Event], split: int, min_hist: int,
     acc = acceptance(r_base, r_cand, flags)
 
     print("\n=== Held-out test (both arms: shipped precision, w_notif=0) ===")
-    _print_table([("v16 (as shipped)", r_base), ("candidate", r_cand)])
+    _print_table([("v17 (as shipped)", r_base), ("candidate", r_cand)])
     print(f"\ntest targets n={r_cand['n']}")
     print(f"ΔMRR={acc.d_mrr:+.4f}  95% CI=[{acc.ci_lo:+.4f}, {acc.ci_hi:+.4f}]  Wilcoxon p={acc.p_value:.4f}"
           f"  Δ@1={acc.d_at1:+.2f}pp  Δ@5={acc.d_at5:+.2f}pp")
@@ -946,13 +980,13 @@ def _report_test(events: list[Event], split: int, min_hist: int,
           f"cold {acc.d_mrr_cold:+.4f} ({len(flags) - sum(flags)} targets)")
     for check, ok in acc.checks.items():
         print(f"  {'pass' if ok else 'FAIL'}  {check}")
-    print("\nTuned params (v16 -> candidate):")
+    print("\nTuned params (v17 -> candidate):")
     for regime, space in SPACES.items():
         for k in space:
             print(f"  [{regime}] {k:<13} {base_p[regime][k]} -> {best[regime][k]}")
     if not acc.accepted:
         failed = ", ".join(c for c, ok in acc.checks.items() if not ok)
-        print(f"\nVERDICT: REJECT, keep v16 (failed: {failed})")
+        print(f"\nVERDICT: REJECT, keep v17 (failed: {failed})")
         return
     print("\nVERDICT: ACCEPT (all checks passed). Kotlin block, paste by hand into ScoreEngine.kt:")
     for regime, space in SPACES.items():
@@ -964,8 +998,8 @@ def run_tune(events: list[Event], train_frac: float = 0.8, n_trials: int = 200,
              min_hist: int = 50, tune_stride: int = 2, study_dir: Path | None = None,
              regime: str = "both") -> dict[str, dict[str, float]]:
     """
-    Tune v16 per regime on train targets [min_hist, split); with regime="both" also score
-    v16 vs the candidate on test targets [split, N) once. Every target sees the full log
+    Tune v17 per regime on train targets [min_hist, split); with regime="both" also score
+    v17 vs the candidate on test targets [split, N) once. Every target sees the full log
     before it. Returns the best params per regime tuned, at shipped precision.
     """
     if study_dir is None:
@@ -1000,7 +1034,7 @@ def run_tune(events: list[Event], train_frac: float = 0.8, n_trials: int = 200,
 # ─── apply params to ScoreEngine.kt: disabled ───────────────────────────────
 
 # Mapping: Python param name → (Kotlin constant name, value suffix). Dead: it names v14's
-# single-regime constants (W_CONTEXT, W_TRANSITION...), the v16 file has W_IN_* / W_COLD_*.
+# single-regime constants (W_CONTEXT, W_TRANSITION...), the dual-regime file has W_IN_* / W_COLD_*.
 _PARAM_MAP = {
     "hour_sigma":   ("HOUR_SIGMA",              "f"),
     "decay_hl":     ("DECAY_HALF_LIFE_DAYS",    "f"),
@@ -1040,7 +1074,7 @@ def main() -> None:
     parser.add_argument("--benchmark",   action="store_true",
                         help="Benchmark all models")
     parser.add_argument("--tune",        action="store_true",
-                        help="One Optuna study per regime on the train split, then v16 vs candidate on the test")
+                        help="One Optuna study per regime on the train split, then v17 vs candidate on the test")
     parser.add_argument("--study-dir",   type=Path, default=None, dest="study_dir",
                         help="Optuna sqlite dir, required with --tune; resume-safe, keep it outside the repo")
     parser.add_argument("--regime",      choices=("in", "cold", "both"), default="both",
