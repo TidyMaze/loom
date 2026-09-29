@@ -26,8 +26,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Pure MVVM, no DI framework, no Compose — classic View system with RecyclerView.
 
 **Data flow:**
-1. `UsageStore` — persists launch events as JSON (`usage_log.json`, capped at 1000 events)
-2. `ScoreEngine` — pure stateless scorer; Naive Bayes with time-of-day Gaussian + day-of-week + exponential decay (7-day half-life)
+1. `UsageStore` — persists launch events as JSON (`usage_log.json` in filesDir, written with `AtomicFile` + `JsonWriter`, capped at 20,000 events, oldest dropped, `UsageStore.MAX_EVENTS`)
+2. `ScoreEngine` — pure stateless scorer (v16): hand-weighted linear blend of features (hour Gaussian, recency, Markov transitions, context), two regimes picked by the gap since the last event (in-session <= 70 s, cold-start otherwise); constants are `private const val`s at the top of the file, tuned offline with `scripts/bench.py`
 3. `AppRepository` — merges PackageManager installed apps with scored events; computes stats (launchCount, todayCount, dailyAvg)
 4. `AppViewModel` — normalizes raw scores to `rank` (0–1 relative to max), exposes `LiveData<List<AppEntry>>`
 5. `MainActivity` — observes apps, drives `AppAdapter`; handles search, swipe-to-reset, long-press score reveal
@@ -39,4 +39,4 @@ Pure MVVM, no DI framework, no Compose — classic View system with RecyclerView
 - Swipe left on an app → `resetApp` deletes all its events from store
 - `Accent` colors are static white/gold; `accentForNow()` is a stub kept for future time-based theming
 
-**No database** — all persistence is a single flat JSON file via Gson.
+**No database** — the usage log is a single flat JSON file (`JsonReader`/`JsonWriter`); small settings live in SharedPreferences. The log is private to the app: pull it with `scripts/pull_log.sh` (debuggable build, `adb run-as`).
