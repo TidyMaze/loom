@@ -3,6 +3,7 @@ uv run --with pytest --with scipy --with optuna python3 -m pytest scripts/test_b
 Never `pytest scripts/`: test_dual_regime.py runs an Optuna experiment at import."""
 import collections
 import random
+import re
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -306,6 +307,31 @@ def test_kotlin_names_exist_in_scoreengine() -> None:
         "private const val W_IN_TRANSITION = 8.28f"
 
 
+def _kotlin_float_constants() -> dict[str, float]:
+    """Every `private const val NAME = <float>f` of ScoreEngine.kt."""
+    pattern = re.compile(r"^\s*private const val (\w+) = (-?\d+(?:\.\d+)?)f\b", re.MULTILINE)
+    return {m.group(1): float(m.group(2)) for m in pattern.finditer(bench.KT_PATH.read_text())}
+
+
+def test_v17_mirror_matches_scoreengine_constants() -> None:
+    kt = _kotlin_float_constants()
+    mirrors = {"in": bench.V17_IN, "cold": bench.V17_COLD}
+    drift = {
+        f"{regime}.{param} ({const})": (mirror[param], kt.get(const))
+        for regime, mirror in mirrors.items()
+        for param, const in bench.KOTLIN_NAMES[regime].items()
+        if const not in kt or round(mirror[param], 2) != round(kt[const], 2)
+    }
+    assert not drift, drift
+
+
+def test_base_and_first_benchmark_model_are_the_shipped_v17() -> None:
+    assert bench.BASE == {"in": bench.V17_IN, "cold": bench.V17_COLD}
+    assert bench.MODELS[0] == ("v17 (deployed dual-regime)", bench.score_v17)
+    assert ("v16 (previous dual-regime)", bench.score_v16) in bench.MODELS
+    assert bench.V16_IN["w_trans"] == 8.2760   # v16 is kept as the previous model, untouched
+
+
 # ─── acceptance rule (plan step 4) ───────────────────────────────────────────
 
 def _result(rr: list[float], at1: float = 30.0, at5: float = 60.0) -> "bench.EvalResult":
@@ -393,7 +419,7 @@ def test_main_tune_requires_a_study_dir(monkeypatch: pytest.MonkeyPatch) -> None
 
 # ─── run_tune: seeded trial 0, resume, stale study ──────────────────────────
 
-def test_run_tune_seeds_trial_zero_with_v16_and_resumes(tmp_path: Path) -> None:
+def test_run_tune_seeds_trial_zero_with_v17_and_resumes(tmp_path: Path) -> None:
     optuna = pytest.importorskip("optuna")
     events = _synthetic_log(200)
     split = int(0.8 * len(events))
@@ -404,7 +430,7 @@ def test_run_tune_seeds_trial_zero_with_v16_and_resumes(tmp_path: Path) -> None:
     study = optuna.load_study(study_name="loom_in", storage=storage)
     assert [t.number for t in study.trials] == [0, 1]
 
-    p = bench.offline_params(bench.V16_IN)
+    p = bench.offline_params(bench.V17_IN)
     plain = bench.evaluate(
         events, lambda h, hr, d, t, target=None: bench.score_v14(h, hr, d, t, target, p),
         min_hist=50, end=split, stride=2, select=lambda h, t, i: bench.is_in_session(h, t))
@@ -440,7 +466,7 @@ def test_run_tune_objective_scores_shipped_precision_without_notif(
     assert {p["hour_sigma"] for p in seen} == {2.53}   # frozen, never searched
 
 
-def test_run_tune_both_scores_test_window_once_and_keeps_v16_when_nothing_won(
+def test_run_tune_both_scores_test_window_once_and_keeps_v17_when_nothing_won(
         tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     pytest.importorskip("optuna")
     pytest.importorskip("scipy")
