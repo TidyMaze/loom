@@ -34,4 +34,37 @@ class SearchFallbackTest {
         val prompt = SearchFallback.buildGeminiPrompt("quantum computing")
         assertEquals("Tell me about quantum computing", prompt)
     }
+
+    @Test
+    fun `filterApps falls back to all apps when query is empty and no app has launch count`() {
+        val app1 = AppEntry("com.app.one", "Alpha", 0f, launchCount = 0, lastLaunchedMillis = null)
+        val app2 = AppEntry("com.app.two", "Beta", 0f, launchCount = 0, lastLaunchedMillis = null)
+        val fullList = listOf(app1, app2)
+
+        val result = SearchFallback.filterApps(fullList, "")
+        assertEquals(2, result.size)
+        assertEquals(listOf(app1, app2), result)
+    }
+
+    @Test
+    fun `filterApps returns only launched apps when query is empty and some apps have launch count`() {
+        val app1 = AppEntry("com.app.one", "Alpha", 1f, launchCount = 5, lastLaunchedMillis = 1000L)
+        val app2 = AppEntry("com.app.two", "Beta", 0f, launchCount = 0, lastLaunchedMillis = null)
+        val fullList = listOf(app1, app2)
+
+        val result = SearchFallback.filterApps(fullList, "")
+        assertEquals(1, result.size)
+        assertEquals(listOf(app1), result)
+    }
+
+    @Test
+    fun `filterApps filters by query when query is non empty`() {
+        val app1 = AppEntry("com.app.one", "Alpha", 1f, launchCount = 5, lastLaunchedMillis = 1000L)
+        val app2 = AppEntry("com.app.two", "Beta", 0f, launchCount = 0, lastLaunchedMillis = null)
+        val fullList = listOf(app1, app2)
+
+        val result = SearchFallback.filterApps(fullList, "bet")
+        assertEquals(1, result.size)
+        assertEquals("Beta", result[0].label)
+    }
 }

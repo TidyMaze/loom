@@ -45,8 +45,7 @@ class MainActivity : AppCompatActivity() {
     private var launcherResumeMs = System.currentTimeMillis()
 
     private fun filteredList(query: String) =
-        if (query.isEmpty()) fullList.filter { it.launchCount > 0 }
-        else fullList.filter { FuzzyMatcher.matches(query, it.label) }
+        SearchFallback.filterApps(fullList, query)
 
     private fun updateListAndEmptyState(query: String, onSubmitted: (() -> Unit)? = null) {
         val list = filteredList(query)

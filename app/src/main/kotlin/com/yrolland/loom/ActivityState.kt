@@ -37,6 +37,14 @@ object ActivityState {
 
     /** Subscribe to activity updates. Call once after ACTIVITY_RECOGNITION permission is granted. */
     fun startUpdates(context: Context) {
+        if (android.os.Build.VERSION.SDK_INT >= 29 &&
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACTIVITY_RECOGNITION
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         runCatching {
             val client = ActivityRecognition.getClient(context.applicationContext)
             val intent = Intent(context, ActivityRecognitionReceiver::class.java)

@@ -87,6 +87,8 @@ object LaunchContext {
     }.getOrNull()
 
     private fun wifiSsidHash(context: Context): String? = runCatching {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return@runCatching null
         val wm = context.getSystemService(Context.WIFI_SERVICE) as? WifiManager ?: return@runCatching null
         @Suppress("DEPRECATION")
         val info = wm.connectionInfo ?: return@runCatching "none"

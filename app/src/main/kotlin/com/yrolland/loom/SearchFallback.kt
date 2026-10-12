@@ -10,6 +10,15 @@ object SearchFallback {
     fun shouldShowEmptyState(query: String, hasAppMatches: Boolean): Boolean =
         query.trim().isNotEmpty() && !hasAppMatches
 
+    fun filterApps(fullList: List<AppEntry>, query: String): List<AppEntry> {
+        val trimmed = query.trim()
+        if (trimmed.isNotEmpty()) {
+            return fullList.filter { FuzzyMatcher.matches(trimmed, it.label) }
+        }
+        val launched = fullList.filter { it.launchCount > 0 }
+        return if (launched.isNotEmpty()) launched else fullList
+    }
+
     fun buildChromeUrl(query: String): String =
         "https://www.google.com/search?q=" + URLEncoder.encode(query, "UTF-8")
 
