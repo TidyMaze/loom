@@ -39,6 +39,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnOpenChrome: View
     private lateinit var btnOpenGemini: View
     private lateinit var gridStore: GridStore
+    private lateinit var onboardingStore: OnboardingStore
+    private var layoutOnboarding: View? = null
+    private var currentOnboardingStep = 0
     private var fullList: List<AppEntry> = emptyList()
     private var searchShownAt = 0L
     private var needsRefresh = false
@@ -68,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         gridStore = GridStore(this)
+        onboardingStore = OnboardingStore(this)
         greeting = findViewById(R.id.tv_greeting)
         search = findViewById(R.id.et_search)
         layoutEmptyState = findViewById(R.id.layout_empty_state)
@@ -174,6 +178,8 @@ class MainActivity : AppCompatActivity() {
                 recycler.scrollToPosition(0)
             }
         }
+
+        checkAndShowOnboarding()
     }
 
     override fun onPause() {
@@ -342,7 +348,66 @@ class MainActivity : AppCompatActivity() {
         else -> "Good night."
     }
 
+    private fun checkAndShowOnboarding() {
+        if (onboardingStore.isOnboardingCompleted()) return
+        layoutOnboarding = findViewById(R.id.layout_onboarding)
+        layoutOnboarding?.visibility = View.VISIBLE
+        currentOnboardingStep = 0
+        renderOnboardingStep()
+
+        findViewById<View>(R.id.btn_onboarding_next)?.setOnClickListener {
+            if (currentOnboardingStep < OnboardingContent.steps.size - 1) {
+                currentOnboardingStep++
+                renderOnboardingStep()
+            } else {
+                finishOnboarding()
+            }
+        }
+
+        findViewById<View>(R.id.btn_onboarding_skip)?.setOnClickListener {
+            finishOnboarding()
+        }
+    }
+
+    private fun renderOnboardingStep() {
+        val step = OnboardingContent.steps.getOrNull(currentOnboardingStep) ?: return
+        findViewById<android.widget.ImageView>(R.id.iv_onboarding_icon)?.setImageResource(step.iconRes)
+        findViewById<TextView>(R.id.tv_onboarding_title)?.text = step.title
+        findViewById<TextView>(R.id.tv_onboarding_subtitle)?.text = step.subtitle
+
+        val nextBtn = findViewById<android.widget.Button>(R.id.btn_onboarding_next)
+        nextBtn?.text = if (currentOnboardingStep == OnboardingContent.steps.size - 1) "Get Started" else "Continue"
+
+        val dotsContainer = findViewById<android.widget.LinearLayout>(R.id.layout_onboarding_dots) ?: return
+        dotsContainer.removeAllViews()
+        for (i in OnboardingContent.steps.indices) {
+            val dot = View(this).apply {
+                val size = (6 * resources.displayMetrics.density).toInt()
+                val margin = (4 * resources.displayMetrics.density).toInt()
+                val params = android.widget.LinearLayout.LayoutParams(size, size).apply {
+                    setMargins(margin, 0, margin, 0)
+                }
+                layoutParams = params
+                setBackgroundResource(R.drawable.circle)
+                alpha = if (i == currentOnboardingStep) 1f else 0.25f
+            }
+            dotsContainer.addView(dot)
+        }
+    }
+
+    private fun finishOnboarding() {
+        onboardingStore.setOnboardingCompleted()
+        layoutOnboarding?.animate()
+            ?.alpha(0f)
+            ?.setDuration(250)
+            ?.withEndAction {
+                layoutOnboarding?.visibility = View.GONE
+            }
+            ?.start()
+    }
+
     companion object {
         private const val REQ_PERMS = 1001
     }
 }
+

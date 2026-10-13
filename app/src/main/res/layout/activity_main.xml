@@ -1,97 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@android:color/black">
 
-    <TextView
-        android:id="@+id/tv_greeting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="56dp"
-        android:paddingBottom="2dp"
-        android:textSize="28sp"
-        android:textColor="#FFFFFF"
-        android:fontFamily="sans-serif-light"
-        android:letterSpacing="0.02" />
-
-
-    <EditText
-        android:id="@+id/et_search"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="4dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:hint="Search apps…"
-        android:textColorHint="#444444"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:background="@drawable/search_bg"
-        android:inputType="text"
-        android:imeOptions="actionSearch"
-        android:maxLines="1"
-        android:visibility="gone" />
-
     <LinearLayout
-        android:id="@+id/layout_empty_state"
+        android:id="@+id/layout_main_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:gravity="center"
-        android:visibility="gone">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_open_chrome"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tv_greeting"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:text="Open in Chrome"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="56dp"
+            android:paddingBottom="2dp"
+            android:textSize="28sp"
             android:textColor="#FFFFFF"
-            android:textSize="13sp"
-            android:textAllCaps="false"
-            android:backgroundTint="#222222" />
+            android:fontFamily="sans-serif-light"
+            android:letterSpacing="0.02" />
 
-        <Button
-            android:id="@+id/btn_open_gemini"
-            android:layout_width="0dp"
+        <EditText
+            android:id="@+id/et_search"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="6dp"
-            android:text="Open in Gemini"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:hint="Search apps…"
+            android:textColorHint="#444444"
             android:textColor="#FFFFFF"
-            android:textSize="13sp"
-            android:textAllCaps="false"
-            android:backgroundTint="#222222" />
+            android:textSize="16sp"
+            android:background="@drawable/search_bg"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/layout_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btn_open_chrome"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="Open in Chrome"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textAllCaps="false"
+                android:backgroundTint="#222222" />
+
+            <Button
+                android:id="@+id/btn_open_gemini"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Open in Gemini"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textAllCaps="false"
+                android:backgroundTint="#222222" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="16dp"
+            android:scrollbarStyle="outsideOverlay"
+            android:scrollbars="none"
+            android:layoutAnimation="@anim/layout_fall_down" />
 
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="16dp"
-        android:scrollbarStyle="outsideOverlay"
-        android:scrollbars="none"
-        android:layoutAnimation="@anim/layout_fall_down" />
+    <include layout="@layout/view_onboarding" />
 
-</LinearLayout>
+</FrameLayout>

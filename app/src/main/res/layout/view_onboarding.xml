@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_onboarding"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:visibility="gone"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingStart="36dp"
+        android:paddingEnd="36dp">
+
+        <ImageView
+            android:id="@+id/iv_onboarding_icon"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_marginBottom="36dp"
+            android:contentDescription="Illustration" />
+
+        <TextView
+            android:id="@+id/tv_onboarding_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="14dp" />
+
+        <TextView
+            android:id="@+id/tv_onboarding_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#888888"
+            android:textSize="15sp"
+            android:lineSpacingExtra="4dp"
+            android:fontFamily="sans-serif"
+            android:layout_marginBottom="44dp" />
+
+        <!-- Dot indicators container -->
+        <LinearLayout
+            android:id="@+id/layout_onboarding_dots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="36dp" />
+
+        <Button
+            android:id="@+id/btn_onboarding_next"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/search_bg"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textAllCaps="false"
+            android:fontFamily="sans-serif-medium"
+            android:text="Continue" />
+
+        <TextView
+            android:id="@+id/btn_onboarding_skip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:text="Skip"
+            android:textColor="#555555"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+</FrameLayout>

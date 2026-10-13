@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Outer boundary -->
+    <path
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M 48,12 A 36,36 0 1,0 48,84 A 36,36 0 1,0 48,12 Z" />
+    <!-- Center clock hands for temporal context -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M 48,48 L 48,28" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M 48,48 L 62,48" />
+    <!-- App icon indicator dots around perimeter -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 48,45 A 3,3 0 1,0 48,51 A 3,3 0 1,0 48,45 Z" />
+    <path
+        android:fillColor="#88FFFFFF"
+        android:pathData="M 28,32 A 4,4 0 1,0 28,40 A 4,4 0 1,0 28,32 Z" />
+    <path
+        android:fillColor="#88FFFFFF"
+        android:pathData="M 68,60 A 4,4 0 1,0 68,68 A 4,4 0 1,0 68,60 Z" />
+</vector>
