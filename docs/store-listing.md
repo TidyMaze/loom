@@ -19,5 +19,8 @@ Every time you open an app, Loom remembers. Over time it builds a picture of you
 • No internet required — everything stays on your device
 • No permissions — Loom only sees what you tap
 
+**Open Source**
+Loom is fully open source: https://github.com/TidyMaze/loom
+
 **Privacy**
 Loom stores nothing but your own launch history, locally on your device. No analytics, no ads, no servers.
