@@ -12,14 +12,14 @@ val keystoreProps = Properties().also { props ->
 
 android {
     namespace = "com.yrolland.loom"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.yrolland.loom"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 2
-        versionName = "1.2"
+        targetSdk = 36
+        versionCode = 3
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
