@@ -24,6 +24,10 @@
   <a href="https://github.com/TidyMaze/loom/releases/latest">
     <img src="https://img.shields.io/badge/All%20Releases-GitHub-24292e?style=for-the-badge&logo=github&logoColor=white" alt="View Releases" />
   </a>
+  &nbsp;&nbsp;
+  <img src="https://img.shields.io/badge/Google%20Play-In%20Review-orange?style=for-the-badge&logo=googleplay&logoColor=white" alt="Google Play in review" />
+  &nbsp;&nbsp;
+  <img src="https://img.shields.io/badge/F--Droid-Planned-blue?style=for-the-badge&logo=fdroid&logoColor=white" alt="F-Droid Planned" />
 </p>
 
 <p align="center">
@@ -133,7 +137,22 @@ Loom uses an on-device score engine combining multiple temporal and behavioral s
 Contributions, feature requests, and bug reports are welcome!
 
 - **Report a Bug**: Open an issue on [GitHub Issues](https://github.com/TidyMaze/loom/issues).
-- **Submit a Pull Request**: Fork the repo, create a branch, run tests (`./gradlew test`), and open a PR.
+---
+
+## FAQ & Troubleshooting
+
+### Why are there no colorful app icons?
+Loom is designed intentionally around digital wellbeing and focus. Colorful icons trigger dopamine loops and subconscious distraction. A clean typography-first list helps you launch what you intended without rabbit-holing.
+
+### How does the ranking engine learn without internet access?
+Everything runs on-device using a lightweight Kotlin scoring engine. When you open an app, Loom logs the timestamp and previous app in an encrypted local database. The math uses exponential decay and Gaussian time-of-day kernels. Zero data ever leaves your phone.
+
+### Can I reset the learned history?
+- **For a single app**: Long press the app item and select **Reset Rank** (or swipe to clear).
+- **For all apps**: Go to Android **Settings** > **Apps** > **Loom** > **Storage** > **Clear Data**.
+
+### How do I switch back to my previous launcher or uninstall?
+Go to Android **Settings** > **Apps** > **Default apps** > **Home app**, and choose your original launcher. You can then uninstall Loom normally like any Android app.
 
 ---
 
