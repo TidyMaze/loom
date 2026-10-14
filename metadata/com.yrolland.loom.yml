@@ -8,33 +8,19 @@ Changelog: https://github.com/TidyMaze/loom/releases
 Donate: https://buymeacoffee.com/tidymaze
 
 AutoName: Loom
-Summary: Minimal Android launcher that quietly learns how you use your phone
-Description: |-
-  A minimal Android launcher that quietly learns how you use your phone.
-
-  No folders. No widgets. No badges. Just a dark grid of app icons, ranked
-  by what you are most likely to need right now based on time of day, day
-  of the week, and past habits.
-
-  Features:
-  * Smart ranking powered by an offline, on-device scoring engine
-  * 100% private: no internet permission, no telemetry, zero tracking
-  * Instant fuzzy search accessible from anywhere
-  * OLED-friendly pure black aesthetic
-  * Full functionality without runtime permissions
 
 RepoType: git
 Repo: https://github.com/TidyMaze/loom.git
 
 Builds:
-  - versionName: 1.3.2
-    versionCode: 5
-    commit: v1.3.2
+  - versionName: 1.3.3
+    versionCode: 6
+    commit: v1.3.3
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.3.2
-CurrentVersionCode: 5
+CurrentVersion: 1.3.3
+CurrentVersionCode: 6

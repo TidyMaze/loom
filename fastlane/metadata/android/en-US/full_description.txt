@@ -1,16 +1,16 @@
 Loom is a minimal Android launcher that quietly learns how you use your phone.
 
-No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of the week, and your past habits.
+The home screen is a dark grid of app icons: no labels, no notification badges, no folders, no widgets. Apps you use are ordered by how likely you are to open them now, based on time of day, day of the week and the app you just closed. Apps you never open stay off the home screen and are one swipe away in search.
 
-FEATURES:
-• Smart ranking: Apps surface automatically when you actually use them.
-• Context awareness: Learns routines by time of day, day of the week, and launch transitions.
-• Instant search: Swipe down anywhere to filter apps by name with fuzzy matching.
-• Clean aesthetic: Pure black UI, easy on eyes and battery efficient on OLED screens.
-• 100% on-device & private: No internet connection required. Zero telemetry, zero tracking.
-• Fallback ready: Fully usable even with zero permissions granted.
+Features:
+• Smart ranking computed on the device by a small scoring model.
+• Swipe down anywhere to search all apps (fuzzy matching).
+• Long-press an app for its shortcuts, to hide it, reset its history or open its system info.
+• Pure black UI, easy on the eyes on OLED screens.
+• Works without granting any runtime permission. Location, calendar and Bluetooth only refine the ranking if you allow them.
 
-Tested on real daily usage across 10,000+ app launches over 3 months:
-• 1 in 3 launches is already ranked #1 on screen.
-• Over 80% of launches require zero searching or scrolling.
-• Less than 1 ms inference latency with zero battery impact.
+Privacy: no INTERNET permission, no account, no ads, nothing sent anywhere. If anonymous usage stats are ever added to improve the model, they will be off unless you turn them on.
+
+On three months of the developer's own usage (10,000+ app launches), the wanted app was already first on screen about one time in three.
+
+Early alpha. The idea comes from Yasan Launcher, thanks to its developer.

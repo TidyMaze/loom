@@ -1,0 +1,1 @@
+Store descriptions and screenshots updated to match the current app (icon grid, privacy wording). No code change.
