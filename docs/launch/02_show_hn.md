@@ -24,7 +24,7 @@ How it works:
 - Recency decay: Exponential time decay based on last launch timestamp.
 - Time-of-day & day-of-week affinity: Gaussian kernel centered around current hour and weekday vs weekend patterns.
 - Transition bigrams: Probabilistic Markov transitions (P(App B | App A)) to anticipate multi-app workflows.
-- Zero analytics / zero tracking: No internet permission in AndroidManifest.xml. Not a single byte ever leaves the phone.
+- Zero analytics / zero tracking today: No internet permission in AndroidManifest.xml. Not a single byte leaves the phone. In future versions, any anonymous usage metrics to improve the habit scoring model will be strictly opt-in and never enabled by default.
 - Micro footprint: APK size is under 1 MB (< 969 KB), sub-millisecond inference time, and zero background battery drain.
 
 On my own real-world usage log (10,472 app launches across 112 days):

@@ -21,7 +21,7 @@ Je vous presente Loom, un nouveau lanceur d'applications Android open source (Ap
 Contrairement aux lanceurs minimalistes habituels qui obligent a scroller dans un alphabet infini ou a figer une liste de favoris statique, Loom integre un moteur mathematique leger (en pur Kotlin) qui anticipe l'application dont vous avez besoin selon l'heure, le jour de la semaine et vos enchainements d'apps.
 
 Points cles :
-• 100% Hors-ligne & Prive : Zero permission INTERNET dans le Manifest Android. Zero tracking, zero telemetrie, tout reste sur l'appareil.
+• 100% Hors-ligne & Prive : Zero permission INTERNET dans le Manifest Android. Zero tracking, zero telemetrie, tout reste sur l'appareil. Des statistiques d'usage anonymes pour ameliorer le modele pourront venir plus tard, uniquement en opt-in.
 • Efficacite prouvee : Evalue sur plus de 10 000 ouvertures reelles d'applications sur 3 mois : 1 fois sur 3, l'application recherchee est deja la premiere a l'ecran sans rien toucher, et 83% des ouvertures ne necessitent ni recherche ni scroll.
 • Poids plume : APK de 969 Ko (< 1 Mo), latence inference < 1 ms a 120 FPS, impact batterie nul sur ecran OLED (noir pur).
 • 100% Gratuit et Open Source sous licence Apache 2.0.

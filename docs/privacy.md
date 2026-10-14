@@ -19,6 +19,11 @@ No personal information, no location, no contacts, no device identifiers.
 
 All data is stored locally on your device in a private file (`usage_log.json`). It is never transmitted to any server, never shared with third parties, and never leaves your device.
 
+## Future Telemetry (Opt-in Only)
+
+Loom currently operates 100% on-device with zero network permissions.
+In future updates, optional anonymous usage statistics (strictly designed to help train and refine the habit prediction model) may be introduced. This will strictly be **opt-in**, clearly communicated, and never enabled by default.
+
 ## Data retention
 
 Usage history is stored indefinitely until you uninstall the app or use the in-app reset gesture (swipe left on any app).

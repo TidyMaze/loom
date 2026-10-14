@@ -18,7 +18,7 @@ What always frustrated me with existing minimalist launchers was having to scrol
 So I built **Loom**, a pure-black launcher designed specifically for focus:
 - **No icons, no widgets, no folders**: Pure typography-first design on an OLED-black background.
 - **Smart habit learning**: An on-device scoring engine looks at the time of day, day of week, and your previous app transitions.
-- **Zero data collection**: It does not even request the `INTERNET` permission in Android. Everything is processed and stored locally in encrypted storage.
+- **Zero data collection**: It does not even request the `INTERNET` permission in Android. Everything is processed and stored locally in encrypted storage. Later on I may add anonymous usage stats to improve the model, strictly opt-in and off by default.
 - **Micro footprint**: Less than 1 MB in size, zero battery drain, and instant (<1ms) response.
 
 On my own real daily usage over 3 months (10,000+ app opens), the exact app I want is already waiting at the very top 1 out of 3 times, and over 80% of the time it is right in view without typing a single letter.
@@ -47,7 +47,7 @@ I wanted to share **Loom**, an ultra-minimalist Android launcher I've been devel
 Key highlights:
 - **Under 1 MB APK**: Fast install, zero bloat, pure native Kotlin.
 - **Smart prediction**: Dual-regime scoring model combining exponential recency decay, Gaussian time-of-day kernels, and Markov transition bigrams (P(App B | App A)).
-- **Zero internet access**: The app does not declare the `android.permission.INTERNET` permission at all. Your app habits are 100% private.
+- **Zero internet access**: The app does not declare the `android.permission.INTERNET` permission at all. Your app habits are 100% private. Anonymous usage stats to improve the model may come later, opt-in only.
 - **Predictive back & edge-to-edge**: Fully targeted for Android 16 (API 36) with smooth 120Hz gesture navigation.
 - **Instant search**: Pull down anywhere to fuzzy-search across your full app catalog.
 
@@ -74,7 +74,7 @@ Code & Release: https://github.com/TidyMaze/loom
 License: Apache 2.0
 
 Why it's built this way:
-- **No telemetry, zero trackers**: No network permission declared in the manifest.
+- **No telemetry, zero trackers**: No network permission declared in the manifest. Any future anonymous usage stats (to improve the model) will be opt-in only.
 - **On-device ML**: Predicts and ranks apps using an offline mathematical scoring engine without cloud dependencies.
 - **F-Droid ready**: Recipe prepared and build verified without proprietary blobs.
 

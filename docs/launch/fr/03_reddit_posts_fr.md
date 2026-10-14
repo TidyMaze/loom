@@ -18,7 +18,7 @@ J'ai essaye pas mal de lanceurs minimalistes, mais soit il fallait scroller dans
 J'ai donc concu **Loom** :
 - **Zero fioriture** : Fond noir pur OLED, liste textuelle epuree, aucune icone coloree distrayante.
 - **Anticipation locale** : Un algorithme tres leger (en Kotlin) apprend vos habitudes au fil de la journee selon l'heure, le jour de la semaine et vos enchainements d'apps.
-- **100% Hors-ligne & Prive** : L'app n'a meme pas la permission INTERNET. Zero pub, zero compte, zero donnee envoyee.
+- **100% Hors-ligne & Prive** : L'app n'a meme pas la permission INTERNET. Zero pub, zero compte, zero donnee envoyee. Plus tard, des statistiques d'usage anonymes (pour ameliorer le modele) pourront etre collectees, uniquement en opt-in.
 - **Micro-poids** : Moins de 1 Mo (969 Ko), instantane, zero impact sur la batterie.
 
 Sur mes 3 derniers mois d'utilisation (10 000+ ouvertures), l'app que je veux ouvrir est deja la premiere a l'ecran 1 fois sur 3 sans rien chercher, et dans 83% des cas elle est directement visible.
@@ -44,7 +44,7 @@ Preneur de vos retours et suggestions d'amelioration !
 Salut la commu dev,
 
 Je vous partage un projet perso que je viens de stabiliser : **Loom**, un lanceur Android concu avec des contraintes techniques strictes :
-- **Zero permission INTERNET** dans le Manifest Android.
+- **Zero permission INTERNET** dans le Manifest Android (pour l'instant : des stats d'usage anonymes en opt-in pourront venir plus tard pour ameliorer le modele).
 - **Empreinte minimale** : APK de 969 Ko, startup time < 50ms, latence de scoring < 1ms a 120 FPS.
 - **Scoring en pur Kotlin** : Modele double-regime combinant decroissance exponentielle de recence, noyaux gaussiens pour l'heure du jour / jour de semaine, et bigrammes de transitions (Markov P(App B | App A)).
 - **Target SDK 36 (Android 16)** : Support complet du retour predictif et edge-to-edge.

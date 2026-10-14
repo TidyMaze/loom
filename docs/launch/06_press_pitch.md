@@ -20,7 +20,7 @@ I wanted to share Loom, a new open-source minimalist Android launcher designed t
 Unlike typical minimalist launchers that force endless alphabetical scrolling, Loom uses an on-device mathematical scoring engine (pure Kotlin) that predicts which app you need based on the time of day, day of week, and your previous app transitions.
 
 Key highlights:
-- 100% Private: Zero internet permissions in AndroidManifest.xml. Zero telemetry.
+- 100% Private: Zero internet permissions in AndroidManifest.xml. Zero telemetry today; anonymous usage stats to improve the model may come later, opt-in only.
 - Evaluated on 10,000+ real-world app launches: 1 in 3 launches is already ranked #1 on screen.
 - Micro footprint: APK size is under 1 MB (< 969 KB), instant <1ms response, pure OLED black UI.
 - Free and open-source under Apache 2.0.

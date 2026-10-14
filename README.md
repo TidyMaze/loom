@@ -54,7 +54,7 @@ No folders. No widgets. No clutter. Just a clean list of apps, ranked by what yo
 - **Instant search**: Swipe down anywhere to filter apps by name with fuzzy matching.
 - **Clean aesthetic**: Pure black UI, easy on eyes and battery efficient on OLED screens.
 - **Swipe to reset**: Clear an app's history with a swipe.
-- **Zero tracking & 100% private**: No internet connection required. Everything stays strictly on your device.
+- **Zero tracking & 100% private**: No internet connection required. Everything stays strictly on your device. Anonymous usage stats to improve the model may come later, opt-in only.
 - **Permission-refusal fallback**: Fully usable with zero runtime permissions granted.
 
 ---
@@ -150,7 +150,9 @@ Go to Android **Settings** > **Apps** > **Default apps** > **Home app**, and cho
 
 ## Privacy Policy
 
-Loom stores nothing but your own launch history locally on your device. No analytics, no ads, no remote telemetry.
+Loom stores nothing but your own launch history locally on your device. Currently, it operates 100% offline with zero network permissions and zero remote telemetry.
+
+In future releases, optional anonymous usage statistics (strictly designed to train and refine the habit scoring model) may be introduced. This will strictly be **opt-in** and never enabled by default.
 
 Read the full [Privacy Policy](docs/privacy.md).
 

@@ -22,7 +22,7 @@ Loom is a distraction-free, minimalist Android launcher designed around focus an
 
 * Pure black OLED-friendly aesthetic.
 * Zero analytics, zero ads, zero telemetry.
-* 100% on-device processing with no internet permissions.
+* 100% on-device processing with no internet permissions (anonymous usage stats to improve the model may come later, opt-in only).
 * Fully usable without runtime permissions.
 
 ### Source Code

@@ -15,7 +15,7 @@ No folders, no widgets, no colorful icons fighting for your attention. Just a cl
 
 Highlights:
 - Early Alpha & Vibe Coded: Built at the very start of the journey through human + AI vibe coding.
-- 100% Private: Zero internet permission, zero telemetry, everything runs locally.
+- 100% Private: Zero internet permission, zero telemetry, everything runs locally. Anonymous usage stats to improve the model may come later, opt-in only.
 - Proven accuracy: Evaluated across 10,000+ real-world app opens (1 in 3 launches is already #1 on screen).
 - Ultra lightweight: Under 1 MB APK size, instant sub-millisecond response.
 - OLED-friendly pure black aesthetic.
@@ -33,7 +33,7 @@ Existing minimalist launchers often forced you into rigid static favorites or en
 
 I wanted something different: a launcher that feels completely calm and invisible, but magically surfaces the app you actually want at 8 AM, 1 PM, or 10 PM.
 
-Loom uses an on-device mathematical scoring engine (pure Kotlin) that combines time-of-day, day-of-week, and Markov app transitions. Best of all: it doesn't even have internet permission. Your habits never leave your phone.
+Loom uses an on-device mathematical scoring engine (pure Kotlin) that combines time-of-day, day-of-week, and Markov app transitions. Best of all: it doesn't even have internet permission. Your habits never leave your phone. If I ever add anonymous usage stats to improve the model, they will be opt-in.
 
 Would love to hear your feedback and answer any questions!
 ```
