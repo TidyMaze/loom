@@ -9,7 +9,7 @@
 **Accroche** : Choc visuel entre un telephone sature et Loom.
 **Musique** : Audio tendance lofi / ambient calme.
 
-- **0:00 - 0:03** : *Plan serre sur un ecran de smartphone classique* : Pastilles rouges de notifications partout, widget Insta, icones fluo agressives. Texte a l'ecran : *"Ton telephone a ete concu comme une machine a sous."*
+- **0:00 - 0:03** : *Plan serre sur un ecran de smartphone classique* : Pastilles rouges de notifications partout, widget Insta, icones fluo agressives. Texte a l'ecran : *"Un ecran sature disperse facilement ton attention."*
 - **0:03 - 0:08** : *Un seul glissement de doigt pour activer Loom en lanceur par defaut* : L'ecran bascule instantanement sur un noir OLED profond et une typographie epuree. Texte a l'ecran : *"Je suis passe a ca il y a 3 mois."*
 - **0:08 - 0:12** : *Demonstration de l'apprentissage des routines* : Montrer l'ecran a 8h00 (appli agenda et cafe en premier). Montrer a 19h00 (musique et sport en premier). Texte a l'ecran : *"Il devine ce dont tu as besoin, sans rien configurer."*
 - **0:12 - 0:15** : *Plan final avec le nom de l'app* : Texte a l'ecran : *"100% hors-ligne. Zero pub. Gratuit sur GitHub (Loom)."*

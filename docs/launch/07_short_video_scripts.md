@@ -9,7 +9,7 @@
 **Hook**: Visual shock of typical phone vs Loom.
 **Audio**: Trending calm lofi or ambient audio.
 
-- **0:00 - 0:03**: *Camera pointing at normal phone screen*: Red badges everywhere, busy Instagram widget, colorful icons. Text on screen: *"Your phone was designed by slot-machine engineers."*
+- **0:00 - 0:03**: *Camera pointing at normal phone screen*: Red badges everywhere, busy Instagram widget, colorful icons. Text on screen: *"Cluttered home screens scatter your daily focus."*
 - **0:03 - 0:08**: *One swipe to set Loom as default launcher*: Screen instantly turns into pure, deep OLED black with clean typography. Text on screen: *"I switched to this 3 months ago."*
 - **0:08 - 0:12**: *Show how habits work*: Tapping the screen at 8:00 AM (calendar & coffee app at top). Tapping at 6:00 PM (gym & messaging at top). Text on screen: *"It quietly predicts what you need. Zero setup."*
 - **0:12 - 0:15**: *Final screen with app title*: Text on screen: *"100% offline. Zero ads. Free & open-source on GitHub."*

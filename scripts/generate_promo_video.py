@@ -128,8 +128,8 @@ def render_frame(f):
         # Title with smooth slide down
         t_title = ease_out_cubic(min(1.0, t * 1.5))
         title_y = int(160 + (1.0 - t_title) * -50)
-        draw.text((WIDTH // 2, title_y), "Your phone is engineered", font=FONT_TITLE, fill=(240, 240, 245), anchor="mm")
-        draw.text((WIDTH // 2, title_y + 60), "to steal your attention.", font=FONT_SUBTITLE, fill=(239, 68, 68), anchor="mm")
+        draw.text((WIDTH // 2, title_y), "Cluttered home screens", font=FONT_TITLE, fill=(240, 240, 245), anchor="mm")
+        draw.text((WIDTH // 2, title_y + 65), "scatter your daily focus.", font=FONT_SUBTITLE, fill=(239, 68, 68), anchor="mm")
 
         # Phone vibrating with relentless notifications
         shake_mag = 5 * min(1.0, t * 1.5)

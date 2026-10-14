@@ -11,7 +11,7 @@
 ```markdown
 Bonjour a tous,
 
-Comme beaucoup, j'avais l'impression que mon telephone etait concu comme une machine a sous : des points rouges partout, des icones fluo et des widgets qui se battent pour capter mon attention.
+Comme beaucoup, je trouvais mon ecran d'accueil trop sature : des pastilles rouges partout, des icones fluo et des widgets qui dispersent l'attention au quotidien.
 
 J'ai essaye pas mal de lanceurs minimalistes, mais soit il fallait scroller dans une liste alphabetique interminable, soit bloquer 4 favoris qui n'etaient jamais les bons au cours de la journee.
 
