@@ -42,6 +42,15 @@ Ce plan classe chaque canal selon le **niveau de popularite minimale requis** po
 
 ---
 
+## Message vie privee (commun a tous les canaux)
+
+- **Aujourd'hui** : 100% local, aucune permission INTERNET, aucune donnee envoyee.
+- **Plus tard** : des statistiques d'usage anonymes (pour ameliorer le modele) pourront etre collectees, **uniquement en opt-in**, jamais activees par defaut.
+- Ne jamais ecrire "jamais aucune donnee ne quittera le telephone" sans le "pour l'instant" : la promesse doit rester vraie apres l'ajout de l'opt-in.
+- Le jour ou l'opt-in arrive : mettre a jour [privacy.md](../privacy.md), le README et le formulaire "Data safety" du Play Store avant la release.
+
+---
+
 ## Synthese de dependance au Google Play Store
 
 1. **Jour 0 (Palier 1) se lance des aujourd'hui sans le Play Store** :
