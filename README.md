@@ -143,6 +143,9 @@ Loom is free and stays free. If it's useful to you, you can [buy me a coffee](ht
 
 ## FAQ & Troubleshooting
 
+### Why "Loom"?
+A loom weaves separate threads into one fabric. Loom does the same with your day: each app you open is a thread, and over time the launcher weaves them into a routine it can follow, putting the next app where your thumb already is.
+
 ### Why no app names, badges or widgets?
 Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
 
