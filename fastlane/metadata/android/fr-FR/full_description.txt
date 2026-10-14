@@ -1,0 +1,16 @@
+Loom est un lanceur Android minimaliste qui apprend silencieusement la facon dont vous utilisez votre telephone.
+
+Sans dossiers. Sans widgets. Sans encombrement. Juste une liste epuree d'applications, classees selon vos besoins reels selon l'heure, le jour de la semaine et vos habitudes.
+
+FONCTIONNALITES :
+• Classement intelligent : Vos applications remontent automatiquement au moment ou vous les utilisez.
+• Prise en compte du contexte : Apprend vos routines selon l'heure, le jour et vos enchainements d'apps.
+• Recherche instantanee : Glissez vers le bas n'importe ou pour filtrer vos applications.
+• Esthetique sobre : Interface noir pur, reposante pour les yeux et economique pour les ecrans OLED.
+• 100% prive et en local : Aucune connexion internet requise. Zero telemetrie, zero publicite.
+• Fonctionne sans permissions : Parfaitement utilisable meme sans accorder de permissions d'arriere-plan.
+
+Teste sur un usage reel quotidien de plus de 10 000 ouvertures d'apps sur 3 mois :
+• 1 fois sur 3, l'application voulue est deja la premiere a l'ecran.
+• Plus de 80% des lancements ne necessitent aucune recherche ni defilement.
+• Moins d'une milliseconde de latence, zero impact sur la batterie.
