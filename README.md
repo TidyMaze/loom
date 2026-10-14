@@ -8,6 +8,23 @@
   <em>A minimal Android launcher that quietly learns how you use your phone.</em>
 </p>
 
+<p align="center">
+  <a href="https://github.com/TidyMaze/loom/releases"><img src="https://img.shields.io/badge/Release-v1.3-black?style=for-the-badge&logo=android&logoColor=white" alt="Release v1.3" /></a>
+  <a href="https://android.com"><img src="https://img.shields.io/badge/API-36%20Vanilla%20Ice%20Cream-black?style=for-the-badge&logo=android&logoColor=white" alt="Target API 36" /></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-1.9.23-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin 1.9" /></a>
+  <a href="#zero-tracking--100-private"><img src="https://img.shields.io/badge/Privacy-100%25%20On--Device-10B981?style=for-the-badge&logo=shield&logoColor=white" alt="100% On Device" /></a>
+  <a href="https://github.com/TidyMaze/loom/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0 License" /></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Telemetry-0%25-black?style=flat-square" alt="0% Telemetry" />
+  <img src="https://img.shields.io/badge/Ads-Zero-black?style=flat-square" alt="Zero Ads" />
+  <img src="https://img.shields.io/badge/Battery%20Drain-OLED%20Friendly-000000?style=flat-square" alt="OLED Friendly" />
+  <img src="https://img.shields.io/badge/Clutter-None-black?style=flat-square" alt="No Clutter" />
+  <img src="https://img.shields.io/badge/AI-On--Device%20ML-6366F1?style=flat-square" alt="On-Device ML" />
+  <img src="https://img.shields.io/badge/Vibes-Minimalist%20AF-purple?style=flat-square" alt="Minimalist AF" />
+</p>
+
 No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
 ---
