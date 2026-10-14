@@ -9,11 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk"><b>⬇ Download APK (v1.3)</b></a> &nbsp;•&nbsp; <a href="https://github.com/TidyMaze/loom/releases/latest">All Releases</a>
-</p>
-
-<p align="center">
-  <sub>Android 8.0+ &nbsp;•&nbsp; 100% On-Device &nbsp;•&nbsp; Apache 2.0</sub>
+  <a href="https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk"><img src="https://img.shields.io/badge/Download_APK-v1.3-2ea44f?style=flat-square&logo=android&logoColor=white" alt="Download APK" /></a>
+  <img src="https://img.shields.io/badge/Android-8.0%2B-black?style=flat-square" alt="Android 8.0+" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-black?style=flat-square" alt="License Apache 2.0" /></a>
 </p>
 
 No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
