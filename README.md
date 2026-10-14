@@ -1,6 +1,12 @@
-# Loom
+<p align="center">
+  <img src="docs/app_icon_512.png" width="96" height="96" alt="Loom logo" />
+</p>
 
-A minimal Android launcher that quietly learns how you use your phone.
+# <p align="center">Loom</p>
+
+<p align="center">
+  <em>A minimal Android launcher that quietly learns how you use your phone.</em>
+</p>
 
 No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
