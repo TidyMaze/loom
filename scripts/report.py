@@ -794,7 +794,7 @@ def main():
         scripts=figs_to_scripts(figs),
     )
 
-    out_dir = "/Users/yannrolland/perso/ai-launcher/reports"
+    out_dir = os.path.expanduser("~/perso/ai-launcher/reports")
     import os
     os.makedirs(out_dir, exist_ok=True)
     out = f"{out_dir}/performance.html"
