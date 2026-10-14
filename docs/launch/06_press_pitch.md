@@ -24,6 +24,8 @@ The scoring runs on the phone. The app has no internet permission and no Google 
 Code and APK: https://github.com/TidyMaze/loom
 Latest release: https://github.com/TidyMaze/loom/releases/tag/v1.3.1
 
+The idea comes from Yasan Launcher on Android (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher); Loom is an open-source take on it.
+
 Happy to answer questions or send screenshots.
 
 Yann

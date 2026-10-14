@@ -23,6 +23,8 @@ Tout reste sur le telephone, l'appli n'a meme pas la permission internet. Plus t
 
 C'est gratuit et open source (Apache 2.0) : https://github.com/TidyMaze/loom
 
+L'idee vient de Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), merci a son developpeur. Loom en est une version open source.
+
 Je precise que c'est une alpha et que j'en ai code une bonne partie avec un assistant IA. Les retours de bugs et les "ca m'a saoule" m'interessent.
 ```
 
@@ -44,6 +46,8 @@ Le classement est un modele lineaire regle a la main, en Kotlin pur. Il combine 
 Cible SDK 36 (Android 16), retour predictif et edge-to-edge.
 
 Le code : https://github.com/TidyMaze/loom
+
+Inspire par Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), merci a son developpeur pour l'idee.
 
 Les PRs et les critiques sur le modele sont bienvenues.
 ```

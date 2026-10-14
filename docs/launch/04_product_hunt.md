@@ -22,5 +22,7 @@ My home screen was full of badges and icons asking for a tap. Minimalist launche
 
 Loom tries to guess instead. A small model on the phone looks at the time, the day and the app you just closed, and puts what you probably want at the top. It has no internet permission, so your habits stay on your phone.
 
+The idea comes from Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), thanks to its developer. Loom is an open-source take on it.
+
 It's early, so I'd love to know where the ranking gets it wrong for you.
 ```

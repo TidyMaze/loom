@@ -131,6 +131,10 @@ Contributions, feature requests, and bug reports are welcome!
 
 - **Report a Bug**: Open an issue on [GitHub Issues](https://github.com/TidyMaze/loom/issues).
 
+## Inspiration
+
+The idea of a launcher that learns which apps you need from context comes from [Yasan Launcher](https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher) on Android. Thanks to its developer for the idea. Loom is a separate, open-source take on it.
+
 ## Support
 
 Loom is free and stays free. If it's useful to you, you can [buy me a coffee](https://buymeacoffee.com/tidymaze). It doesn't buy features or priority, it just helps me keep working on it.

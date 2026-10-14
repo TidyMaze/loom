@@ -27,6 +27,8 @@ Le calcul se fait sur le telephone. L'appli n'a pas la permission internet, ne d
 Code et APK : https://github.com/TidyMaze/loom
 Derniere version : https://github.com/TidyMaze/loom/releases/tag/v1.3.1
 
+L'idee vient de Yasan Launcher sur Android (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher) ; Loom en est une version open source.
+
 Je peux vous envoyer des captures ou repondre a vos questions.
 
 Yann

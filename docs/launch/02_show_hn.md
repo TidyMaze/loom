@@ -24,6 +24,8 @@ There's no INTERNET permission in the manifest, so nothing leaves the phone. I m
 
 Honest status: it's an early alpha and I built a lot of it with an AI coding assistant. The scoring and gestures are tested, the rest moves fast. I'd especially like to hear whether the ranking holds up on someone else's habits, since so far it's only been tuned on mine.
 
+Credit where it's due: the idea comes from Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), which ranks apps by context. Thanks to its developer. Loom is my own open-source take on it.
+
 Code (Apache 2.0): https://github.com/TidyMaze/loom
 APK: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
 ```

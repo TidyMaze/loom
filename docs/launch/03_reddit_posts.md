@@ -40,6 +40,8 @@ It has no internet permission and no Google Play Services, and the APK is 790 KB
 GitHub: https://github.com/TidyMaze/loom
 APK: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
 
+The idea comes from Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), thanks to its developer. Loom is an open-source take on it.
+
 It's early, so bug reports help a lot.
 ```
 
@@ -59,6 +61,8 @@ It ranks your apps with a small hand-tuned model that runs on the phone (recency
 Code: https://github.com/TidyMaze/loom
 License: Apache 2.0
 
+Inspired by Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), thanks to its developer for the idea.
+
 Issues and PRs welcome, especially from people with very different phone habits than mine.
 ```
 
@@ -74,6 +78,8 @@ Issues and PRs welcome, especially from people with very different phone habits 
 I need my bank app, 2FA, maps and WhatsApp for family, so a real dumbphone isn't an option for me. What I could change was the home screen.
 
 Loom replaces it with a dark grid of icons. No labels, no notification dots, no widgets, nothing that moves. The apps you need at that time of day float to the top on their own, so you open what you came for and leave.
+
+The idea comes from Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), thanks to its developer.
 
 Free, open source, no internet permission: https://github.com/TidyMaze/loom
 ```

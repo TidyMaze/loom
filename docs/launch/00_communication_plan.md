@@ -60,6 +60,7 @@ Each channel is placed at the **minimum popularity it needs** so a post doesn't 
 
 - The home screen is a **dark grid of app icons** (no labels, badges, folders or widgets). It has not been a text-only list since August 2026, so don't describe it that way.
 - Be upfront: early alpha, built largely with an AI coding assistant, ranking tuned on one person's data so far.
+- Credit the inspiration: the idea comes from [Yasan Launcher](https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher) (Yasan Glass, Play Store). Mention it and thank its developer in every post.
 
 ---
 
