@@ -9,9 +9,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk"><img src="https://img.shields.io/badge/Download_APK-v1.3-2ea44f?style=flat-square&logo=android&logoColor=white" alt="Download APK" /></a>
+  <a href="https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk"><img src="https://img.shields.io/badge/Download_APK-latest-2ea44f?style=flat-square&logo=android&logoColor=white" alt="Download APK" /></a>
   <img src="https://img.shields.io/badge/Android-8.0%2B-black?style=flat-square" alt="Android 8.0+" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-black?style=flat-square" alt="License Apache 2.0" /></a>
+  <a href="https://buymeacoffee.com/tidymaze"><img src="https://img.shields.io/badge/Buy_me_a_coffee-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" /></a>
 </p>
 
 <p align="center">
@@ -129,6 +130,11 @@ Loom uses an on-device score engine combining multiple temporal and behavioral s
 Contributions, feature requests, and bug reports are welcome!
 
 - **Report a Bug**: Open an issue on [GitHub Issues](https://github.com/TidyMaze/loom/issues).
+
+## Support
+
+Loom is free and stays free. If it's useful to you, you can [buy me a coffee](https://buymeacoffee.com/tidymaze). It doesn't buy features or priority, it just helps me keep working on it.
+
 ---
 
 ## FAQ & Troubleshooting
