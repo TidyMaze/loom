@@ -17,6 +17,16 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk">
+    <img src="https://img.shields.io/badge/Download%20APK-v1.3%20(969%20KB)-2ea44f?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/TidyMaze/loom/releases/latest">
+    <img src="https://img.shields.io/badge/All%20Releases-GitHub-24292e?style=for-the-badge&logo=github&logoColor=white" alt="View Releases" />
+  </a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Telemetry-0%25-black?style=flat-square" alt="0% Telemetry" />
   <img src="https://img.shields.io/badge/Ads-Zero-black?style=flat-square" alt="Zero Ads" />
   <img src="https://img.shields.io/badge/Battery%20Drain-OLED%20Friendly-000000?style=flat-square" alt="OLED Friendly" />
