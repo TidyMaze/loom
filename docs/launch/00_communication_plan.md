@@ -12,7 +12,7 @@ Each channel is placed at the **minimum popularity it needs** so a post doesn't 
 |---|---|---|---|---|
 | **F-Droid (RFP)** | Request for packaging | ✅ Submitted 2026-10-14 ([#4573](https://gitlab.com/fdroid/rfp/-/work_items/4573)) | Maintainers review code and license, not social proof. | [01_fdroid_rfp.md](01_fdroid_rfp.md) |
 | **Hacker News (Show HN)** | Show HN post | To do | HN likes raw, open-source projects without marketing. | [02_show_hn.md](02_show_hn.md) |
-| **Niche Reddit** | `r/digitalminimalism`, `r/dumbphones`, `r/opensource` | To do | These communities look for concrete tools. A modest, non-promotional post works. | [03_reddit_posts.md](03_reddit_posts.md) |
+| **Niche Reddit** | `r/opensource`, `r/dumbphones` (not `r/digitalminimalism`, see below) | To do, **write in your own words** | These communities look for concrete tools. A modest post works. | [03_reddit_posts.md](03_reddit_posts.md) |
 | **Shorts / TikTok / Reels** | 2-3 short videos | To do | Distribution depends on retention in the first seconds, not followers. | [07_short_video_scripts.md](07_short_video_scripts.md) / [fr/](fr/07_short_video_scripts_fr.md) |
 
 ---
@@ -41,6 +41,13 @@ Each channel is placed at the **minimum popularity it needs** so a post doesn't 
 | **In-app sharing** | "Share my setup" feature | Yes (people want a store button) | Only produces visible volume with thousands of daily users. | [08_viral_share_feature_spec.md](08_viral_share_feature_spec.md) |
 
 ---
+
+## Subreddit rules (checked 2026-10-14)
+
+- **r/digitalminimalism: do not post.** Rule 2 bans promotion of any app, "zero tolerance, permanent ban". Rule 3 bans AI-generated posts, even AI translation. The only allowed place for apps, the "Screen time apps to explore" megathread, is locked and archived.
+- **r/opensource: allowed with care.** Use the **Promotional** flair. The repo needs an OSI license (Apache 2.0, OK). "All AI-generated content is low-effort and ban worthy", and drive-by posts get removed: write the post yourself and stay to answer comments.
+- **r/dumbphones: borderline.** No explicit promotion ban, but you must read the pinned "State of the Dumbphone" post first, flairs are limited by weekday (mod bot), and links need a summary in your own words. Loom is a smartphone launcher, so frame it as a way to "dumb down" a smartphone.
+- **General rule:** the drafts in this folder are notes. Several communities ban AI-written posts, so rewrite them in your own words before posting, and never post them verbatim.
 
 ## Shared privacy message (all channels)
 
