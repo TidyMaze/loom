@@ -137,7 +137,7 @@ Contributions, feature requests, and bug reports are welcome!
 Loom is designed intentionally around digital wellbeing and focus. Colorful icons trigger dopamine loops and subconscious distraction. A clean typography-first list helps you launch what you intended without rabbit-holing.
 
 ### How does the ranking engine learn without internet access?
-Everything runs on-device using a lightweight Kotlin scoring engine. When you open an app, Loom logs the timestamp and previous app in an encrypted local database. The math uses exponential decay and Gaussian time-of-day kernels. Zero data ever leaves your phone.
+Everything runs on-device using a lightweight Kotlin scoring engine. When you open an app, Loom logs the timestamp and previous app in a JSON file in the app's private storage (other apps can't read it). The math uses exponential decay and Gaussian time-of-day kernels. Today nothing leaves your phone; anonymous usage stats may come later, opt-in only.
 
 ### Can I reset the learned history?
 - **For a single app**: Long press the app item and select **Reset Rank** (or swipe to clear).
