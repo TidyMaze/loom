@@ -149,9 +149,6 @@ class MainActivity : AppCompatActivity() {
             } else false
         }
 
-        // Subscribe to activity recognition updates (callback-driven, ~60s cadence).
-        ActivityState.startUpdates(this)
-
         needsRefresh = true // treat first launch as coming from outside
 
         viewModel.apps.observe(this) { apps ->
@@ -398,9 +395,6 @@ class MainActivity : AppCompatActivity() {
                     != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACCESS_FINE_LOCATION)
             if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.READ_CALENDAR)
                     != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.READ_CALENDAR)
-            if (android.os.Build.VERSION.SDK_INT >= 29 &&
-                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACTIVITY_RECOGNITION)
-                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACTIVITY_RECOGNITION)
             if (android.os.Build.VERSION.SDK_INT >= 31 &&
                 ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT)
                     != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.BLUETOOTH_CONNECT)

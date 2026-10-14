@@ -60,8 +60,6 @@ object LaunchContext {
             secsSinceLastNotif = secsSinceLast,
             wifiSsidHash = wifiSsidHash(app),
             batteryPct = batteryPct(bm),
-            activityType = ActivityState.lastActivity.takeIf { (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 1200 },
-            activityConfidence = ActivityState.lastConfidence.takeIf { it >= 0 && (ActivityState.secsSinceUpdate(nowMs) ?: Int.MAX_VALUE) < 1200 },
             secsToNextEvent = secsToNextCalendarEvent(app, nowMs),
             btDeviceHash = bluetoothDeviceHash(app),
             prevAppDwellSecs = prevDwell

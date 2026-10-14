@@ -16,9 +16,6 @@
     <!-- Calendar event proximity feature: read next 30 min of events to predict app affinity. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
 
-    <!-- Activity recognition: detect walking / in-vehicle / still to predict app affinity. -->
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
     <!-- Bluetooth device name hash (specific device beyond audioDevice category). -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
@@ -69,10 +66,6 @@
             </intent-filter>
         </service>
 
-        <!-- Receives ActivityRecognition broadcasts to update ActivityState singleton. -->
-        <receiver
-            android:name=".ActivityRecognitionReceiver"
-            android:exported="false" />
 
     </application>
 
