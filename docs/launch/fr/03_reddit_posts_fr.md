@@ -27,6 +27,8 @@ Le projet est totalement gratuit et open source (licence Apache 2.0).
 L'APK directe et le code sont dispo sur GitHub :
 https://github.com/TidyMaze/loom
 
+*Note : Loom est au tout debut du projet (stade Alpha initiale) et a ete vibe-code avec soin. Le moteur local et l'interface sont fluides, mais le developpement est tres actif : vos retours et signalements de bugs sont precieux !*
+
 Preneur de vos retours et suggestions d'amelioration !
 ```
 

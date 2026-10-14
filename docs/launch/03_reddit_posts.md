@@ -26,6 +26,8 @@ On my own real daily usage over 3 months (10,000+ app opens), the exact app I wa
 It's completely free and open-source (Apache 2.0). If you want to try it, the direct signed APK is on GitHub:
 https://github.com/TidyMaze/loom
 
+*Note: Loom is at the very beginning of the project (early Alpha) and actively vibe-coded. The core engine is rock solid, but feedback on edge cases and feature requests are super welcome!*
+
 Feedback and ideas for further decluttering are very welcome!
 ```
 

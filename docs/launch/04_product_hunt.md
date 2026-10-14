@@ -14,6 +14,7 @@ Loom is a distraction-free Android launcher designed around focus and privacy.
 No folders, no widgets, no colorful icons fighting for your attention. Just a clean list of apps, ranked by what you actually need right now based on an offline on-device scoring engine.
 
 Highlights:
+- Early Alpha & Vibe Coded: Built at the very start of the journey through human + AI vibe coding.
 - 100% Private: Zero internet permission, zero telemetry, everything runs locally.
 - Proven accuracy: Evaluated across 10,000+ real-world app opens (1 in 3 launches is already #1 on screen).
 - Ultra lightweight: Under 1 MB APK size, instant sub-millisecond response.

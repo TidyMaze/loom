@@ -14,7 +14,14 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-black?style=flat-square" alt="License Apache 2.0" /></a>
 </p>
 
+<p align="center">
+  <sub>Early Alpha &nbsp;•&nbsp; Vibe Coded &nbsp;•&nbsp; Active Development</sub>
+</p>
+
 No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
+
+> [!NOTE]
+> **Early Alpha**: Loom is at the very beginning of its journey and vibe-coded with care. Everything works on-device, but expect rapid evolution. Feedback and bug reports are warmly welcome!
 
 <div align="center">
 
