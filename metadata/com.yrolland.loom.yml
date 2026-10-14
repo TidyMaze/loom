@@ -1,0 +1,39 @@
+Categories:
+  - System
+License: Apache-2.0
+WebSite: https://github.com/TidyMaze/loom
+SourceCode: https://github.com/TidyMaze/loom
+IssueTracker: https://github.com/TidyMaze/loom/issues
+Changelog: https://github.com/TidyMaze/loom/releases
+
+AutoName: Loom
+Summary: Minimal Android launcher that quietly learns how you use your phone
+Description: |-
+  A minimal Android launcher that quietly learns how you use your phone.
+
+  No folders. No widgets. No clutter. Just a clean list of apps, ranked
+  by what you are most likely to need right now based on time of day, day
+  of the week, and past habits.
+
+  Features:
+  * Smart ranking powered by an offline, on-device scoring engine
+  * 100% private: no internet permission, no telemetry, zero tracking
+  * Instant fuzzy search accessible from anywhere
+  * OLED-friendly pure black aesthetic
+  * Full functionality without runtime permissions
+
+RepoType: git
+Repo: https://github.com/TidyMaze/loom.git
+
+Builds:
+  - versionName: '1.3'
+    versionCode: 3
+    commit: v1.3
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.3'
+CurrentVersionCode: 3
