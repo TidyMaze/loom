@@ -1,21 +1,23 @@
-# Posts Reddit Francophones (Prets a publier)
+# French Reddit Posts (ready to post)
+
+Notes are in English; post titles and bodies are in French for the audience.
 
 ---
 
-## 1. r/france ou r/bonjour
+## 1. r/france or r/bonjour
 
-**Titre du post** :
-`[Projet perso] J'ai fait un lanceur Android tout en texte qui met en haut l'appli dont j'ai besoin, sans rien epingler`
+**Post title**:
+`[Projet perso] J'ai fait un lanceur Android minimaliste qui met en haut l'appli dont j'ai besoin, sans rien epingler`
 
-**Contenu du post** :
+**Post body**:
 ```markdown
 Bonjour a tous,
 
 Mon ecran d'accueil m'agacait : pastilles rouges, icones qui clignotent, widgets. J'ai essaye plusieurs lanceurs minimalistes, mais soit je scrollais une liste alphabetique, soit j'epinglais 4 favoris qui n'etaient bons qu'une partie de la journee.
 
-Du coup j'ai code Loom. C'est un fond noir avec le nom des applis, sans icones. Il retient quand tu ouvres quoi et remonte les bonnes applis au bon moment. Rien a configurer.
+Du coup j'ai code Loom. C'est un fond noir avec une petite grille d'icones : pas de noms, pas de pastilles, pas de widgets. Il retient quand tu ouvres quoi et remonte les bonnes applis au bon moment. Rien a configurer.
 
-Sur 3 mois de mon usage (un peu plus de 10 000 ouvertures), l'appli que je voulais etait la premiere de la liste une fois sur trois, et dans le top 10 dans 83 % des cas. Je ne cherche quasiment plus rien.
+Sur 3 mois de mon usage (un peu plus de 10 000 ouvertures), l'appli que je voulais etait la premiere une fois sur trois, et dans le top 10 dans 83 % des cas. Je ne cherche quasiment plus rien.
 
 Tout reste sur le telephone, l'appli n'a meme pas la permission internet. Plus tard je proposerai peut-etre de partager des stats d'usage anonymes pour ameliorer le classement, mais uniquement si on l'active soi-meme.
 
@@ -28,10 +30,10 @@ Je precise que c'est une alpha et que j'en ai code une bonne partie avec un assi
 
 ## 2. r/developpeurs
 
-**Titre du post** :
+**Post title**:
 `[Showcase] Loom : un launcher Android en Kotlin avec un petit modele de classement on-device (790 Ko, pas de reseau)`
 
-**Contenu du post** :
+**Post body**:
 ```markdown
 Salut,
 

@@ -5,13 +5,13 @@
 ## 1. r/digitalminimalism
 
 **Post Title**:
-`I made a text-only launcher that puts the app I need at the top, without me pinning anything`
+`I made a minimal launcher that puts the app I need at the top, without me pinning anything`
 
 **Post Body**:
 ```markdown
 I've tried most of the usual tricks: grayscale, deleting apps, a couple of minimalist launchers. The launchers helped, but I kept scrolling an alphabetical list or pinning favorites that were only right for part of the day (work stuff in the morning, messages at lunch, music on the way home).
 
-So I made my own. Loom is a black screen with app names, no icons and no badges. It learns when you open what and moves those apps up at the right time of day. You don't set anything up.
+So I made my own. Loom is a black screen with a small grid of app icons: no labels, no badges, no widgets. It learns when you open what and moves those apps up at the right time of day. You don't set anything up.
 
 On three months of my own use (about 10,000 app opens), the app I wanted was first on the list one time in three, and in the top 10 83% of the time, so I almost never search.
 
@@ -33,7 +33,7 @@ Fair warning, it's an early alpha and I built a good part of it with an AI codin
 ```markdown
 Hi all, I've been working on Loom, a minimal launcher for Android.
 
-The home screen is just a list of app names on black. The order changes through the day: a small scoring model on the phone looks at how recently you used each app, the time and weekday, and which app you just closed. Pull down anywhere to search the rest.
+The home screen is just a grid of app icons on black, with no labels or badges. The order changes through the day: a small scoring model on the phone looks at how recently you used each app, the time and weekday, and which app you just closed. Pull down anywhere to search the rest.
 
 It has no internet permission and no Google Play Services, and the APK is 790 KB. It targets Android 16 with predictive back and edge-to-edge. If I ever add anonymous usage stats to tune the model, they'll be opt-in.
 
@@ -67,13 +67,13 @@ Issues and PRs welcome, especially from people with very different phone habits 
 ## 4. r/dumbphones
 
 **Post Title**:
-`For those who can't drop the smartphone entirely: a calm, text-only launcher (free, open source)`
+`For those who can't drop the smartphone entirely: a calm, minimal launcher (free, open source)`
 
 **Post Body**:
 ```markdown
 I need my bank app, 2FA, maps and WhatsApp for family, so a real dumbphone isn't an option for me. What I could change was the home screen.
 
-Loom replaces it with a plain list of app names on black. No icons, no notification dots, nothing that moves. The apps you need at that time of day float to the top on their own, so you open what you came for and leave.
+Loom replaces it with a dark grid of icons. No labels, no notification dots, no widgets, nothing that moves. The apps you need at that time of day float to the top on their own, so you open what you came for and leave.
 
 Free, open source, no internet permission: https://github.com/TidyMaze/loom
 ```

@@ -10,7 +10,7 @@ Repository: `https://github.com/JStumpp/awesome-android`
 
 ### Entry to add under Launcher / UI Category
 ```markdown
-* [Loom](https://github.com/TidyMaze/loom) - Text-only launcher that sorts apps by time of day and recent use, computed on the device. No internet permission, 790 KB.
+* [Loom](https://github.com/TidyMaze/loom) - Minimal icon-grid launcher that sorts apps by time of day and recent use, computed on the device. No internet permission, 790 KB.
 ```
 
 ---

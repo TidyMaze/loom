@@ -18,7 +18,7 @@ Loom
 Minimal Android launcher that quietly learns how you use your phone
 
 ### Description
-Loom is a minimal, text-only launcher. It orders apps by how likely you are to open them now, using a small scoring model that runs on the device (recency, time of day, day of week, app-to-app transitions).
+Loom is a minimal icon-grid launcher (no labels, badges or widgets). It orders apps by how likely you are to open them now, using a small scoring model that runs on the device (recency, time of day, day of week, app-to-app transitions).
 
 It has no INTERNET permission, no analytics, no ads and no Google Play Services (removed in 1.3.1 for F-Droid). If anonymous usage stats are ever added to improve the model, they will be opt-in. The app works without granting any runtime permission.
 

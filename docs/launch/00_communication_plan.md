@@ -1,78 +1,79 @@
-# Plan de Communication et de Lancement (Ordonne par Paliers de Popularite)
+# Launch Communication Plan (ordered by popularity tier)
 
-Ce plan classe chaque canal selon le **niveau de popularite minimale requis** pour eviter de bider.
+Each channel is placed at the **minimum popularity it needs** so a post doesn't fall flat. Plans are in English; the messages themselves are in the language of their audience (`fr/` holds the French ones).
 
 ---
 
-## Palier 1 : Jour 0 (0 stars / 0 users / 0 followers)
-*Ces canaux jugent la qualite technique brute et l'utilite reelle. Zero dependance a une audience preexistante.*
-*Play Store : **NON REQUIS** (tourne a 100% sur GitHub / F-Droid).*
+## Tier 1: Day 0 (0 stars, 0 users, 0 followers)
+*These channels judge the project on its own merits. No existing audience needed.*
+*Play Store: **not required** (GitHub and F-Droid are enough).*
 
-| Canal | Action | Play Store requis ? | Pourquoi faisable a 0 star | Document associe |
+| Channel | Action | Status | Why it works at 0 stars | Document |
 |---|---|---|---|---|
-| **Hacker News (Show HN)** | Publication du post Show HN | **Non** (prefere GitHub direct) | HN valorise la decouverte de projets bruts, open-source et sans marketing. | [02_show_hn.md](02_show_hn.md) |
-| **F-Droid (RFP)** | Soumission de la recette | **Non** (100% independant de Google) | Les mainteneurs auditent le code et la licence libre, pas les stats sociales. | [01_fdroid_rfp.md](01_fdroid_rfp.md) |
-| **Reddit Niche** | `r/digitalminimalism`, `r/dumbphones`, `r/opensource` | **Non** (APK GitHub direct bienvenu) | Ces communautes cherchent des outils concrets. Un post humble sans promo marche fort. | [03_reddit_posts.md](03_reddit_posts.md) |
-| **Shorts / TikTok / Reels** | Publication de 2-3 videos courtes | **Non** (lien GitHub dans la bio) | Distribution 100% algorithmique sur la retention des 3 premieres secondes, pas les followers. | [07_short_video_scripts.md](07_short_video_scripts.md) / [fr/](fr/07_short_video_scripts_fr.md) |
+| **F-Droid (RFP)** | Request for packaging | ✅ Submitted 2026-10-14 ([#4573](https://gitlab.com/fdroid/rfp/-/work_items/4573)) | Maintainers review code and license, not social proof. | [01_fdroid_rfp.md](01_fdroid_rfp.md) |
+| **Hacker News (Show HN)** | Show HN post | To do | HN likes raw, open-source projects without marketing. | [02_show_hn.md](02_show_hn.md) |
+| **Niche Reddit** | `r/digitalminimalism`, `r/dumbphones`, `r/opensource` | To do | These communities look for concrete tools. A modest, non-promotional post works. | [03_reddit_posts.md](03_reddit_posts.md) |
+| **Shorts / TikTok / Reels** | 2-3 short videos | To do | Distribution depends on retention in the first seconds, not followers. | [07_short_video_scripts.md](07_short_video_scripts.md) / [fr/](fr/07_short_video_scripts_fr.md) |
 
 ---
 
-## Palier 2 : Traction Initiale (50 a 150 stars & ~100 utilisateurs)
-*Necessite un debut de preuve sociale et une stabilite confirmee sur plusieurs appareils.*
-*Play Store : **FORTEMENT RECOMMANDE** pour lever le frein au telechargement grand public.*
+## Tier 2: Early traction (50 to 150 stars, ~100 users)
+*Needs some social proof and stability confirmed on several devices.*
+*Play Store: **strongly recommended** to remove the sideloading barrier.*
 
-| Canal | Action | Play Store requis ? | Pre-requis pour ne pas bider | Document associe |
+| Channel | Action | Play Store needed? | Prerequisite | Document |
 |---|---|---|---|---|
-| **Reddit Large** | `r/androidapps`, `r/france`, `r/developpeurs` | **Fortement recommande** sur r/androidapps | Moderation plus stricte. Demande des retours de testeurs deja valides pour eviter le rejet. | [03_reddit_posts.md](03_reddit_posts.md) / [fr/](fr/03_reddit_posts_fr.md) |
-| **Awesome Lists PRs** | PRs sur `awesome-android` et `awesome-privacy` | **Non** (lien GitHub uniquement) | La majorite des mainteneurs refusent les projets < 50 stars pour eviter les repos abandonnes. | [05_awesome_lists.md](05_awesome_lists.md) |
-| **Google Play Store** | Fin du Closed Testing 14 jours & sortie publique | **Cible de cette etape** | Exige 12 a 20 testeurs actifs prealablement recrutes via le Palier 1. | [09_play_store_aso_matrix.md](09_play_store_aso_matrix.md) |
+| **Large Reddit** | `r/androidapps`, `r/france`, `r/developpeurs` | Strongly recommended for r/androidapps | Stricter moderation. Have feedback from real testers first. | [03_reddit_posts.md](03_reddit_posts.md) / [fr/](fr/03_reddit_posts_fr.md) |
+| **Awesome list PRs** | PRs to `awesome-android` and `awesome-privacy` | No (GitHub link) | Many maintainers turn down repos under ~50 stars. | [05_awesome_lists.md](05_awesome_lists.md) |
+| **Google Play Store** | End of 14-day closed testing, public release | This is the goal of the tier | Needs 12 to 20 active testers, recruited in Tier 1. | [09_play_store_aso_matrix.md](09_play_store_aso_matrix.md) / [fr/](fr/09_play_store_aso_matrix_fr.md) |
 
 ---
 
-## Palier 3 : Communaute Etablie (300 a 500+ stars & 1 000+ installs)
-*Lancer ces etapes a 0 garantit un echec complet.*
-*Play Store : **STRICTEMENT OBLIGATOIRE** (la presse et Product Hunt refusent le sideloading manuel).*
+## Tier 3: Established community (300 to 500+ stars, 1,000+ installs)
+*Launching these at 0 is a near-certain failure.*
+*Play Store: **required** (press and Product Hunt audiences expect a store link).*
 
-| Canal | Action | Play Store requis ? | Pre-requis pour ne pas bider | Document associe |
+| Channel | Action | Play Store needed? | Prerequisite | Document |
 |---|---|---|---|---|
-| **Product Hunt** | Lancement jour J a 9h01 CET | **Oui** (taux d'abandon de 90% sur APK manuel) | Sans base d'utilisateurs a mobiliser pour upvoter au lancement, le projet finit hors du Top 10. | [04_product_hunt.md](04_product_hunt.md) |
-| **Presse Tech** | Android Police, Numerama, Frandroid | **Oui** (responsabilite editoriale sur la securite) | Les journalistes couvrent les projets qui font deja du bruit ou ont un track record prouve. | [06_press_pitch.md](06_press_pitch.md) / [fr/](fr/06_press_pitch_fr.md) |
-| **Presse Libriste** | Korben, LinuxFr | **Non** (repo GitHub / F-Droid apprecie) | Ces medias mettent en avant les alternatives open-source pures. | [fr/06_press_pitch_fr.md](fr/06_press_pitch_fr.md) |
-| **Partage Viral In-App** | Fonctionnalite "Partager mon setup" | **Oui** (les internautes veulent le bouton Store) | Ne produit un volume perceptible que s'il y a des milliers d'utilisateurs quotidiens. | [08_viral_share_feature_spec.md](08_viral_share_feature_spec.md) |
+| **Product Hunt** | Launch day at 00:01 PT (09:01 CET) | Yes (most visitors won't sideload an APK) | Without users ready to upvote on launch day, the project ends outside the top 10. | [04_product_hunt.md](04_product_hunt.md) |
+| **Tech press** | Android Police, Android Authority, Numerama, Frandroid | Yes | Journalists cover projects that already have some buzz or a track record. | [06_press_pitch.md](06_press_pitch.md) / [fr/](fr/06_press_pitch_fr.md) |
+| **Open-source press** | Korben, LinuxFr | No (GitHub / F-Droid welcome) | These outlets like pure open-source alternatives. | [fr/06_press_pitch_fr.md](fr/06_press_pitch_fr.md) |
+| **In-app sharing** | "Share my setup" feature | Yes (people want a store button) | Only produces visible volume with thousands of daily users. | [08_viral_share_feature_spec.md](08_viral_share_feature_spec.md) |
 
 ---
 
-## Message vie privee (commun a tous les canaux)
+## Shared privacy message (all channels)
 
-- **Aujourd'hui** : 100% local, aucune permission INTERNET, aucune donnee envoyee.
-- **Plus tard** : des statistiques d'usage anonymes (pour ameliorer le modele) pourront etre collectees, **uniquement en opt-in**, jamais activees par defaut.
-- Ne jamais ecrire "jamais aucune donnee ne quittera le telephone" sans le "pour l'instant" : la promesse doit rester vraie apres l'ajout de l'opt-in.
-- Le jour ou l'opt-in arrive : mettre a jour [privacy.md](../privacy.md), le README et le formulaire "Data safety" du Play Store avant la release.
+- **Today**: 100% local, no INTERNET permission, no data sent.
+- **Later**: anonymous usage stats (to improve the model) may be collected, **opt-in only**, never on by default.
+- Never write "no data will ever leave the phone" without "for now": the promise must stay true once opt-in ships.
+- When opt-in ships: update [privacy.md](../privacy.md), the README, the onboarding screen and the Play Store "Data safety" form before the release.
 
----
+## Shared product description (all channels)
 
-## Synthese de dependance au Google Play Store
-
-1. **Jour 0 (Palier 1) se lance des aujourd'hui sans le Play Store** :
-   - F-Droid, Hacker News et les subreddits de minimalisme preferent les depots open-source directs.
-   - Ne pas attendre la validation Google pour commencer a obtenir les premieres etoiles et premiers retours.
-2. **Le Closed Testing Google Play (14 jours) s'execute en parallele** :
-   - Les 12 a 20 testeurs requis par Google sont recrutes parmi les premiers utilisateurs enthousiastes du Palier 1.
-   - La validation publique du Play Store arrive idealement au moment ou le projet atteint le Palier 2 (50-100 stars), ouvrant alors la porte a `r/androidapps`, Product Hunt et la presse tech.
+- The home screen is a **dark grid of app icons** (no labels, badges, folders or widgets). It has not been a text-only list since August 2026, so don't describe it that way.
+- Be upfront: early alpha, built largely with an AI coding assistant, ranking tuned on one person's data so far.
 
 ---
 
-## Calendrier d'execution recommande
+## Play Store dependency
 
-1. **Semaine 1 (Jour 0 a 7)** :
-   - Ouvrir le ticket RFP sur F-Droid.
-   - Poster sur Hacker News (Show HN en milieu de semaine, mardi-jeudi 14h-16h CET).
-   - Poster sur `r/digitalminimalism` et `r/opensource`.
-   - Poster 1ere video sur TikTok / Shorts.
-2. **Semaine 2 a 3 (des ~50 stars atteintes)** :
-   - Envoyer les PRs sur `awesome-android` et `awesome-privacy`.
-   - Poster sur `r/androidapps` et `r/developpeurs`.
-   - Lancer le closed testing 14 jours Play Store avec les premiers inscrits.
-3. **Mois 2 (des ~300+ stars)** :
-   - Coordonner le lancement Product Hunt.
-   - Envoyer les pitchs personnalises a la presse tech avec les metrics d'usage.
+1. **Tier 1 can start today without the Play Store.** F-Droid, Hacker News and the minimalism subreddits are happy with direct open-source releases. Don't wait for Google to start getting the first stars and feedback.
+2. **Play Store closed testing (14 days) runs in parallel.** Recruit the 12 to 20 testers Google requires from the first Tier 1 users, so the public release lands around Tier 2 and opens `r/androidapps`, Product Hunt and the press.
+
+---
+
+## Recommended schedule
+
+1. **Week 1 (day 0 to 7)**:
+   - ✅ Open the F-Droid RFP.
+   - Post on Hacker News (mid-week, Tuesday to Thursday, 14:00 to 16:00 CET).
+   - Post on `r/digitalminimalism` and `r/opensource`.
+   - Post the first video on TikTok / Shorts.
+   - Start Play Store closed testing as soon as testers sign up.
+2. **Weeks 2 to 3 (from ~50 stars)**:
+   - Send the PRs to `awesome-android` and `awesome-privacy`.
+   - Post on `r/androidapps` and `r/developpeurs`.
+3. **Month 2 (from ~300 stars)**:
+   - Plan the Product Hunt launch.
+   - Send personalised pitches to the tech press with usage numbers.

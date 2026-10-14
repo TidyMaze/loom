@@ -4,13 +4,13 @@
 Loom
 
 ## Tagline
-A text-only Android launcher that learns your routine
+A minimal Android launcher that learns your routine
 
 ## Category
 Productivity, Android, Open Source
 
 ## Description
-Loom replaces your home screen with a list of app names on black. No icons, no folders, no widgets. The order follows your day: it learns which apps you open at what time and after which other app, and moves them up when you're likely to need them.
+Loom replaces your home screen with a dark grid of app icons. No labels, no badges, no folders, no widgets. The order follows your day: it learns which apps you open at what time and after which other app, and moves them up when you're likely to need them.
 
 Everything runs on the phone and the app has no internet permission. If anonymous usage stats ever come to improve the model, they'll be opt-in. On three months of my own use, the app I wanted was already first one time in three. The APK is 790 KB, free and open source (Apache 2.0). It's an early alpha, built with a lot of help from an AI coding assistant.
 

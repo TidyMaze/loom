@@ -10,7 +10,7 @@ Three short concepts (15 to 30 s) for digital minimalism and Android customizati
 **Audio**: Calm lofi or ambient track.
 
 - **0:00 - 0:03**: *Normal home screen*: red badges, Instagram widget, bright icons. Text on screen: *"My home screen used to look like this."*
-- **0:03 - 0:08**: *Set Loom as default launcher*: the screen turns black with a list of app names. Text on screen: *"Three months ago I switched to this."*
+- **0:03 - 0:08**: *Set Loom as default launcher*: the screen turns black with a calm grid of icons. Text on screen: *"Three months ago I switched to this."*
 - **0:08 - 0:12**: *Same screen at 8:00 and at 18:00*: calendar and coffee app on top in the morning, gym and messages in the evening. Text on screen: *"It moves the apps I need to the top. I set nothing up."*
 - **0:12 - 0:15**: *App name*: Text on screen: *"Works offline. No ads. Free on GitHub."*
 

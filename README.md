@@ -18,7 +18,7 @@
   <sub>Early Alpha &nbsp;•&nbsp; Vibe Coded &nbsp;•&nbsp; Active Development</sub>
 </p>
 
-No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
+No folders. No widgets. No labels or badges. Just a dark grid of app icons, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
 > [!NOTE]
 > **Early Alpha**: Loom is at the very beginning of its journey and vibe-coded with care. Everything works on-device, but expect rapid evolution. Feedback and bug reports are warmly welcome!
@@ -53,7 +53,7 @@ No folders. No widgets. No clutter. Just a clean list of apps, ranked by what yo
 - **Context awareness**: Learns routines by time of day, day of the week, and launch transitions.
 - **Instant search**: Swipe down anywhere to filter apps by name with fuzzy matching.
 - **Clean aesthetic**: Pure black UI, easy on eyes and battery efficient on OLED screens.
-- **Swipe to reset**: Clear an app's history with a swipe.
+- **Long-press menu**: App shortcuts, hide an app, reset its history, or open its system info.
 - **Zero tracking & 100% private**: No internet connection required. Everything stays strictly on your device. Anonymous usage stats to improve the model may come later, opt-in only.
 - **Permission-refusal fallback**: Fully usable with zero runtime permissions granted.
 
@@ -133,8 +133,8 @@ Contributions, feature requests, and bug reports are welcome!
 
 ## FAQ & Troubleshooting
 
-### Why are there no colorful app icons?
-Loom is designed intentionally around digital wellbeing and focus. Colorful icons trigger dopamine loops and subconscious distraction. A clean typography-first list helps you launch what you intended without rabbit-holing.
+### Why no app names, badges or widgets?
+Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
 
 ### How does the ranking engine learn without internet access?
 Everything runs on-device using a lightweight Kotlin scoring engine. When you open an app, Loom logs the timestamp and previous app in a JSON file in the app's private storage (other apps can't read it). The math uses exponential decay and Gaussian time-of-day kernels. Today nothing leaves your phone; anonymous usage stats may come later, opt-in only.
