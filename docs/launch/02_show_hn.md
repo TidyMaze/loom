@@ -3,7 +3,7 @@
 Submit on [news.ycombinator.com/submit](https://news.ycombinator.com/submit).
 
 ## Title
-`Show HN: Loom – Minimalist Android launcher that quietly learns your habits (100% on-device)`
+`Show HN: Loom, an Android launcher that ranks apps by what you usually open at this time`
 
 ## URL
 `https://github.com/TidyMaze/loom`
@@ -11,34 +11,18 @@ Submit on [news.ycombinator.com/submit](https://news.ycombinator.com/submit).
 ## First Comment (from Author)
 
 ```markdown
-Hi HN!
+Hi HN,
 
-I built Loom because I was fed up with dopamine-trap Android homescreens packed with red badges, colorful icons, and widgets fighting for my attention.
+I wanted a calmer home screen: no icons, no badges, no widgets. The text-only launchers I tried all had the same problem though. Either I scrolled an alphabetical list all day, or I pinned four favorites that were right in the morning and wrong by lunch.
 
-At the same time, existing "minimalist" launchers often force you to scroll through alphabetical lists or set static favorites that quickly become obsolete throughout the day.
+So Loom is a black screen with a list of app names, sorted by how likely I am to open each one right now. The scoring is a hand-tuned linear model in plain Kotlin, running on the phone. It looks at how recently I opened an app, the hour and weekday (Gaussian kernels), and which app I just left (Markov transitions, so "Maps then Spotify" gets picked up).
 
-Loom takes a different approach:
-It provides a distraction-free, pure black typography list, backed by a lightweight on-device scoring engine written in pure Kotlin.
+I measured it on my own log, 10,472 launches over 112 days. The app I wanted was #1 on screen 31.8% of the time and in the top 10 83% of the time. MRR is 0.483, 37% better than sorting by most recent.
 
-How it works:
-- Recency decay: Exponential time decay based on last launch timestamp.
-- Time-of-day & day-of-week affinity: Gaussian kernel centered around current hour and weekday vs weekend patterns.
-- Transition bigrams: Probabilistic Markov transitions (P(App B | App A)) to anticipate multi-app workflows.
-- Zero analytics / zero tracking today: No internet permission in AndroidManifest.xml. Not a single byte leaves the phone. In future versions, any anonymous usage metrics to improve the habit scoring model will be strictly opt-in and never enabled by default.
-- Micro footprint: APK size is under 1 MB (< 969 KB), sub-millisecond inference time, and zero background battery drain.
+There's no INTERNET permission in the manifest, so nothing leaves the phone. I might later add anonymous usage stats to tune the model on more than one person, but that would be opt-in and off by default. The APK is 790 KB and doesn't depend on Google Play Services.
 
-On my own real-world usage log (10,472 app launches across 112 days):
-- 31.8% of launches are already ranked #1 on screen.
-- Over 83% of launches are in the top 10 (no search or scrolling needed).
-- MRR of 0.483, outperforming a naive recency baseline by +37% relative.
+Honest status: it's an early alpha and I built a lot of it with an AI coding assistant. The scoring and gestures are tested, the rest moves fast. I'd especially like to hear whether the ranking holds up on someone else's habits, since so far it's only been tuned on mine.
 
-The project is completely open source under Apache 2.0. APK downloads are on the GitHub releases page, and an F-Droid recipe is in the works.
-
-Note on project status:
-Loom is in its early Alpha stage and actively vibe-coded. The core local math engine and gesture handling are solid and tested, but expect rapid iterations and evolving features. Your bug reports, feedback on edge cases, and thoughts on focus-first UI are super valuable!
-
-GitHub: https://github.com/TidyMaze/loom
-Direct APK: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
-
-I would love to hear your thoughts, feedback on the scoring model, or features you value in a focus-first launcher!
+Code (Apache 2.0): https://github.com/TidyMaze/loom
+APK: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
 ```

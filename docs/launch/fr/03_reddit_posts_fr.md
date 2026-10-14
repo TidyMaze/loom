@@ -5,31 +5,23 @@
 ## 1. r/france ou r/bonjour
 
 **Titre du post** :
-`[Projet perso] J'en avais marre de la surcharge de mon smartphone, alors j'ai developpe un lanceur Android minimaliste et 100% prive (Loom)`
+`[Projet perso] J'ai fait un lanceur Android tout en texte qui met en haut l'appli dont j'ai besoin, sans rien epingler`
 
 **Contenu du post** :
 ```markdown
 Bonjour a tous,
 
-Comme beaucoup, je trouvais mon ecran d'accueil trop sature : des pastilles rouges partout, des icones fluo et des widgets qui dispersent l'attention au quotidien.
+Mon ecran d'accueil m'agacait : pastilles rouges, icones qui clignotent, widgets. J'ai essaye plusieurs lanceurs minimalistes, mais soit je scrollais une liste alphabetique, soit j'epinglais 4 favoris qui n'etaient bons qu'une partie de la journee.
 
-J'ai essaye pas mal de lanceurs minimalistes, mais soit il fallait scroller dans une liste alphabetique interminable, soit bloquer 4 favoris qui n'etaient jamais les bons au cours de la journee.
+Du coup j'ai code Loom. C'est un fond noir avec le nom des applis, sans icones. Il retient quand tu ouvres quoi et remonte les bonnes applis au bon moment. Rien a configurer.
 
-J'ai donc concu **Loom** :
-- **Zero fioriture** : Fond noir pur OLED, liste textuelle epuree, aucune icone coloree distrayante.
-- **Anticipation locale** : Un algorithme tres leger (en Kotlin) apprend vos habitudes au fil de la journee selon l'heure, le jour de la semaine et vos enchainements d'apps.
-- **100% Hors-ligne & Prive** : L'app n'a meme pas la permission INTERNET. Zero pub, zero compte, zero donnee envoyee. Plus tard, des statistiques d'usage anonymes (pour ameliorer le modele) pourront etre collectees, uniquement en opt-in.
-- **Micro-poids** : Moins de 1 Mo (969 Ko), instantane, zero impact sur la batterie.
+Sur 3 mois de mon usage (un peu plus de 10 000 ouvertures), l'appli que je voulais etait la premiere de la liste une fois sur trois, et dans le top 10 dans 83 % des cas. Je ne cherche quasiment plus rien.
 
-Sur mes 3 derniers mois d'utilisation (10 000+ ouvertures), l'app que je veux ouvrir est deja la premiere a l'ecran 1 fois sur 3 sans rien chercher, et dans 83% des cas elle est directement visible.
+Tout reste sur le telephone, l'appli n'a meme pas la permission internet. Plus tard je proposerai peut-etre de partager des stats d'usage anonymes pour ameliorer le classement, mais uniquement si on l'active soi-meme.
 
-Le projet est totalement gratuit et open source (licence Apache 2.0).
-L'APK directe et le code sont dispo sur GitHub :
-https://github.com/TidyMaze/loom
+C'est gratuit et open source (Apache 2.0) : https://github.com/TidyMaze/loom
 
-*Note : Loom est au tout debut du projet (stade Alpha initiale) et a ete vibe-code avec soin. Le moteur local et l'interface sont fluides, mais le developpement est tres actif : vos retours et signalements de bugs sont precieux !*
-
-Preneur de vos retours et suggestions d'amelioration !
+Je precise que c'est une alpha et que j'en ai code une bonne partie avec un assistant IA. Les retours de bugs et les "ca m'a saoule" m'interessent.
 ```
 
 ---
@@ -37,20 +29,19 @@ Preneur de vos retours et suggestions d'amelioration !
 ## 2. r/developpeurs
 
 **Titre du post** :
-`[Showcase] Loom : Un launcher Android minimaliste en pur Kotlin avec moteur de scoring on-device (< 1 Mo, 0 network)`
+`[Showcase] Loom : un launcher Android en Kotlin avec un petit modele de classement on-device (790 Ko, pas de reseau)`
 
 **Contenu du post** :
 ```markdown
-Salut la commu dev,
+Salut,
 
-Je vous partage un projet perso que je viens de stabiliser : **Loom**, un lanceur Android concu avec des contraintes techniques strictes :
-- **Zero permission INTERNET** dans le Manifest Android (pour l'instant : des stats d'usage anonymes en opt-in pourront venir plus tard pour ameliorer le modele).
-- **Empreinte minimale** : APK de 969 Ko, startup time < 50ms, latence de scoring < 1ms a 120 FPS.
-- **Scoring en pur Kotlin** : Modele double-regime combinant decroissance exponentielle de recence, noyaux gaussiens pour l'heure du jour / jour de semaine, et bigrammes de transitions (Markov P(App B | App A)).
-- **Target SDK 36 (Android 16)** : Support complet du retour predictif et edge-to-edge.
+Je partage un projet perso : Loom, un launcher Android minimaliste. L'APK fait 790 Ko, sans permission INTERNET et sans Google Play Services.
 
-Code source et architecture sur GitHub :
-https://github.com/TidyMaze/loom
+Le classement est un modele lineaire regle a la main, en Kotlin pur. Il combine une decroissance exponentielle sur la recence, des noyaux gaussiens sur l'heure et le jour de la semaine, et des transitions de Markov entre applis (P(B | A)). Deux regimes selon le temps ecoule depuis la derniere ouverture. Les constantes sont reglees hors ligne avec un script de bench sur mon propre historique.
 
-N'hesitez pas a jeter un oeil au code ou a proposer des PRs !
+Cible SDK 36 (Android 16), retour predictif et edge-to-edge.
+
+Le code : https://github.com/TidyMaze/loom
+
+Les PRs et les critiques sur le modele sont bienvenues.
 ```

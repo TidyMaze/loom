@@ -9,28 +9,23 @@ Cibles :
 ---
 
 ## Objet de l'email
-`[Projet libre] Loom : un lanceur Android ultra-minimaliste (< 1 Mo) avec apprentissage d'habitudes 100% hors-ligne`
+`Loom, un lanceur Android libre de 790 Ko qui range vos applis selon vos habitudes`
 
 ## Corps de l'email
 
 ```text
-Bonjour l'equipe,
+Bonjour,
 
-Je vous presente Loom, un nouveau lanceur d'applications Android open source (Apache 2.0) concu pour la concentration et la sobriete numerique, sans sacrifier l'ergonomie.
+Je developpe Loom, un lanceur Android minimaliste et open source (Apache 2.0), et je me suis dit qu'il pourrait interesser vos lecteurs.
 
-Contrairement aux lanceurs minimalistes habituels qui obligent a scroller dans un alphabet infini ou a figer une liste de favoris statique, Loom integre un moteur mathematique leger (en pur Kotlin) qui anticipe l'application dont vous avez besoin selon l'heure, le jour de la semaine et vos enchainements d'apps.
+L'ecran d'accueil est une simple liste de noms d'applis sur fond noir. Au lieu d'un ordre alphabetique ou de favoris figes, Loom apprend a quelle heure et apres quelle appli vous ouvrez chacune, et remonte les plus probables. Sur 3 mois de mon propre usage (plus de 10 000 ouvertures), l'appli voulue etait la premiere une fois sur trois, et visible sans chercher dans 83 % des cas.
 
-Points cles :
-• 100% Hors-ligne & Prive : Zero permission INTERNET dans le Manifest Android. Zero tracking, zero telemetrie, tout reste sur l'appareil. Des statistiques d'usage anonymes pour ameliorer le modele pourront venir plus tard, uniquement en opt-in.
-• Efficacite prouvee : Evalue sur plus de 10 000 ouvertures reelles d'applications sur 3 mois : 1 fois sur 3, l'application recherchee est deja la premiere a l'ecran sans rien toucher, et 83% des ouvertures ne necessitent ni recherche ni scroll.
-• Poids plume : APK de 969 Ko (< 1 Mo), latence inference < 1 ms a 120 FPS, impact batterie nul sur ecran OLED (noir pur).
-• 100% Gratuit et Open Source sous licence Apache 2.0.
+Le calcul se fait sur le telephone. L'appli n'a pas la permission internet, ne depend pas des Google Play Services et pese 790 Ko. Si un jour des stats d'usage anonymes servent a ameliorer le modele, ce sera uniquement en opt-in. Le projet est encore en alpha.
 
-Code source et APK : https://github.com/TidyMaze/loom
-Release v1.3 : https://github.com/TidyMaze/loom/releases/tag/v1.3
+Code et APK : https://github.com/TidyMaze/loom
+Derniere version : https://github.com/TidyMaze/loom/releases/tag/v1.3.1
 
-Disponible si vous souhaitez le tester, des visuels complementaires ou des details techniques sur le moteur de scoring.
+Je peux vous envoyer des captures ou repondre a vos questions.
 
-Bien cordialement,
 Yann
 ```

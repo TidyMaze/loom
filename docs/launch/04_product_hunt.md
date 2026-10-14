@@ -4,36 +4,23 @@
 Loom
 
 ## Tagline
-Minimalist Android launcher that quietly learns your habits
+A text-only Android launcher that learns your routine
 
 ## Category
 Productivity, Android, Open Source
 
 ## Description
-Loom is a distraction-free Android launcher designed around focus and privacy.
-No folders, no widgets, no colorful icons fighting for your attention. Just a clean list of apps, ranked by what you actually need right now based on an offline on-device scoring engine.
+Loom replaces your home screen with a list of app names on black. No icons, no folders, no widgets. The order follows your day: it learns which apps you open at what time and after which other app, and moves them up when you're likely to need them.
 
-Highlights:
-- Early Alpha & Vibe Coded: Built at the very start of the journey through human + AI vibe coding.
-- 100% Private: Zero internet permission, zero telemetry, everything runs locally. Anonymous usage stats to improve the model may come later, opt-in only.
-- Proven accuracy: Evaluated across 10,000+ real-world app opens (1 in 3 launches is already #1 on screen).
-- Ultra lightweight: Under 1 MB APK size, instant sub-millisecond response.
-- OLED-friendly pure black aesthetic.
-- Completely free & open-source (Apache 2.0).
+Everything runs on the phone and the app has no internet permission. If anonymous usage stats ever come to improve the model, they'll be opt-in. On three months of my own use, the app I wanted was already first one time in three. The APK is 790 KB, free and open source (Apache 2.0). It's an early alpha, built with a lot of help from an AI coding assistant.
 
 ## Maker First Comment
 ```markdown
-Hey Product Hunt! 👋
+Hi Product Hunt, I'm Yann and I made Loom.
 
-I'm Yann, creator of Loom.
+My home screen was full of badges and icons asking for a tap. Minimalist launchers fixed that, but then I spent my day scrolling an alphabetical list or pinning favorites that were only right half the time.
 
-Like many, I felt overwhelmed by how smartphones are engineered to trigger dopamine loops: bright red badges, neon icons, and widgets begging for taps.
+Loom tries to guess instead. A small model on the phone looks at the time, the day and the app you just closed, and puts what you probably want at the top. It has no internet permission, so your habits stay on your phone.
 
-Existing minimalist launchers often forced you into rigid static favorites or endless alphabetical scrolling.
-
-I wanted something different: a launcher that feels completely calm and invisible, but magically surfaces the app you actually want at 8 AM, 1 PM, or 10 PM.
-
-Loom uses an on-device mathematical scoring engine (pure Kotlin) that combines time-of-day, day-of-week, and Markov app transitions. Best of all: it doesn't even have internet permission. Your habits never leave your phone. If I ever add anonymous usage stats to improve the model, they will be opt-in.
-
-Would love to hear your feedback and answer any questions!
+It's early, so I'd love to know where the ranking gets it wrong for you.
 ```

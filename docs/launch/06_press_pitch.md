@@ -8,28 +8,23 @@ Target publications:
 ---
 
 ## Subject
-`[Tip] Loom: Under 1MB open-source Android launcher with offline habit learning`
+`Tip: Loom, a 790 KB open-source launcher that orders apps by your routine`
 
 ## Email Body
 
 ```text
-Hi [Editor / Team],
+Hi,
 
-I wanted to share Loom, a new open-source minimalist Android launcher designed to cut through phone addiction without sacrificing usability.
+I'm the developer of Loom, a minimal Android launcher, and I thought it might interest your readers.
 
-Unlike typical minimalist launchers that force endless alphabetical scrolling, Loom uses an on-device mathematical scoring engine (pure Kotlin) that predicts which app you need based on the time of day, day of week, and your previous app transitions.
+The home screen is a plain list of app names on black. Instead of sorting them alphabetically or asking you to pin favorites, Loom learns when you open each app and after which other app, and moves the likely ones to the top. On three months of my own use (10,000+ launches), the app I wanted was first one time in three.
 
-Key highlights:
-- 100% Private: Zero internet permissions in AndroidManifest.xml. Zero telemetry today; anonymous usage stats to improve the model may come later, opt-in only.
-- Evaluated on 10,000+ real-world app launches: 1 in 3 launches is already ranked #1 on screen.
-- Micro footprint: APK size is under 1 MB (< 969 KB), instant <1ms response, pure OLED black UI.
-- Free and open-source under Apache 2.0.
+The scoring runs on the phone. The app has no internet permission and no Google Play Services, and the APK is 790 KB. If anonymous usage stats are ever added to improve the model, they'll be opt-in. It's free and open source under Apache 2.0, and still an early alpha.
 
-Source & APK: https://github.com/TidyMaze/loom
-Release v1.3: https://github.com/TidyMaze/loom/releases/tag/v1.3
+Code and APK: https://github.com/TidyMaze/loom
+Latest release: https://github.com/TidyMaze/loom/releases/tag/v1.3.1
 
-Happy to provide additional details or answer any questions if you'd like to feature it.
+Happy to answer questions or send screenshots.
 
-Best,
 Yann
 ```

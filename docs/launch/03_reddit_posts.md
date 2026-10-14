@@ -5,30 +5,21 @@
 ## 1. r/digitalminimalism
 
 **Post Title**:
-`I got tired of colorful icons triggering my phone addiction, so I built an open-source minimalist launcher that learns habits offline`
+`I made a text-only launcher that puts the app I need at the top, without me pinning anything`
 
 **Post Body**:
 ```markdown
-Hey everyone,
+I've tried most of the usual tricks: grayscale, deleting apps, a couple of minimalist launchers. The launchers helped, but I kept scrolling an alphabetical list or pinning favorites that were only right for part of the day (work stuff in the morning, messages at lunch, music on the way home).
 
-Like many of you here, I went through multiple attempts to make my phone less distracting: grayscale mode, dumbphone transitions, minimalistic launchers.
+So I made my own. Loom is a black screen with app names, no icons and no badges. It learns when you open what and moves those apps up at the right time of day. You don't set anything up.
 
-What always frustrated me with existing minimalist launchers was having to scroll endlessly through an alphabetical list, or setting static "favorite" apps that never matched what I actually needed throughout the day (work tools in the morning, messaging midday, commute/music in the evening).
+On three months of my own use (about 10,000 app opens), the app I wanted was first on the list one time in three, and in the top 10 83% of the time, so I almost never search.
 
-So I built **Loom**, a pure-black launcher designed specifically for focus:
-- **No icons, no widgets, no folders**: Pure typography-first design on an OLED-black background.
-- **Smart habit learning**: An on-device scoring engine looks at the time of day, day of week, and your previous app transitions.
-- **Zero data collection**: It does not even request the `INTERNET` permission in Android. Everything is processed and stored locally in encrypted storage. Later on I may add anonymous usage stats to improve the model, strictly opt-in and off by default.
-- **Micro footprint**: Less than 1 MB in size, zero battery drain, and instant (<1ms) response.
+Everything stays on the phone. The app doesn't even have the internet permission. Maybe one day I'll ask people to share anonymous usage stats to improve the ranking, but only if they opt in.
 
-On my own real daily usage over 3 months (10,000+ app opens), the exact app I want is already waiting at the very top 1 out of 3 times, and over 80% of the time it is right in view without typing a single letter.
+It's free and open source: https://github.com/TidyMaze/loom
 
-It's completely free and open-source (Apache 2.0). If you want to try it, the direct signed APK is on GitHub:
-https://github.com/TidyMaze/loom
-
-*Note: Loom is at the very beginning of the project (early Alpha) and actively vibe-coded. The core engine is rock solid, but feedback on edge cases and feature requests are super welcome!*
-
-Feedback and ideas for further decluttering are very welcome!
+Fair warning, it's an early alpha and I built a good part of it with an AI coding assistant. Bugs and "this annoyed me" reports are very welcome.
 ```
 
 ---
@@ -36,25 +27,20 @@ Feedback and ideas for further decluttering are very welcome!
 ## 2. r/androidapps
 
 **Post Title**:
-`[DEV] Loom – A 969 KB distraction-free launcher that quietly predicts your next app (100% on-device, no internet permission)`
+`[DEV] Loom: a 790 KB text launcher that sorts your apps by what you're likely to open next`
 
 **Post Body**:
 ```markdown
-Hi r/androidapps!
+Hi all, I've been working on Loom, a minimal launcher for Android.
 
-I wanted to share **Loom**, an ultra-minimalist Android launcher I've been developing.
+The home screen is just a list of app names on black. The order changes through the day: a small scoring model on the phone looks at how recently you used each app, the time and weekday, and which app you just closed. Pull down anywhere to search the rest.
 
-Key highlights:
-- **Under 1 MB APK**: Fast install, zero bloat, pure native Kotlin.
-- **Smart prediction**: Dual-regime scoring model combining exponential recency decay, Gaussian time-of-day kernels, and Markov transition bigrams (P(App B | App A)).
-- **Zero internet access**: The app does not declare the `android.permission.INTERNET` permission at all. Your app habits are 100% private. Anonymous usage stats to improve the model may come later, opt-in only.
-- **Predictive back & edge-to-edge**: Fully targeted for Android 16 (API 36) with smooth 120Hz gesture navigation.
-- **Instant search**: Pull down anywhere to fuzzy-search across your full app catalog.
+It has no internet permission and no Google Play Services, and the APK is 790 KB. It targets Android 16 with predictive back and edge-to-edge. If I ever add anonymous usage stats to tune the model, they'll be opt-in.
 
-GitHub & Downloads: https://github.com/TidyMaze/loom
-Direct APK: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
+GitHub: https://github.com/TidyMaze/loom
+APK: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
 
-Looking forward to your bug reports, feature suggestions, or general feedback!
+It's early, so bug reports help a lot.
 ```
 
 ---
@@ -62,23 +48,18 @@ Looking forward to your bug reports, feature suggestions, or general feedback!
 ## 3. r/opensource
 
 **Post Title**:
-`Loom: Open-source, offline minimalist Android launcher with on-device routine learning (Apache 2.0)`
+`Loom: open-source Android launcher that learns your routine on-device (Apache 2.0)`
 
 **Post Body**:
 ```markdown
-Hello r/opensource,
+Sharing a side project: Loom, a minimal Android launcher.
 
-I wanted to share Loom, an open-source Android launcher built with a strict focus on privacy, minimalism, and performance.
+It ranks your apps with a small hand-tuned model that runs on the phone (recency, time of day, app-to-app transitions). There's no network permission, no trackers and no Google Play Services, so it should be fine for F-Droid. I've prepared the recipe. Any future usage stats to improve the model would be opt-in.
 
-Code & Release: https://github.com/TidyMaze/loom
+Code: https://github.com/TidyMaze/loom
 License: Apache 2.0
 
-Why it's built this way:
-- **No telemetry, zero trackers**: No network permission declared in the manifest. Any future anonymous usage stats (to improve the model) will be opt-in only.
-- **On-device ML**: Predicts and ranks apps using an offline mathematical scoring engine without cloud dependencies.
-- **F-Droid ready**: Recipe prepared and build verified without proprietary blobs.
-
-PRs and feedback welcome!
+Issues and PRs welcome, especially from people with very different phone habits than mine.
 ```
 
 ---
@@ -86,16 +67,13 @@ PRs and feedback welcome!
 ## 4. r/dumbphones
 
 **Post Title**:
-`Turn any Android smartphone into a distraction-free tool with Loom (open-source & offline)`
+`For those who can't drop the smartphone entirely: a calm, text-only launcher (free, open source)`
 
 **Post Body**:
 ```markdown
-Hi all,
+I need my bank app, 2FA, maps and WhatsApp for family, so a real dumbphone isn't an option for me. What I could change was the home screen.
 
-If you want the calm, intentional experience of a minimalist phone without sacrificing essential smartphone tools (banking, 2FA, maps, WhatsApp for family), you might find Loom useful.
+Loom replaces it with a plain list of app names on black. No icons, no notification dots, nothing that moves. The apps you need at that time of day float to the top on their own, so you open what you came for and leave.
 
-It replaces the home screen with a distraction-free monochrome list of text-only apps. No red notification dots, no algorithmic feeds, no dopamine-inducing graphics.
-
-It's free, open-source, and has no internet permission:
-https://github.com/TidyMaze/loom
+Free, open source, no internet permission: https://github.com/TidyMaze/loom
 ```

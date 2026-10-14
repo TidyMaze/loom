@@ -6,11 +6,11 @@
 Repository: `https://github.com/JStumpp/awesome-android`
 
 ### PR Title
-`Add Loom - Minimalist habit-learning launcher`
+`Add Loom (minimal launcher with on-device app ranking)`
 
 ### Entry to add under Launcher / UI Category
 ```markdown
-* [Loom](https://github.com/TidyMaze/loom) - Minimal Android launcher that quietly learns routines using an on-device Kotlin scoring engine. Zero tracking, no internet permission, under 1 MB.
+* [Loom](https://github.com/TidyMaze/loom) - Text-only launcher that sorts apps by time of day and recent use, computed on the device. No internet permission, 790 KB.
 ```
 
 ---
@@ -23,5 +23,5 @@ Repository: `https://github.com/pluja/awesome-privacy`
 
 ### Entry to add under Android > Launchers Category
 ```markdown
-* [Loom](https://github.com/TidyMaze/loom) - Distraction-free, open-source Android launcher with zero network permissions. Habit ranking runs 100% locally on-device.
+* [Loom](https://github.com/TidyMaze/loom) - Open-source minimal launcher. No internet permission, no Google Play Services; app ranking is computed on the device.
 ```
