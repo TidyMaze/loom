@@ -9,67 +9,26 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TidyMaze/loom/releases"><img src="https://img.shields.io/badge/Release-v1.3-black?style=for-the-badge&logo=android&logoColor=white" alt="Release v1.3" /></a>
-  <a href="https://android.com"><img src="https://img.shields.io/badge/API-36%20Vanilla%20Ice%20Cream-black?style=for-the-badge&logo=android&logoColor=white" alt="Target API 36" /></a>
-  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-1.9.23-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin 1.9" /></a>
-  <a href="#zero-tracking--100-private"><img src="https://img.shields.io/badge/Privacy-100%25%20On--Device-10B981?style=for-the-badge&logo=shield&logoColor=white" alt="100% On Device" /></a>
-  <a href="https://github.com/TidyMaze/loom/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0 License" /></a>
-</p>
-
-<p align="center">
   <a href="https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk">
-    <img src="https://img.shields.io/badge/Download%20APK-v1.3%20(969%20KB)-2ea44f?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
+    <img src="https://img.shields.io/badge/Download%20APK-v1.3-black?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
-  &nbsp;&nbsp;
-  <a href="https://github.com/TidyMaze/loom/releases/latest">
-    <img src="https://img.shields.io/badge/All%20Releases-GitHub-24292e?style=for-the-badge&logo=github&logoColor=white" alt="View Releases" />
-  </a>
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/Google%20Play-In%20Review-orange?style=for-the-badge&logo=googleplay&logoColor=white" alt="Google Play in review" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/F--Droid-Planned-blue?style=for-the-badge&logo=fdroid&logoColor=white" alt="F-Droid Planned" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Telemetry-0%25-black?style=flat-square" alt="0% Telemetry" />
-  <img src="https://img.shields.io/badge/Ads-Zero-black?style=flat-square" alt="Zero Ads" />
-  <img src="https://img.shields.io/badge/Battery%20Drain-OLED%20Friendly-000000?style=flat-square" alt="OLED Friendly" />
-  <img src="https://img.shields.io/badge/Clutter-None-black?style=flat-square" alt="No Clutter" />
-  <img src="https://img.shields.io/badge/AI-On--Device%20ML-6366F1?style=flat-square" alt="On-Device ML" />
-  <img src="https://img.shields.io/badge/Vibes-Minimalist%20AF-purple?style=flat-square" alt="Minimalist AF" />
+  <sub>Android 8.0+ &nbsp;•&nbsp; 100% On-Device &nbsp;•&nbsp; Apache 2.0 &nbsp;•&nbsp; <a href="https://github.com/TidyMaze/loom/releases/latest">Releases</a></sub>
 </p>
 
 No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
-<table align="center" width="100%">
-  <tr>
-    <td align="center" width="33%">
-      <br/>
-      <img src="https://img.shields.io/badge/🎯%20Right%20App%20First%20Try-1%20in%203%20times-2ea44f?style=for-the-badge" alt="Right app first try" />
-      <br/><br/>
-      <b>Already #1 on Screen</b><br/>
-      <sub>The app you want is waiting at the very top 1 out of 3 times you unlock your phone. No typing, no scrolling.</sub>
-      <br/><br/>
-    </td>
-    <td align="center" width="33%">
-      <br/>
-      <img src="https://img.shields.io/badge/⚡%20Effortless%20Access-83%25%20of%20the%20time-0969da?style=for-the-badge" alt="Effortless access" />
-      <br/><br/>
-      <b>No Searching Needed</b><br/>
-      <sub>Over 8 out of 10 times, your app is already in direct view. Finding what you need is practically instantaneous.</sub>
-      <br/><br/>
-    </td>
-    <td align="center" width="33%">
-      <br/>
-      <img src="https://img.shields.io/badge/🔒%20100%25%20Private-Zero%20Internet-8957e5?style=for-the-badge" alt="100% Private" />
-      <br/><br/>
-      <b>Zero Ads, Zero Battery Drain</b><br/>
-      <sub>No background tracking, no network calls, and instant response. Your habits stay on your phone, forever.</sub>
-      <br/><br/>
-    </td>
-  </tr>
-</table>
-<p align="center"><sub><em>Tested on real daily phone usage across 10,000+ app launches over 3 months.</em></sub></p>
+<div align="center">
+
+| 🎯 1 in 3 | ⚡ 83% | 🔒 100% |
+| :---: | :---: | :---: |
+| **Right app, first try**<br><sub>Already #1 on screen</sub> | **Zero search needed**<br><sub>Directly in view</sub> | **Private & offline**<br><sub>Zero tracking, zero ads</sub> |
+
+<sub><em>Tested on real daily phone usage across 10,000+ app launches over 3 months.</em></sub>
+
+</div>
 
 ---
 
