@@ -19,7 +19,7 @@ Full plan: [launch/00_communication_plan.md](launch/00_communication_plan.md).
 | Step | Status |
 |---|---|
 | F-Droid request for packaging | [fdroid/rfp#4573](https://gitlab.com/fdroid/rfp/-/work_items/4573), with correction and 1.3.2 follow-up |
-| F-Droid merge request (fdroiddata) | Recipe on fork branch `com.yrolland.loom`, fork CI 12/12 green, MR being opened |
+| F-Droid merge request (fdroiddata) | Opened: [fdroid/fdroiddata!52561](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/52561), fork CI green, waiting for review |
 | r/dumbphones | Posted: [1x612io](https://www.reddit.com/r/dumbphones/comments/1x612io/), 1 question answered (APK link) |
 | r/digitalminimalism | Not allowed: app promotion and AI-written posts are banned |
 | r/opensource | To do, must be written by Yann (AI-written content banned), Promotional flair |
