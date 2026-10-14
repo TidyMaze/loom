@@ -149,24 +149,6 @@ class MainActivity : AppCompatActivity() {
             } else false
         }
 
-        // Request runtime perms for the feature-collection pipeline. Each is optional —
-        // if denied, the corresponding capture function silently returns null.
-        val perms = buildList {
-            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACCESS_FINE_LOCATION)
-            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.READ_CALENDAR)
-                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.READ_CALENDAR)
-            if (android.os.Build.VERSION.SDK_INT >= 29 &&
-                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACTIVITY_RECOGNITION)
-                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACTIVITY_RECOGNITION)
-            if (android.os.Build.VERSION.SDK_INT >= 31 &&
-                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT)
-                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.BLUETOOTH_CONNECT)
-        }
-        if (perms.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, perms.toTypedArray(), REQ_PERMS)
-        }
-
         // Subscribe to activity recognition updates (callback-driven, ~60s cadence).
         ActivityState.startUpdates(this)
 
@@ -349,7 +331,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAndShowOnboarding() {
-        if (onboardingStore.isOnboardingCompleted()) return
+        if (onboardingStore.isOnboardingCompleted()) {
+            requestRuntimePermissions()
+            return
+        }
         layoutOnboarding = findViewById(R.id.layout_onboarding)
         layoutOnboarding?.visibility = View.VISIBLE
         currentOnboardingStep = 0
@@ -402,8 +387,27 @@ class MainActivity : AppCompatActivity() {
             ?.setDuration(250)
             ?.withEndAction {
                 layoutOnboarding?.visibility = View.GONE
+                requestRuntimePermissions()
             }
             ?.start()
+    }
+
+    private fun requestRuntimePermissions() {
+        val perms = buildList {
+            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACCESS_FINE_LOCATION)
+            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.READ_CALENDAR)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.READ_CALENDAR)
+            if (android.os.Build.VERSION.SDK_INT >= 29 &&
+                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACTIVITY_RECOGNITION)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.ACTIVITY_RECOGNITION)
+            if (android.os.Build.VERSION.SDK_INT >= 31 &&
+                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+        if (perms.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, perms.toTypedArray(), REQ_PERMS)
+        }
     }
 
     companion object {

@@ -19,13 +19,18 @@ object OnboardingContent {
             iconRes = R.drawable.ic_onboarding_ranking
         ),
         OnboardingStep(
+            title = "Context Awareness",
+            subtitle = "Loom optionally uses location, calendar events, and activity to predict what you need. Everything is processed 100% on-device.",
+            iconRes = R.drawable.ic_onboarding_permissions
+        ),
+        OnboardingStep(
             title = "Swipe Down to Search",
             subtitle = "Need an app right now? Swipe down anywhere on your home screen to filter instantly.",
             iconRes = R.drawable.ic_onboarding_search
         ),
         OnboardingStep(
             title = "Zero Tracking. 100% Private",
-            subtitle = "Loom operates completely offline. No accounts, no data collected, no ads, ever.",
+            subtitle = "Loom operates completely offline. No accounts, no data sent to servers, no ads, ever.",
             iconRes = R.drawable.ic_onboarding_privacy
         )
     )
