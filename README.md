@@ -63,6 +63,37 @@ No folders. No widgets. No clutter. Just a clean list of apps, ranked by what yo
 
 ---
 
+## Getting Started & Installation
+
+### 1. Download & Install APK
+1. Download [`app-release.apk`](https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk) from the latest release.
+2. Open the file on your device and confirm installation. If prompted, enable **Install unknown apps** for your browser or file manager.
+
+### 2. Set as Default Launcher
+1. Open Android **Settings** > **Apps** > **Default apps** > **Home app**.
+2. Select **Loom**.
+3. Or press your device's **Home** button/gesture and select **Loom** > **Always**.
+
+---
+
+## Gestures & Navigation
+
+| Action | Gesture | Description |
+|---|---|---|
+| **Launch App** | Tap | Opens the application immediately. |
+| **Instant Search** | Swipe down | Opens fuzzy search filter for quick typing. |
+| **App Options** | Long press | View app details, system info, or reset learned score. |
+| **Fast Jump** | Alphabet scroll | Drag along the alphabet bar to jump directly to a letter. |
+
+---
+
+## Compatibility
+
+- **Minimum Version**: Android 8.0 Oreo (API 26)
+- **Target Version**: Android 16 (API 36)
+- **Supported Architectures**: `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`
+- **Display**: Optimized for 60Hz-120Hz displays and OLED battery saving.
+
 ## Architecture & Scoring Engine
 
 Loom uses an on-device score engine combining multiple temporal and behavioral signals:
@@ -97,6 +128,15 @@ Loom uses an on-device score engine combining multiple temporal and behavioral s
 
 ---
 
+## Contributing
+
+Contributions, feature requests, and bug reports are welcome!
+
+- **Report a Bug**: Open an issue on [GitHub Issues](https://github.com/TidyMaze/loom/issues).
+- **Submit a Pull Request**: Fork the repo, create a branch, run tests (`./gradlew test`), and open a PR.
+
+---
+
 ## Privacy Policy
 
 Loom stores nothing but your own launch history locally on your device. No analytics, no ads, no remote telemetry.
@@ -108,3 +148,4 @@ Read the full [Privacy Policy](docs/privacy.md).
 ## License
 
 Open source under the [Apache 2.0 License](LICENSE).
+
