@@ -44,23 +44,32 @@ No folders. No widgets. No clutter. Just a clean list of apps, ranked by what yo
 <table align="center" width="100%">
   <tr>
     <td align="center" width="33%">
-      <img src="https://img.shields.io/badge/Instant%20Hit%20(@1)-31.8%25-2ea44f?style=for-the-badge&logo=target&logoColor=white" alt="Recall@1" /><br/><br/>
-      <b>1 in 3 Launches</b><br/>
-      <sub>Ranked #1 on screen before touching anything</sub>
+      <br/>
+      <img src="https://img.shields.io/badge/🎯%20Right%20App%20First%20Try-1%20in%203%20times-2ea44f?style=for-the-badge" alt="Right app first try" />
+      <br/><br/>
+      <b>Already #1 on Screen</b><br/>
+      <sub>The app you want is waiting at the very top 1 out of 3 times you unlock your phone. No typing, no scrolling.</sub>
+      <br/><br/>
     </td>
     <td align="center" width="33%">
-      <img src="https://img.shields.io/badge/Zero%20Search%20(@10)-83.1%25-0969da?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Recall@10" /><br/><br/>
-      <b>83.1% of All Opens</b><br/>
-      <sub>Require zero typing and zero scrolling</sub>
+      <br/>
+      <img src="https://img.shields.io/badge/⚡%20Effortless%20Access-83%25%20of%20the%20time-0969da?style=for-the-badge" alt="Effortless access" />
+      <br/><br/>
+      <b>No Searching Needed</b><br/>
+      <sub>Over 8 out of 10 times, your app is already in direct view. Finding what you need is practically instantaneous.</sub>
+      <br/><br/>
     </td>
     <td align="center" width="33%">
-      <img src="https://img.shields.io/badge/On--Device%20ML-%3C%201%20ms%20%7C%200%20KB-8957e5?style=for-the-badge&logo=lightning&logoColor=white" alt="Speed and privacy" /><br/><br/>
-      <b>Sub-ms & Zero Telemetry</b><br/>
-      <sub>Pure Kotlin engine, 0 network bytes, 0 tracking</sub>
+      <br/>
+      <img src="https://img.shields.io/badge/🔒%20100%25%20Private-Zero%20Internet-8957e5?style=for-the-badge" alt="100% Private" />
+      <br/><br/>
+      <b>Zero Ads, Zero Battery Drain</b><br/>
+      <sub>No background tracking, no network calls, and instant response. Your habits stay on your phone, forever.</sub>
+      <br/><br/>
     </td>
   </tr>
 </table>
-<p align="center"><sub><em>Benchmarked on 10,472 real-world app launches over 112 days.</em></sub></p>
+<p align="center"><sub><em>Tested on real daily phone usage across 10,000+ app launches over 3 months.</em></sub></p>
 
 ---
 
