@@ -1,6 +1,7 @@
 Categories:
   - System
 License: Apache-2.0
+AuthorName: Yann Rolland
 WebSite: https://github.com/TidyMaze/loom
 SourceCode: https://github.com/TidyMaze/loom
 IssueTracker: https://github.com/TidyMaze/loom/issues
@@ -15,7 +16,7 @@ Repo: https://github.com/TidyMaze/loom.git
 Builds:
   - versionName: 1.3.3
     versionCode: 6
-    commit: v1.3.3
+    commit: 1ec6cd0dccbb4d1302e8fc2b2eb24602df6a28f5
     subdir: app
     gradle:
       - yes
