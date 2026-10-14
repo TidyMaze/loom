@@ -2,12 +2,12 @@
 
 Manual end-to-end checks to run before every release. Each test lists the steps, the expected result and a reference screenshot in [screenshots/](screenshots/).
 
-**Last run:** 2026-10-14, v1.3.1 (versionCode 4), signed release APK, Android emulator `test_avd` (1080x2400, API 36). Result: all tests pass. Issues found are listed at the end.
+**Last run:** 2026-10-14, v1.3.2 (versionCode 5), signed release APK, Android emulator `test_avd` (1080x2400, API 36). Result: all tests pass. The first run (v1.3.1) found the issues listed at the end; all are fixed in 1.3.2 and re-checked.
 
 ## Setup
 
 ```bash
-./gradlew test assembleRelease          # unit tests (36) + release APK
+./gradlew test assembleRelease          # unit tests + release APK
 adb install -r app/build/outputs/apk/release/app-release.apk
 adb shell cmd package set-home-activity com.yrolland.loom/.MainActivity
 adb logcat -c                            # so crashes from this run are easy to spot
@@ -23,9 +23,9 @@ After the run: `adb logcat -d -b crash` must be empty.
 |---|---|---|---|
 | A1 | `adb shell pm clear com.yrolland.loom`, press Home | Onboarding page 1 "Welcome to Loom" with Continue and Skip | `01_onboarding_step1.png` |
 | A2 | Tap Continue | Page 2 "Smart Ranking" | `02_onboarding_step2.png` |
-| A3 | Tap Continue | Page 3 "Context Awareness" (lists the optional signals) | `03_onboarding_step3.png` |
+| A3 | Tap Continue | Page 3 "Context Awareness" lists exactly the optional signals: location, calendar events, connected Bluetooth devices (no "activity") | `03_onboarding_step3.png` |
 | A4 | Tap Continue | Page 4 "Swipe Down to Search" | `04_onboarding_step4.png` |
-| A5 | Tap Continue | Page 5 privacy page, button reads "Get Started" | `05_onboarding_step5.png` |
+| A5 | Tap Continue | Page 5 "Private by Default": offline today, future anonymous stats only if the user turns them on (no "ever"). Button reads "Get Started" | `05_onboarding_step5.png` |
 | A6 | Tap Get Started | System permission prompts: location, calendar, nearby devices. No activity-recognition prompt (removed in 1.3.1) | `06_onboarding_step6.png` |
 | A7 | Deny every prompt | Home shows every installed app, dimmed (nothing learned yet). No crash | `07_home_fresh_all_permissions_denied.png` |
 
@@ -34,7 +34,9 @@ After the run: `adb logcat -d -b crash` must be empty.
 | # | Steps | Expected | Screenshot |
 |---|---|---|---|
 | B1 | Tap a tile | The app opens (check `dumpsys window` focus) | |
-| B2 | Press Home after the first launch on a fresh install | Home shows only apps launched at least once (see issue on this behavior) | `08_home_after_first_launch.png` |
+| B2 | Press Home after the first launch on a fresh install | The launched app comes first, followed by other apps up to 12 tiles (not a single icon) | `08_home_after_first_launch.png` |
+| B3 | Use a dozen apps a few times each, wait 75 s, go Home | Grid shows only launched apps, most likely ones first | `09_home_with_history.png` |
+| B4 | `uiautomator dump` on home | Every tile has a content description equal to the app name (TalkBack reads it) | |
 
 ## C. Search
 
@@ -43,7 +45,9 @@ After the run: `adb logcat -d -b crash` must be empty.
 | C1 | Swipe down on the grid | Search field appears with "Search apps…" and keyboard | `30_search_open.png` |
 | C2 | Type `clo` | Grid filters to matching apps (Clock) | `31_search_filtered_clo.png` |
 | C3 | Press Enter | The top match (Clock) opens | |
-| C4 | Search `zzqxw` | No results; "Open in Chrome" and "Open in Gemini" buttons appear | `32_search_empty_state_fallbacks.png` |
+| C4 | Search `zzqxw` | No results; "Search the web" and "Ask Gemini (Google)" buttons appear | `32_search_empty_state_fallbacks.png` |
+| C4b | Tap "Search the web" | The default web search app opens with the query (no hardcoded engine) | |
+| C4c | Tap "Ask Gemini (Google)" | Gemini app if installed, otherwise the system share sheet | |
 | C5 | Press Back twice | Keyboard closes, then search field hides; still on Loom | |
 
 ## D. Long-press menu
@@ -75,9 +79,9 @@ After the run: `adb logcat -d -b crash` must be empty.
 | F1 | From a state where only Settings has history, open Camera once and Clock 3 times via search, then go Home right away | Order changes. Clock (just closed) is ranked last: the "self penalty" pushes the app you just left down for about 70 s (`ScoreEngine.kt`, `SELF_PENALTY`, `SESSION_MS`) | `20_learning_after_launches.png` |
 | F2 | Wait 75 s, open and close Loom settings to refresh | Clock (3 launches) is now first, then Camera, then Settings | `21_learning_after_session_gap.png` |
 
-Read the order with a long-press on each tile (tiles have no visible or accessible label, see issues).
+Read the order from the tiles' content descriptions (`uiautomator dump`), or with a long-press on each tile.
 
-## Issues found on 2026-10-14
+## Issues found on 2026-10-14 (all fixed in 1.3.2)
 
 1. [#2](https://github.com/TidyMaze/loom/issues/2) Onboarding page 3 still mentions "activity", which was removed in 1.3.1.
 2. [#3](https://github.com/TidyMaze/loom/issues/3) Onboarding page 5 says "no data sent to servers ... ever", which conflicts with the planned opt-in usage stats.

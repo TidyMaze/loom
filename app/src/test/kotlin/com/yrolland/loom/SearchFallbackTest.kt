@@ -24,12 +24,6 @@ class SearchFallbackTest {
     }
 
     @Test
-    fun `buildChromeUrl formats search query correctly`() {
-        val url = SearchFallback.buildChromeUrl("quantum computing")
-        assertEquals("https://www.google.com/search?q=quantum+computing", url)
-    }
-
-    @Test
     fun `buildGeminiPrompt formats pre-prompt correctly`() {
         val prompt = SearchFallback.buildGeminiPrompt("quantum computing")
         assertEquals("Tell me about quantum computing", prompt)
@@ -47,14 +41,23 @@ class SearchFallbackTest {
     }
 
     @Test
-    fun `filterApps returns only launched apps when query is empty and some apps have launch count`() {
-        val app1 = AppEntry("com.app.one", "Alpha", 1f, launchCount = 5, lastLaunchedMillis = 1000L)
-        val app2 = AppEntry("com.app.two", "Beta", 0f, launchCount = 0, lastLaunchedMillis = null)
-        val fullList = listOf(app1, app2)
+    fun `filterApps keeps unlaunched apps after launched ones while history is short`() {
+        val unlaunchedFirst = AppEntry("com.app.two", "Beta", 0f, launchCount = 0, lastLaunchedMillis = null)
+        val launched = AppEntry("com.app.one", "Alpha", 1f, launchCount = 5, lastLaunchedMillis = 1000L)
 
-        val result = SearchFallback.filterApps(fullList, "")
-        assertEquals(1, result.size)
-        assertEquals(listOf(app1), result)
+        val result = SearchFallback.filterApps(listOf(unlaunchedFirst, launched), "")
+        assertEquals(listOf(launched, unlaunchedFirst), result)
+    }
+
+    @Test
+    fun `filterApps shows only launched apps once they fill the home screen`() {
+        val launched = (1..SearchFallback.HOME_MIN_TILES).map {
+            AppEntry("com.launched.$it", "L$it", 1f, launchCount = 1, lastLaunchedMillis = 1000L)
+        }
+        val unlaunched = AppEntry("com.app.none", "Zeta", 0f, launchCount = 0, lastLaunchedMillis = null)
+
+        val result = SearchFallback.filterApps(launched + unlaunched, "")
+        assertEquals(launched, result)
     }
 
     @Test

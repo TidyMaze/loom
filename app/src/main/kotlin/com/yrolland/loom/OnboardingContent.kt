@@ -20,7 +20,7 @@ object OnboardingContent {
         ),
         OnboardingStep(
             title = "Context Awareness",
-            subtitle = "Loom optionally uses location, calendar events, and activity to predict what you need. Everything is processed 100% on-device.",
+            subtitle = "If you allow it, Loom also uses your location, calendar events and connected Bluetooth devices to predict what you need. Everything is processed on your phone.",
             iconRes = R.drawable.ic_onboarding_permissions
         ),
         OnboardingStep(
@@ -29,8 +29,8 @@ object OnboardingContent {
             iconRes = R.drawable.ic_onboarding_search
         ),
         OnboardingStep(
-            title = "Zero Tracking. 100% Private",
-            subtitle = "Loom operates completely offline. No accounts, no data sent to servers, no ads, ever.",
+            title = "Private by Default",
+            subtitle = "Loom works offline: no account, no ads, nothing sent anywhere. If anonymous usage stats are added one day to improve the ranking, they will stay off unless you turn them on.",
             iconRes = R.drawable.ic_onboarding_privacy
         )
     )

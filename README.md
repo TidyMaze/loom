@@ -136,6 +136,9 @@ Contributions, feature requests, and bug reports are welcome!
 ### Why no app names, badges or widgets?
 Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
 
+### Why did the app I just closed drop to the bottom?
+On purpose. For about 70 seconds after you leave an app, Loom assumes you're unlikely to reopen it right away and pushes it down to make room for what you'll probably open next. After that window it goes back to its normal place, which reflects how often and when you use it.
+
 ### How does the ranking engine learn without internet access?
 Everything runs on-device using a lightweight Kotlin scoring engine. When you open an app, Loom logs the timestamp and previous app in a JSON file in the app's private storage (other apps can't read it). The math uses exponential decay and Gaussian time-of-day kernels. Today nothing leaves your phone; anonymous usage stats may come later, opt-in only.
 

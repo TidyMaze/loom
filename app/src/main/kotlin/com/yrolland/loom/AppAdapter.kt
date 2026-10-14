@@ -65,6 +65,7 @@ class AppAdapter(
         }
 
         holder.label.text = entry.label
+        holder.itemView.contentDescription = entry.label // tiles show no text, so screen readers need this
 
         // Use pre-computed rank so filtered lists (search) keep original sizes
         val relScore = entry.rank

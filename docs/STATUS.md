@@ -2,11 +2,12 @@
 
 ## App
 
-- **Version:** v1.3.1 (versionCode 4), released 2026-10-14 on [GitHub](https://github.com/TidyMaze/loom/releases/tag/v1.3.1). Signed APK 790 KB, plus an AAB for the Play Store.
+- **Version:** v1.3.2 (versionCode 5), released 2026-10-14 on [GitHub](https://github.com/TidyMaze/loom/releases/tag/v1.3.2). Signed APK 790 KB, plus an AAB for the Play Store.
+- **What changed in 1.3.2:** fixes the 5 issues from the first test run (#2 to #6), web search goes to the default search app instead of a hardcoded google.com URL, Gradle wrapper checksum added (both flagged by the F-Droid scanner).
 - **What changed in 1.3.1:** Google Play Services removed (activity recognition was logged but never used by the ranking), so the app is fully free software and eligible for F-Droid. The `ACTIVITY_RECOGNITION` permission is gone.
 - **Privacy:** no INTERNET permission, everything on the device. Anonymous usage stats may come later, opt-in only.
 - **Tests:** 36 unit tests green. Full manual end-to-end run on an emulator passed, see [testing/NON_REGRESSION.md](testing/NON_REGRESSION.md) and its screenshots. The ranking still learns: after 3 launches, Clock moves to first place once the 70 s session window has passed.
-- **Known issues:** 6 found during the test run, all filed on [GitHub Issues](https://github.com/TidyMaze/loom/issues). The most visible: home collapses to a single icon after the first launch on a fresh install, and tiles have no accessible label for screen readers.
+- **Known issues:** the 6 found during the first test run are fixed and closed on [GitHub Issues](https://github.com/TidyMaze/loom/issues).
 - **Stage:** early alpha, built largely with an AI coding assistant, ranking tuned on one person's data so far.
 
 ## Communication plan

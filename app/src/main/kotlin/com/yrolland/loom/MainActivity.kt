@@ -81,13 +81,7 @@ class MainActivity : AppCompatActivity() {
         btnOpenChrome.setOnClickListener {
             val query = search.text?.toString()?.trim().orEmpty()
             if (query.isNotEmpty()) {
-                val url = SearchFallback.buildChromeUrl(query)
-                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
-                    setPackage("com.android.chrome")
-                }
-                runCatching { startActivity(intent) }.onFailure {
-                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
-                }
+                runCatching { startActivity(SearchFallback.createWebSearchIntent(query)) }
             }
         }
 

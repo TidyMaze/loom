@@ -1,9 +1,8 @@
 package com.yrolland.loom
 
+import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import java.net.URLEncoder
 
 object SearchFallback {
 
@@ -15,12 +14,16 @@ object SearchFallback {
         if (trimmed.isNotEmpty()) {
             return fullList.filter { FuzzyMatcher.matches(trimmed, it.label) }
         }
-        val launched = fullList.filter { it.launchCount > 0 }
-        return if (launched.isNotEmpty()) launched else fullList
+        // Launched apps first; while history is short, fill the screen with the rest so a new user isn't left with one icon.
+        val (launched, rest) = fullList.partition { it.launchCount > 0 }
+        return launched + rest.take((HOME_MIN_TILES - launched.size).coerceAtLeast(0))
     }
 
-    fun buildChromeUrl(query: String): String =
-        "https://www.google.com/search?q=" + URLEncoder.encode(query, "UTF-8")
+    const val HOME_MIN_TILES = 12
+
+    /** Hands the query to the user's default search app instead of a hardcoded engine. */
+    fun createWebSearchIntent(query: String): Intent =
+        Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, query)
 
     fun buildGeminiPrompt(query: String): String =
         "Tell me about $query"
@@ -39,20 +42,11 @@ object SearchFallback {
         return if (isCallable) {
             directIntent
         } else {
-            val genericSendIntent = Intent(Intent.ACTION_SEND).apply {
+            // No Gemini app: let the user pick any app that accepts text.
+            Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, prompt)
-            }
-            val genericCallable = runCatching {
-                context.packageManager.queryIntentActivities(genericSendIntent, 0).isNotEmpty()
-            }.getOrDefault(false)
-
-            if (genericCallable) {
-                genericSendIntent
-            } else {
-                val webUrl = "https://gemini.google.com/app?q=" + URLEncoder.encode(prompt, "UTF-8")
-                Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
-            }
+            }, null)
         }
     }
 }
