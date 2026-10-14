@@ -1,0 +1,1 @@
+A minimal Android launcher that quietly learns how you use your phone.
