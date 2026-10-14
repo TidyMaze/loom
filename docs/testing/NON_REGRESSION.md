@@ -79,11 +79,9 @@ Read the order with a long-press on each tile (tiles have no visible or accessib
 
 ## Issues found on 2026-10-14
 
-See the GitHub issues labelled `bug`, `documentation` and `enhancement` opened on that date. Summary:
-
-1. Onboarding page 3 still mentions "activity", which was removed in 1.3.1.
-2. Onboarding page 5 says "no data sent to servers ... ever", which conflicts with the planned opt-in usage stats.
-3. Home tiles have no accessible name, so TalkBack cannot announce which app a tile opens.
-4. After the first launch on a fresh install, home drops from all apps to that single app.
-5. The app you just closed sinks to last place for ~70 s, which looks like the ranking forgot it (by design, but confusing).
-6. README, F-Droid metadata and launch posts described a text-only list; the app has been an icon grid since August 2026 (docs fixed in the same commit as this plan).
+1. [#2](https://github.com/TidyMaze/loom/issues/2) Onboarding page 3 still mentions "activity", which was removed in 1.3.1.
+2. [#3](https://github.com/TidyMaze/loom/issues/3) Onboarding page 5 says "no data sent to servers ... ever", which conflicts with the planned opt-in usage stats.
+3. [#4](https://github.com/TidyMaze/loom/issues/4) Home tiles have no accessible name, so TalkBack cannot announce which app a tile opens.
+4. [#5](https://github.com/TidyMaze/loom/issues/5) After the first launch on a fresh install, home drops from all apps to that single app.
+5. [#6](https://github.com/TidyMaze/loom/issues/6) The app you just closed sinks to last place for ~70 s, which looks like the ranking forgot it (by design, but confusing).
+6. [#7](https://github.com/TidyMaze/loom/issues/7) (closed) README, F-Droid metadata and launch posts described a text-only list; the app has been an icon grid since August 2026.
