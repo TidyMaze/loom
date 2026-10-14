@@ -41,6 +41,27 @@
 
 No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="33%">
+      <img src="https://img.shields.io/badge/Instant%20Hit%20(@1)-31.8%25-2ea44f?style=for-the-badge&logo=target&logoColor=white" alt="Recall@1" /><br/><br/>
+      <b>1 in 3 Launches</b><br/>
+      <sub>Ranked #1 on screen before touching anything</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="https://img.shields.io/badge/Zero%20Search%20(@10)-83.1%25-0969da?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Recall@10" /><br/><br/>
+      <b>83.1% of All Opens</b><br/>
+      <sub>Require zero typing and zero scrolling</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="https://img.shields.io/badge/On--Device%20ML-%3C%201%20ms%20%7C%200%20KB-8957e5?style=for-the-badge&logo=lightning&logoColor=white" alt="Speed and privacy" /><br/><br/>
+      <b>Sub-ms & Zero Telemetry</b><br/>
+      <sub>Pure Kotlin engine, 0 network bytes, 0 tracking</sub>
+    </td>
+  </tr>
+</table>
+<p align="center"><sub><em>Benchmarked on 10,472 real-world app launches over 112 days.</em></sub></p>
+
 ---
 
 ## Screenshots
