@@ -68,18 +68,32 @@ Issues and PRs welcome, especially from people with very different phone habits 
 
 ---
 
-## 4. r/dumbphones
+## 4. r/dumbphones (posted 2026-10-14)
+
+Live post: https://www.reddit.com/r/dumbphones/comments/1x612io/ (flair: General discussion, image: `docs/screenshots/01_home.png`). Text as published, after two edits (APK link, Yasan credit):
 
 **Post Title**:
-`For those who can't drop the smartphone entirely: a calm, minimal launcher (free, open source)`
+`I couldn't go full dumbphone, so I made my Android launcher as boring as I could`
 
 **Post Body**:
 ```markdown
-I need my bank app, 2FA, maps and WhatsApp for family, so a real dumbphone isn't an option for me. What I could change was the home screen.
+I need a few smart apps (bank, 2FA, maps, WhatsApp for family), so a real dumbphone never stuck for me. Following the "customize what you already have" route from the pinned post, the part that bugged me most was the home screen.
 
-Loom replaces it with a dark grid of icons. No labels, no notification dots, no widgets, nothing that moves. The apps you need at that time of day float to the top on their own, so you open what you came for and leave.
+Minimal launchers helped, but I always ended up either scrolling an alphabetical list or pinning favorites that were only right half the day.
 
-The idea comes from Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), thanks to its developer.
+So I made Loom. It's brand new as a public project, but it has been my only launcher for the last 6 months. I like the idea of a launcher that does very little but does it well. It's a black screen with a small grid of icons. No names, no notification badges, no widgets, no feed.
 
-Free, open source, no internet permission: https://github.com/TidyMaze/loom
+Apps you don't use stay off the home screen. In my experience most installed apps are rarely or never opened, so there's no point in looking at them every day. (On a fresh install it shows a few extra so the screen isn't empty while it learns.) Everything else is one swipe down away, in search.
+
+The apps you do use are ordered by a small model that learns your habits: time of day, day of week, which app you just closed. It's a step up from sorting by "last opened": over the last three months of my usage log (about 10k app opens) it ranked the app I wanted 37% better than a plain recency sort, and that app was the first icon about one time in three.
+
+A few things people here might care about: it has no internet permission at all, no ads, no account, and it's free and open source. It's an early alpha, and I wrote a good part of it with an AI coding assistant, so expect rough edges.
+
+https://github.com/TidyMaze/loom
+
+Happy to hear what you'd strip out even further.
+
+Direct APK download: https://github.com/TidyMaze/loom/releases/latest/download/app-release.apk
+
+Credit where it's due: the idea comes from Yasan Launcher (https://play.google.com/store/apps/details?id=yasan.space.mnml.ai.launcher), which ranks apps by context. Thanks to its developer. Loom is my own open-source take on it.
 ```
