@@ -5,6 +5,8 @@
     android:layout_height="76dp"
     android:layout_margin="4dp"
     android:background="@drawable/glass_bg"
+    android:focusable="true"
+    android:focusableInTouchMode="false"
     android:clipToOutline="true">
 
     <!-- Progress Fill -->

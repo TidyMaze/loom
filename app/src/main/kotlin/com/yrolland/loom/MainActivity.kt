@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.GestureDetector
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -200,6 +201,52 @@ class MainActivity : AppCompatActivity() {
         search.clearFocus()
         (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
             .hideSoftInputFromWindow(search.windowToken, 0)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            val keyCode = event.keyCode
+
+            // Printable key -> open search and feed character
+            if (!search.hasFocus() && DpadNavigation.isPrintableKey(event.unicodeChar)) {
+                showSearch()
+                search.append(event.unicodeChar.toChar().toString())
+                return true
+            }
+
+            // D-pad UP from top row -> focus search
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP && !search.hasFocus()) {
+                val focusedView = currentFocus
+                val pos = focusedView?.let { recycler.getChildAdapterPosition(it) } ?: -1
+                val cols = (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount ?: 1
+                if (pos in 0 until cols || pos == -1) {
+                    showSearch()
+                    search.requestFocus()
+                    return true
+                }
+            }
+
+            // D-pad DOWN from search -> focus first grid item
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && search.hasFocus()) {
+                if (adapter.itemCount > 0) {
+                    search.clearFocus()
+                    val firstHolder = recycler.findViewHolderForAdapterPosition(0)
+                    if (firstHolder != null) {
+                        firstHolder.itemView.requestFocus()
+                    } else {
+                        recycler.post { recycler.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus() }
+                    }
+                    return true
+                }
+            }
+
+            // Escape closes search
+            if (keyCode == KeyEvent.KEYCODE_ESCAPE && search.visibility == View.VISIBLE) {
+                hideSearch()
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     private fun attachGestures() {

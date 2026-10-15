@@ -108,8 +108,26 @@ class AppAdapter(
         }
         holder.icon.alpha = prominence
 
-        val bg = holder.itemView.background.mutate() as? GradientDrawable
+        val bg = holder.itemView.background?.mutate() as? GradientDrawable
         bg?.setColor(0xFF0E0E0E.toInt())
+        if (holder.itemView.isFocused) {
+            bg?.setStroke((2 * dp).toInt(), accent.barEnd)
+        } else {
+            bg?.setStroke(0, android.graphics.Color.TRANSPARENT)
+        }
+
+        holder.itemView.setOnFocusChangeListener { v, hasFocus ->
+            val bgDrawable = v.background?.mutate() as? GradientDrawable
+            if (hasFocus) {
+                bgDrawable?.setStroke((2 * dp).toInt(), accent.barEnd)
+                v.scaleX = 1.04f
+                v.scaleY = 1.04f
+            } else {
+                bgDrawable?.setStroke(0, android.graphics.Color.TRANSPARENT)
+                v.scaleX = 1.0f
+                v.scaleY = 1.0f
+            }
+        }
 
         if (entry.launchCount > 0) {
             val fillScale = entry.rank.coerceIn(0.02f, 1f)
