@@ -160,6 +160,9 @@ Apps you never open don't appear on the home screen at all, so the simplest way 
 ### Why no app names, badges or widgets?
 Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
 
+### How is it different from Before Launcher or other minimal launchers?
+Many minimal launchers ask you to pick favorites and keep the rest in a list with search. Loom doesn't ask you to pick anything: it reorders the apps you actually use by time of day, weekday and the app you just closed, and apps you never open stay off the home screen. The gain is modest: it saves a scroll or a search a few times a day, not hours. If a favorites-based launcher already works for you, there's no strong reason to switch.
+
 ### Why did the app I just closed drop to the bottom?
 On purpose. For about 70 seconds after you leave an app, Loom assumes you're unlikely to reopen it right away and pushes it down to make room for what you'll probably open next. After that window it goes back to its normal place, which reflects how often and when you use it.
 
