@@ -36,9 +36,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btn_reset_all).setOnClickListener { confirmResetAll() }
         findViewById<TextView>(R.id.btn_usage_access).setOnClickListener { UsageStatsSync.openSettings(this) }
         findViewById<TextView>(R.id.btn_notif_access).setOnClickListener { NotificationCounts.openPermissionSettings(this) }
-        findViewById<TextView>(R.id.btn_hide_browsers).setOnClickListener { hideAllBrowsers() }
         findViewById<TextView>(R.id.btn_web_search_fallback).setOnClickListener { toggleWebSearchFallback() }
-        findViewById<TextView>(R.id.btn_hidden_in_search).setOnClickListener { toggleHiddenInSearch() }
         findViewById<TextView>(R.id.btn_manage_hidden).setOnClickListener { pickAppsToHide() }
 
         viewModel.apps.observe(this) { _ -> render() }
@@ -56,11 +54,6 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.web_search_fallback_status).text =
             if (webDisabled) "Disabled — no 'Search the web' button in empty search"
             else "Enabled — shows fallback button when no apps match"
-
-        val searchHidden = hiddenStore.isSearchIncludeHidden()
-        findViewById<TextView>(R.id.hidden_in_search_status).text =
-            if (searchHidden) "Searchable — hidden apps can still be launched via search"
-            else "Strictly hidden — excluded even from search results"
 
         val usageGranted = UsageStatsSync.hasPermission(this)
         findViewById<TextView>(R.id.usage_access_status).text =
@@ -155,34 +148,12 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun hideAllBrowsers() {
-        val repo = AppRepository(this)
-        val allApps = repo.getAllInstalledApps()
-        val browsers = allApps.filter { AppFilter.isBrowser(it.packageName) }.map { it.packageName }
-        if (browsers.isNotEmpty()) {
-            hiddenStore.hideAll(browsers)
-            viewModel.refresh()
-            render()
-            android.widget.Toast.makeText(this, "Hidden ${browsers.size} browser(s)", android.widget.Toast.LENGTH_SHORT).show()
-        } else {
-            android.widget.Toast.makeText(this, "No web browsers detected", android.widget.Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun toggleWebSearchFallback() {
         val next = !hiddenStore.isWebSearchFallbackDisabled()
         hiddenStore.setWebSearchFallbackDisabled(next)
         findViewById<TextView>(R.id.web_search_fallback_status).text =
             if (next) "Disabled — no 'Search the web' button in empty search"
             else "Enabled — shows fallback button when no apps match"
-    }
-
-    private fun toggleHiddenInSearch() {
-        val next = !hiddenStore.isSearchIncludeHidden()
-        hiddenStore.setSearchIncludeHidden(next)
-        findViewById<TextView>(R.id.hidden_in_search_status).text =
-            if (next) "Searchable — hidden apps can still be launched via search"
-            else "Strictly hidden — excluded even from search results"
     }
 
     private fun pickAppsToHide() {

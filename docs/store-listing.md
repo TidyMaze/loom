@@ -1,32 +1,28 @@
 # Loom: Play Store Listing
 
 ## Short description
-Your launcher that learns. The right app, at the right time. Pure math, zero LLM.
+A minimal Android launcher that quietly learns how you use your phone.
 
 ## Full description
 Loom is a minimal Android launcher that quietly learns how you use your phone.
 
-No folders. No widgets. No clutter. Just a clean list of apps, ranked by what you are most likely to need right now based on time of day, day of the week, and past habits.
+The home screen is a dark grid of app icons: no labels, no badges, no folders, no widgets. Apps you use are ordered by how likely you are to open them now, based on time of day, day of the week and the app you just closed. Apps you never open stay off the home screen.
 
 **How it works**
-Every time you open an app, Loom remembers. Over time it builds a picture of your routines: Spotify on your morning commute, Slack during work hours, Netflix in the evening. The ranking updates automatically with no setup or manual configuration.
-
-**Pure Offline Math (Zero LLM / Zero AI Hype)**
-Loom uses zero generative AI, zero large language models, and zero cloud servers. The scoring engine is under 100 lines of lightweight, deterministic Kotlin math running locally in less than 1 millisecond. It uses < 0.001% CPU per launch, has zero background services, and draws minimal power on OLED screens.
+Every time you open an app, Loom remembers. The ranking is plain arithmetic computed on the phone (no LLM, no neural network, no server), and it runs only when the home screen opens.
 
 **Features**
 • Smart ranking: apps surface when you actually use them
-• Pure offline math: runs locally in < 1ms, zero battery drain, zero LLM
-• Instant search: swipe down to filter by name
-• Digital detox: 1-tap hide all web browsers, hide distracting apps, or disable web search fallback
-• D-pad navigation: full keypad support for dumbphones (Cat S22, Qin F21/F22)
-• Clean aesthetic: pure black UI, easy on OLED screens
-• Long press options: app shortcuts, hide app, or reset history
-• No internet required: everything stays on your device
-• Permission-refusal fallback: fully usable with zero permissions
+• Search: swipe down to find any app
+• Hide any app: long-press > Hide, or choose several in Settings
+• Option to turn off the "Search the web" button
+• D-pad and keyboard navigation
+• Long-press options: app shortcuts, hide app, reset history, app info
+• Pure black UI, easy on OLED screens
+• Works without granting any permission
 
 **Open Source**
 Loom is fully open source: https://github.com/TidyMaze/loom
 
 **Privacy**
-Loom stores nothing but your own launch history locally on your device. Zero telemetry, zero analytics, zero ads, zero remote servers.
+No INTERNET permission: your launch history stays on your device. No account, no ads. If anonymous usage stats are ever added to improve the ranking, they will be off unless you turn them on.

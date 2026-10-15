@@ -7,7 +7,7 @@ import android.content.Intent
 object SearchFallback {
 
     fun shouldShowEmptyState(query: String, hasAppMatches: Boolean, webFallbackDisabled: Boolean = false): Boolean =
-        AppFilter.shouldShowWebFallback(query, hasAppMatches, webFallbackDisabled)
+        !webFallbackDisabled && query.isNotBlank() && !hasAppMatches
 
     fun filterApps(fullList: List<AppEntry>, query: String): List<AppEntry> {
         val trimmed = query.trim()

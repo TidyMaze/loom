@@ -2,7 +2,7 @@
 
 Manual end-to-end checks to run before every release. Each test lists the steps, the expected result and a reference screenshot in [screenshots/](screenshots/).
 
-**Last run:** 2026-10-14, v1.3.2 (versionCode 5), signed release APK, Android emulator `test_avd` (1080x2400, API 36). Result: all tests pass. The first run (v1.3.1) found the issues listed at the end; all are fixed in 1.3.2 and re-checked.
+**Last run:** 2026-10-15, v1.3.4 (versionCode 7), signed release APK, Android emulator `test_avd` (1080x2400, API 36). Result: all tests pass, including section G (added in 1.3.4). The first run (v1.3.1) found the issues listed at the end; all are fixed in 1.3.2 and re-checked.
 
 ## Setup
 
@@ -80,6 +80,19 @@ After the run: `adb logcat -d -b crash` must be empty.
 | F2 | Wait 75 s, open and close Loom settings to refresh | Clock (3 launches) is now first, then Camera, then Settings | `21_learning_after_session_gap.png` |
 
 Read the order from the tiles' content descriptions (`uiautomator dump`), or with a long-press on each tile.
+
+## G. Hiding, web button, D-pad (added in 1.3.4)
+
+| # | Steps | Expected | Screenshot |
+|---|---|---|---|
+| G1 | Launch 12 different apps, go Home | Only launched apps are on home; an app never opened (e.g. YouTube) is not shown | |
+| G2 | Long-press an app > Hide app | It leaves home; searching its name finds nothing | `33_search_hidden_app_not_found.png` |
+| G3 | Settings > Choose apps to hide…, tick an app, Done | It appears under the hidden list in Settings and leaves home | `55_settings_choose_apps_to_hide.png`, `56_settings_hidden_list.png` |
+| G4 | Settings > Web search button (toggle off), search `zzqxw` | No "Search the web" / "Ask Gemini" buttons | `34_search_no_match_web_button_off.png` |
+| G5 | D-pad Down/Left/Right/Up on home | Focus moves tile by tile, focused tile is outlined; Right on the last column stays put | `60_dpad_focus.png` |
+| G6 | D-pad Up from the top row, then Down | Up focuses the search field, Down returns to the first tile | |
+| G7 | D-pad Center on a tile | That app opens | |
+| G8 | Type a letter on a hardware keyboard from home | Search opens with that letter and filters | |
 
 ## Issues found on 2026-10-14 (all fixed in 1.3.2)
 

@@ -24,6 +24,11 @@ class SearchFallbackTest {
     }
 
     @Test
+    fun `shouldShowEmptyState returns false when the web search button is turned off`() {
+        assertFalse(SearchFallback.shouldShowEmptyState("quantum computing", hasAppMatches = false, webFallbackDisabled = true))
+    }
+
+    @Test
     fun `buildGeminiPrompt formats pre-prompt correctly`() {
         val prompt = SearchFallback.buildGeminiPrompt("quantum computing")
         assertEquals("Tell me about quantum computing", prompt)

@@ -50,12 +50,7 @@ class MainActivity : AppCompatActivity() {
     private var launcherResumeMs = System.currentTimeMillis()
 
     private fun filteredList(query: String) =
-        AppFilter.filter(
-            fullList,
-            hiddenStore.all(),
-            query,
-            hiddenStore.isSearchIncludeHidden()
-        )
+        SearchFallback.filterApps(fullList, query)
 
     private fun updateListAndEmptyState(query: String, onSubmitted: (() -> Unit)? = null) {
         val list = filteredList(query)

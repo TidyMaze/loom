@@ -1,0 +1,1 @@
+D-pad and keyboard navigation. Hide any app from Settings > Choose apps to hide, and option to turn off the Search the web button. Fix: home screen shows only the apps you use again.

@@ -50,12 +50,12 @@ No folders. No widgets. No labels or badges. Just a dark grid of app icons, rank
 
 ## Features
 
-- **Pure offline math (Zero LLM)**: Zero generative AI, zero cloud servers, and zero battery drain. Under 100 lines of deterministic Kotlin math running in < 1ms CPU time per launch.
+- **Plain math, no LLM**: no generative AI, no neural network, no server. The ranking is a few hundred lines of Kotlin arithmetic that runs only when the home screen opens.
 - **Smart ranking**: Apps surface automatically when you actually use them.
 - **Context awareness**: Learns routines by time of day, day of the week, and launch transitions.
 - **Instant search**: Swipe down anywhere to filter apps by name with fuzzy matching.
-- **Digital detox & app hiding**: 1-tap hide all web browsers, hide distracting apps, or disable web search fallback.
-- **D-pad & physical keypad support**: Full navigation support for dumbphones (Cat S22, Qin F21/F22, etc.).
+- **Hide any app**: long-press an app and choose Hide, or pick several in Settings > "Choose apps to hide…". Hidden apps leave the home screen and search. You can also turn off the "Search the web" button.
+- **D-pad & keyboard navigation**: move between apps with arrow keys or a D-pad, open with center/Enter. Up from the top row (or typing any letter) opens search, Down from search goes back to the grid.
 - **Clean aesthetic**: Pure black UI, easy on eyes and battery efficient on OLED screens.
 - **Long-press menu**: App shortcuts, hide an app, reset its history, or open its system info.
 - **Zero tracking & 100% private**: No internet connection required. Everything stays strictly on your device. Anonymous usage stats to improve the model may come later, opt-in only.
@@ -97,7 +97,7 @@ No folders. No widgets. No labels or badges. Just a dark grid of app icons, rank
 ## Architecture & Scoring Engine
 
 > [!NOTE]
-> **Pure Math, Zero LLM**: Loom contains zero neural networks, zero large language models, and zero cloud dependencies. It does not waste battery or ping remote data centers. The scoring engine is under 100 lines of deterministic, lightweight Kotlin math running locally in < 1 millisecond.
+> **Plain math, no LLM**: Loom has no neural network, no language model and no network access at all. The ranking is ordinary arithmetic (exponential decay, Gaussian time-of-day weights, app-to-app transition counts) computed on the phone.
 
 Loom uses an on-device score engine combining multiple temporal and behavioral signals:
 
@@ -153,7 +153,9 @@ Loom is free and stays free. If it's useful to you, you can [buy me a coffee](ht
 A loom weaves separate threads into one fabric. Loom does the same with your day: each app you open is a thread, and over time the launcher weaves them into a routine it can follow, putting the next app where your thumb already is.
 
 ### Does Loom use AI, neural networks, or drain battery?
-No. There is zero generative AI, zero LLM, and zero cloud servers. The word "AI" often implies heavy energy-hungry models running in remote data centers. Loom is the opposite: under 100 lines of pure, lightweight Kotlin math (exponential decay and Markov transition probabilities). Each calculation takes less than 1 millisecond and consumes < 0.001% CPU per launch. Combined with Loom's pure OLED black interface and zero background daemons, Loom uses significantly less battery than standard launchers.
+No LLM, no neural network, no server. "AI" here only means a small scoring formula: exponential decay on recency, Gaussian weights for time of day and weekday, and app-to-app transition counts. It runs when the home screen opens, not in a loop. Measured on a laptop JVM, ranking 110 apps over a 15,600-launch history takes about 4 ms (replay of 15,565 launches in 58 s, `ScoreEngineReplayTest`); a phone is slower but it is still a one-off cost per home screen visit. Nothing runs in the background except the optional notification listener (only if you grant notification access). Battery use has not been measured yet.
+
+Apps you never open don't appear on the home screen at all, so the simplest way to keep an app out of sight is to not use it. To hide one for sure, long-press it and choose Hide.
 
 ### Why no app names, badges or widgets?
 Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
