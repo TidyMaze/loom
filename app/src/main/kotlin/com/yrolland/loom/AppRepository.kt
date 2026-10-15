@@ -166,6 +166,22 @@ class AppRepository(private val context: Context) {
             .sortedBy { it.label.lowercase() }
     }
 
+    /** All installed launcher apps (hidden or visible) for settings app manager. */
+    fun getAllInstalledApps(): List<AppEntry> {
+        val pm = context.packageManager
+        val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        return pm.queryIntentActivities(launchIntent, PackageManager.GET_META_DATA)
+            .map { it.activityInfo.packageName }
+            .distinct()
+            .map { pkg ->
+                val label = runCatching {
+                    pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
+                }.getOrDefault(pkg)
+                AppEntry(pkg, label, 0f, 0, null)
+            }
+            .sortedBy { it.label.lowercase() }
+    }
+
     private data class UsageStats(
         val countByPkg: Map<String, Int>,
         val lastByPkg: Map<String, Long>,

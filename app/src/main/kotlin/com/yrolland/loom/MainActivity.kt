@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnOpenGemini: View
     private lateinit var gridStore: GridStore
     private lateinit var onboardingStore: OnboardingStore
+    private lateinit var hiddenStore: HiddenStore
     private var layoutOnboarding: View? = null
     private var currentOnboardingStep = 0
     private var fullList: List<AppEntry> = emptyList()
@@ -49,14 +50,19 @@ class MainActivity : AppCompatActivity() {
     private var launcherResumeMs = System.currentTimeMillis()
 
     private fun filteredList(query: String) =
-        SearchFallback.filterApps(fullList, query)
+        AppFilter.filter(
+            fullList,
+            hiddenStore.all(),
+            query,
+            hiddenStore.isSearchIncludeHidden()
+        )
 
     private fun updateListAndEmptyState(query: String, onSubmitted: (() -> Unit)? = null) {
         val list = filteredList(query)
         adapter.submitList(list) {
             onSubmitted?.invoke()
         }
-        layoutEmptyState.visibility = if (SearchFallback.shouldShowEmptyState(query, list.isNotEmpty())) View.VISIBLE else View.GONE
+        layoutEmptyState.visibility = if (SearchFallback.shouldShowEmptyState(query, list.isNotEmpty(), hiddenStore.isWebSearchFallbackDisabled())) View.VISIBLE else View.GONE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         gridStore = GridStore(this)
         onboardingStore = OnboardingStore(this)
+        hiddenStore = HiddenStore(this)
         greeting = findViewById(R.id.tv_greeting)
         search = findViewById(R.id.et_search)
         layoutEmptyState = findViewById(R.id.layout_empty_state)
