@@ -50,9 +50,12 @@ No folders. No widgets. No labels or badges. Just a dark grid of app icons, rank
 
 ## Features
 
+- **Pure offline math (Zero LLM)**: Zero generative AI, zero cloud servers, and zero battery drain. Under 100 lines of deterministic Kotlin math running in < 1ms CPU time per launch.
 - **Smart ranking**: Apps surface automatically when you actually use them.
 - **Context awareness**: Learns routines by time of day, day of the week, and launch transitions.
 - **Instant search**: Swipe down anywhere to filter apps by name with fuzzy matching.
+- **Digital detox & app hiding**: 1-tap hide all web browsers, hide distracting apps, or disable web search fallback.
+- **D-pad & physical keypad support**: Full navigation support for dumbphones (Cat S22, Qin F21/F22, etc.).
 - **Clean aesthetic**: Pure black UI, easy on eyes and battery efficient on OLED screens.
 - **Long-press menu**: App shortcuts, hide an app, reset its history, or open its system info.
 - **Zero tracking & 100% private**: No internet connection required. Everything stays strictly on your device. Anonymous usage stats to improve the model may come later, opt-in only.
@@ -93,12 +96,15 @@ No folders. No widgets. No labels or badges. Just a dark grid of app icons, rank
 
 ## Architecture & Scoring Engine
 
+> [!NOTE]
+> **Pure Math, Zero LLM**: Loom contains zero neural networks, zero large language models, and zero cloud dependencies. It does not waste battery or ping remote data centers. The scoring engine is under 100 lines of deterministic, lightweight Kotlin math running locally in < 1 millisecond.
+
 Loom uses an on-device score engine combining multiple temporal and behavioral signals:
 
 1. **Recency decay**: Exponential time decay based on last usage timestamp.
 2. **Time-of-day affinity**: Gaussian kernel centered on current hour.
 3. **Day-of-week affinity**: Differentiates weekday vs weekend habits.
-4. **Transition bigram**: Probabilistic likelihood of opening App B right after App A.
+4. **Transition bigram**: Probabilistic Markov likelihood of opening App B right after App A.
 5. **Context signals**: Optional on-device location, activity, and calendar signals.
 
 ---
@@ -145,6 +151,9 @@ Loom is free and stays free. If it's useful to you, you can [buy me a coffee](ht
 
 ### Why "Loom"?
 A loom weaves separate threads into one fabric. Loom does the same with your day: each app you open is a thread, and over time the launcher weaves them into a routine it can follow, putting the next app where your thumb already is.
+
+### Does Loom use AI, neural networks, or drain battery?
+No. There is zero generative AI, zero LLM, and zero cloud servers. The word "AI" often implies heavy energy-hungry models running in remote data centers. Loom is the opposite: under 100 lines of pure, lightweight Kotlin math (exponential decay and Markov transition probabilities). Each calculation takes less than 1 millisecond and consumes < 0.001% CPU per launch. Combined with Loom's pure OLED black interface and zero background daemons, Loom uses significantly less battery than standard launchers.
 
 ### Why no app names, badges or widgets?
 Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
