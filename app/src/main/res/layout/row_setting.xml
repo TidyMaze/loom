@@ -1,27 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One settings row: label + optional summary inside the same touch target (min 56dp, grows with font scale).
+     Trailing element is one of: chevron (opens something), switch (toggle), action text (e.g. Unhide). -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
+    android:layout_height="wrap_content"
+    android:minHeight="56dp"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:background="?attr/selectableItemBackground">
+    android:paddingStart="@dimen/space_16"
+    android:paddingEnd="@dimen/space_16"
+    android:paddingTop="@dimen/space_12"
+    android:paddingBottom="@dimen/space_12"
+    android:background="@drawable/row_bg"
+    android:focusable="true"
+    android:clickable="true">
 
-    <TextView
-        android:id="@+id/row_label"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="16sp"
-        android:textColor="#FFFFFF"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/row_label"
+            style="@style/Loom.Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/row_summary"
+            style="@style/Loom.Text.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/space_4"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/row_action"
+        style="@style/Loom.Text.Label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="13sp"
-        android:textColor="#88AAFF" />
+        android:layout_marginStart="@dimen/space_12"
+        android:textColor="@color/loom_accent"
+        android:visibility="gone" />
+
+    <!-- Not focusable: the whole row is the one target, the switch only shows state. -->
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/row_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_12"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/row_chevron"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:layout_marginStart="@dimen/space_4"
+        android:layout_marginEnd="-12dp"
+        android:padding="@dimen/space_12"
+        android:src="@drawable/ic_chevron_right"
+        android:importantForAccessibility="no"
+        android:visibility="gone" />
 
 </LinearLayout>

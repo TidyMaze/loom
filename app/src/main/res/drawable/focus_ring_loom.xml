@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Focus ring for ripple-only controls (gear, clear, web rows, sheet rows, shortcuts), used as view foreground.
+     Same look as tile_focus_ring: 2dp loom_accent, drawn inside the bounds. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <stroke android:width="@dimen/focus_ring" android:color="@color/loom_accent" />
+            <corners android:radius="@dimen/radius_chip" />
+        </shape>
+    </item>
+    <item android:drawable="@android:color/transparent" />
+</selector>

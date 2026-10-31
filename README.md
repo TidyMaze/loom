@@ -19,7 +19,7 @@
   <sub>Early Alpha &nbsp;•&nbsp; Vibe Coded &nbsp;•&nbsp; Active Development</sub>
 </p>
 
-No folders. No widgets. No labels or badges. Just a dark grid of app icons, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
+No folders. No widgets. No badges. Just a calm grid of app icons, dark or light, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
 > [!NOTE]
 > **Early Alpha**: Loom is at the very beginning of its journey and vibe-coded with care. Everything works on-device, but expect rapid evolution. Feedback and bug reports are warmly welcome!
@@ -155,13 +155,13 @@ A loom weaves separate threads into one fabric. Loom does the same with your day
 ### Does Loom use AI, neural networks, or drain battery?
 No LLM, no neural network, no server. "AI" here only means a small scoring formula: exponential decay on recency, Gaussian weights for time of day and weekday, and app-to-app transition counts. It runs when the home screen opens, not in a loop. Measured on a laptop JVM, ranking 110 apps over a 15,600-launch history takes about 4 ms (replay of 15,565 launches in 58 s, `ScoreEngineReplayTest`); a phone is slower but it is still a one-off cost per home screen visit. Nothing runs in the background except the optional notification listener (only if you grant notification access). Battery use has not been measured yet.
 
-Apps you never open don't appear on the home screen at all, so the simplest way to keep an app out of sight is to not use it. To hide one for sure, long-press it and choose Hide.
+Apps you have launched come first. While your history is short, the home screen is topped up with unused apps (up to 12 tiles) so it isn't nearly empty; they sit at the bottom and drop out as you use others. To hide an app for sure, long-press it and choose Hide.
 
-### Why no app names, badges or widgets?
-Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets, folders and labels. Unused apps stay dimmed, and the ones you're likely to need now are brighter and at the top.
+### Why no badges, widgets or folders?
+Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets and folders. App names are shown under every icon so nothing is guesswork. How likely you are to need an app now shows in its size (the best guesses get a full-width row), and a thin gold bar under the name gives the rank relative to the top app.
 
 ### How is it different from Before Launcher or other minimal launchers?
-Many minimal launchers ask you to pick favorites and keep the rest in a list with search. Loom doesn't ask you to pick anything: it reorders the apps you actually use by time of day, weekday and the app you just closed, and apps you never open stay off the home screen. The gain is modest: it saves a scroll or a search a few times a day, not hours. If a favorites-based launcher already works for you, there's no strong reason to switch.
+Many minimal launchers ask you to pick favorites and keep the rest in a list with search. Loom doesn't ask you to pick anything: it reorders the apps you actually use by time of day, weekday and the app you just closed, and apps you never open stay at the bottom, out of the way. The gain is modest: it saves a scroll or a search a few times a day, not hours. If a favorites-based launcher already works for you, there's no strong reason to switch.
 
 ### Why did the app I just closed drop to the bottom?
 On purpose. For about 70 seconds after you leave an app, Loom assumes you're unlikely to reopen it right away and pushes it down to make room for what you'll probably open next. After that window it goes back to its normal place, which reflects how often and when you use it.
@@ -170,7 +170,7 @@ On purpose. For about 70 seconds after you leave an app, Loom assumes you're unl
 Everything runs on-device using a lightweight Kotlin scoring engine. When you open an app, Loom logs the timestamp and previous app in a JSON file in the app's private storage (other apps can't read it). The math uses exponential decay and Gaussian time-of-day kernels. Today nothing leaves your phone; anonymous usage stats may come later, opt-in only.
 
 ### Can I reset the learned history?
-- **For a single app**: Long press the app item and select **Reset Rank** (or swipe to clear).
+- **For a single app**: Long press the app item and select **Reset stats**.
 - **For all apps**: Go to Android **Settings** > **Apps** > **Loom** > **Storage** > **Clear Data**.
 
 ### How do I switch back to my previous launcher or uninstall?

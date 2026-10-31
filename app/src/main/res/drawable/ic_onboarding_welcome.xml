@@ -5,15 +5,15 @@
     android:viewportHeight="96">
     <!-- Outer subtle circle -->
     <path
-        android:strokeColor="#33FFFFFF"
+        android:strokeColor="@color/loom_stroke"
         android:strokeWidth="1.5"
         android:pathData="M 48,6 A 42,42 0 1,0 48,90 A 42,42 0 1,0 48,6 Z" />
     <!-- Three concentric minimal arcs (weaving / routine loop) -->
     <path
-        android:strokeColor="#88FFFFFF"
+        android:strokeColor="@color/loom_text_2"
         android:strokeWidth="2"
         android:pathData="M 28,48 C 28,34 38,24 48,24 C 58,24 68,34 68,48 C 68,62 58,72 48,72" />
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="@color/loom_text"
         android:pathData="M 48,44 A 4,4 0 1,0 48,52 A 4,4 0 1,0 48,44 Z" />
 </vector>

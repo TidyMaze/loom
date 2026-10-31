@@ -1,18 +1,17 @@
 package com.yrolland.loom
 
-import android.graphics.Typeface
-import android.graphics.drawable.ClipDrawable
+import android.content.Context
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.util.LruCache
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
@@ -28,65 +27,82 @@ class AppAdapter(
 ) : ListAdapter<AppEntry, AppAdapter.ViewHolder>(DIFF) {
 
     private val iconCache = LruCache<String, Drawable>(150)
-    var showScores = false
-    var accent: Accent = accentForNow()
+    var accent: Accent? = null
     var iconSizeDp: Int = 44
     var itemHeightDp: Int = 76
+    /** Grid the items live in; read at bind time to size icons to the cell. Set by [spanSizeLookup]. */
+    private var grid: GridLayoutManager? = null
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.iv_icon)
         val label: TextView = view.findViewById(R.id.tv_label)
         val stats: TextView = view.findViewById(R.id.tv_stats)
-        val progressFill: View = view.findViewById(R.id.v_progress_fill)
+        val rank: View = view.findViewById(R.id.v_rank)
+        val rankFill: View = view.findViewById(R.id.v_rank_fill)
+        val rankRest: View = view.findViewById(R.id.v_rank_rest)
+        /** The entry currently bound to this holder; read by the accessibility action. */
+        var entry: AppEntry? = null
     }
 
     init { setHasStableIds(true) }
 
     override fun getItemId(position: Int) = getItem(position).packageName.hashCode().toLong()
 
+    override fun getItemViewType(position: Int): Int = TileLayout.viewTypeFor(getItem(position).rank)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_app, parent, false)
-        view.clipToOutline = true
-        return ViewHolder(view)
+        val layoutRes = when (viewType) {
+            TileLayout.TYPE_HERO -> R.layout.item_app_hero
+            TileLayout.TYPE_ROW -> R.layout.item_app_row
+            else -> R.layout.item_app_tile
+        }
+        val view = LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
+        // The focus ring is the view's foreground state; the scale is the only extra cue.
+        view.setOnFocusChangeListener { v, hasFocus ->
+            val s = if (hasFocus) TileLayout.FOCUS_SCALE else 1f
+            v.scaleX = s
+            v.scaleY = s
+        }
+        val holder = ViewHolder(view)
+        // Named action for TalkBack and switch access: same callback as the long press (opens the item sheet).
+        ViewCompat.addAccessibilityAction(view, view.context.getString(R.string.tile_action_more)) { _, _ ->
+            holder.entry?.let(onLongClickItem)
+            true
+        }
+        return holder
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val entry = getItem(position)
-        val pm = holder.itemView.context.packageManager
+        val type = getItemViewType(position)
+        val ctx = holder.itemView.context
+        val pm = ctx.packageManager
         val dp = holder.itemView.resources.displayMetrics.density
+        val a = accent ?: accentForNow(ctx)
+        val rank = entry.rank.coerceIn(0f, 1f)
+        val detailed = type != TileLayout.TYPE_TILE
 
-        holder.itemView.layoutParams = (holder.itemView.layoutParams ?: ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (itemHeightDp * dp).toInt())).apply {
-            height = (itemHeightDp * dp).toInt()
+        holder.entry = entry
+        holder.itemView.minimumHeight = (TileLayout.heightDp(type, itemHeightDp) * dp).toInt()
+        // The icon never draws wider than its cell (5-6 columns, large icon size).
+        val iconDp = TileLayout.fitIconDp(type, iconSizeDp, itemWidthDp(type, dp))
+        val iconPx = (iconDp * dp).toInt()
+        holder.icon.layoutParams = holder.icon.layoutParams.apply {
+            width = iconPx
+            height = iconPx
         }
-        holder.icon.layoutParams = (holder.icon.layoutParams ?: ViewGroup.LayoutParams((iconSizeDp * dp).toInt(), (iconSizeDp * dp).toInt())).apply {
-            width = (iconSizeDp * dp).toInt()
-            height = (iconSizeDp * dp).toInt()
-        }
+        // Icons are always fully opaque (contrast); rank is shown by the bar, the icon size and the label weight.
 
         holder.label.text = entry.label
-        holder.itemView.contentDescription = entry.label // tiles show no text, so screen readers need this
+        // Tiles show no stats, so the spoken description carries rank, frequency and trend.
+        holder.itemView.contentDescription = describe(ctx, entry)
 
-        // Use pre-computed rank so filtered lists (search) keep original sizes
-        val relScore = entry.rank
-        val prominence = 0.35f + (relScore * 0.65f)
-        holder.label.typeface = when {
-            relScore > 0.85f -> Typeface.create("sans-serif-black", Typeface.NORMAL)
-            relScore > 0.6f  -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            relScore > 0.3f  -> Typeface.create("sans-serif", Typeface.NORMAL)
-            else             -> Typeface.create("sans-serif-light", Typeface.NORMAL)
-        }
-        holder.label.textSize = when {
-            relScore > 0.85f -> 20f
-            relScore > 0.5f  -> 18f
-            else             -> 16f
-        }
-        holder.label.alpha = prominence
+        holder.stats.visibility = if (detailed) View.VISIBLE else View.GONE
+        holder.stats.text = buildStats(ctx, entry)
+        holder.stats.setTextColor(if (isNow(entry)) a.now else a.textSecondary)
 
-        val statsText = buildStats(entry)
-        holder.stats.text = statsText
-        holder.stats.alpha = if (showScores) 1f else 0.75f
-        holder.stats.setTextColor(statsColor(statsText))
+        holder.rank.visibility = if (detailed) View.VISIBLE else View.GONE
+        if (detailed) setRankWeights(holder, rank)
 
         // Icon: cache hit = sync set; miss = placeholder + async load
         holder.icon.tag = entry.packageName
@@ -106,55 +122,6 @@ class AppAdapter(
                 }
             }
         }
-        holder.icon.alpha = prominence
-
-        val bg = holder.itemView.background?.mutate() as? GradientDrawable
-        bg?.setColor(0xFF0E0E0E.toInt())
-        if (holder.itemView.isFocused) {
-            bg?.setStroke((2 * dp).toInt(), accent.barEnd)
-        } else {
-            bg?.setStroke(0, android.graphics.Color.TRANSPARENT)
-        }
-
-        holder.itemView.setOnFocusChangeListener { v, hasFocus ->
-            val bgDrawable = v.background?.mutate() as? GradientDrawable
-            if (hasFocus) {
-                bgDrawable?.setStroke((2 * dp).toInt(), accent.barEnd)
-                v.scaleX = 1.04f
-                v.scaleY = 1.04f
-            } else {
-                bgDrawable?.setStroke(0, android.graphics.Color.TRANSPARENT)
-                v.scaleX = 1.0f
-                v.scaleY = 1.0f
-            }
-        }
-
-        if (entry.launchCount > 0) {
-            val fillScale = entry.rank.coerceIn(0.02f, 1f)
-            val r = 14f * dp
-            val radii = floatArrayOf(r, r, r, r, r, r, r, r)
-            val bar = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadii = radii
-                orientation = GradientDrawable.Orientation.LEFT_RIGHT
-                colors = intArrayOf(accent.barStart, accent.barEnd)
-            }
-            val halo = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadii = radii
-                gradientType = GradientDrawable.RADIAL_GRADIENT
-                setGradientCenter(0.07f, 0.5f)
-                gradientRadius = 80f * dp
-                colors = intArrayOf(accent.haloCore, accent.haloMid, accent.haloEdge)
-            }
-            val clip = ClipDrawable(LayerDrawable(arrayOf(bar, halo)), Gravity.START, ClipDrawable.HORIZONTAL)
-            holder.progressFill.background = clip
-            clip.level = (fillScale * 10000).toInt()
-            holder.progressFill.alpha = 1f
-            holder.progressFill.visibility = View.VISIBLE
-        } else {
-            holder.progressFill.visibility = View.GONE
-        }
 
         holder.itemView.setOnClickListener { v ->
             HapticHelper.vibrateClick(v)
@@ -162,7 +129,8 @@ class AppAdapter(
                 .scaleX(0.96f).scaleY(0.96f)
                 .setDuration(80)
                 .withEndAction {
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                    val s = if (v.isFocused) TileLayout.FOCUS_SCALE else 1f
+                    v.animate().scaleX(s).scaleY(s).setDuration(100).start()
                     onClick(entry)
                 }.start()
         }
@@ -173,28 +141,97 @@ class AppAdapter(
         }
     }
 
-    fun buildStats(entry: AppEntry): String {
-        if (entry.launchCount == 0) return "never"
+    /** Grid span of every item for the given column count (used by the span lookup and D-pad). */
+    fun spanSizes(columns: Int): IntArray =
+        IntArray(itemCount) { TileLayout.spanFor(this.getItemViewType(it), columns) }
+
+    /** Also remembers [layoutManager] as the grid whose width sizes the icons (call once, from the screen setup). */
+    fun spanSizeLookup(layoutManager: GridLayoutManager): GridLayoutManager.SpanSizeLookup {
+        grid = layoutManager
+        return object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int =
+                TileLayout.spanFor(this@AppAdapter.getItemViewType(position), layoutManager.spanCount)
+        }
+    }
+
+    /** Width in dp of an item of [type] in the current grid, or 0 when the grid has no width yet. */
+    private fun itemWidthDp(type: Int, density: Float): Int {
+        val lm = grid ?: return 0
+        val gridWidthDp = ((lm.width - lm.paddingLeft - lm.paddingRight) / density).toInt()
+        if (gridWidthDp <= 0) return 0
+        return TileLayout.itemWidthDp(type, lm.spanCount, gridWidthDp)
+    }
+
+    private fun setRankWeights(holder: ViewHolder, rank: Float) {
+        (holder.rankFill.layoutParams as LinearLayout.LayoutParams).let {
+            it.weight = rank
+            holder.rankFill.layoutParams = it
+        }
+        (holder.rankRest.layoutParams as LinearLayout.LayoutParams).let {
+            it.weight = 1f - rank
+            holder.rankRest.layoutParams = it
+        }
+    }
+
+    private fun isNow(entry: AppEntry): Boolean =
+        entry.launchCount > 0 &&
+            entry.lastLaunchedMillis?.let { System.currentTimeMillis() - it < 60_000 } == true
+
+    /** -1 = below usual, 0 = normal or no baseline, +1 = above usual today. */
+    private fun trend(entry: AppEntry): Int = when {
+        entry.dailyAvg > 0f && entry.todayCount >= entry.dailyAvg * 1.5f -> 1
+        entry.dailyAvg > 0f && entry.todayCount < entry.dailyAvg * 0.4f -> -1
+        else -> 0
+    }
+
+    fun buildStats(context: Context, entry: AppEntry): String {
+        if (entry.launchCount == 0) return context.getString(R.string.stats_never)
         val lastMillis = entry.lastLaunchedMillis ?: return ""
         val diffMs = System.currentTimeMillis() - lastMillis
         val time = when {
-            diffMs < 60_000 -> "now"
-            diffMs < 3600_000 -> "${TimeUnit.MILLISECONDS.toMinutes(diffMs)}m"
-            diffMs < 86400_000 -> "${TimeUnit.MILLISECONDS.toHours(diffMs)}h"
-            else -> "${TimeUnit.MILLISECONDS.toDays(diffMs)}d"
+            diffMs < 60_000 -> context.getString(R.string.stats_now)
+            diffMs < 3600_000 -> context.getString(R.string.stats_minutes, TimeUnit.MILLISECONDS.toMinutes(diffMs))
+            diffMs < 86400_000 -> context.getString(R.string.stats_hours, TimeUnit.MILLISECONDS.toHours(diffMs))
+            else -> context.getString(R.string.stats_days, TimeUnit.MILLISECONDS.toDays(diffMs))
         }
-        val arrow = when {
-            entry.dailyAvg > 0f && entry.todayCount >= entry.dailyAvg * 1.5f -> " ↑"
-            entry.dailyAvg > 0f && entry.todayCount < entry.dailyAvg * 0.4f  -> " ↓"
+        val arrow = when (trend(entry)) {
+            1 -> " ↑"
+            -1 -> " ↓"
             else -> ""
         }
         return time + arrow
     }
 
-    companion object {
-        fun statsColor(text: String): Int =
-            if (text == "now") 0xFFFFFFFF.toInt() else 0xFF888888.toInt()
+    /** Spoken name, rank word, last use and trend, for TalkBack. */
+    private fun describe(ctx: Context, entry: AppEntry): String {
+        if (entry.launchCount == 0) return ctx.getString(R.string.tile_desc_never, entry.label)
+        val last = entry.lastLaunchedMillis
+        val timeText = last?.let { agoText(ctx, System.currentTimeMillis() - it) }
+            ?: ctx.getString(R.string.tile_time_unknown)
+        val freq = ctx.getString(
+            when {
+                entry.rank >= TileLayout.HERO_MIN_RANK -> R.string.tile_freq_top
+                entry.rank >= TileLayout.ROW_MIN_RANK -> R.string.tile_freq_often
+                else -> R.string.tile_freq_rare
+            }
+        )
+        val launches = ctx.resources.getQuantityString(R.plurals.tile_launches, entry.launchCount, entry.launchCount)
+        val base = ctx.getString(R.string.tile_desc_used, entry.label, timeText, launches, freq)
+        return when (trend(entry)) {
+            1 -> "$base, ${ctx.getString(R.string.tile_more_than_usual)}"
+            -1 -> "$base, ${ctx.getString(R.string.tile_less_than_usual)}"
+            else -> base
+        }
+    }
 
+    private fun agoText(ctx: Context, diffMs: Long): String = when {
+        diffMs < 60_000 -> ctx.getString(R.string.tile_time_now)
+        diffMs < 3600_000 -> ctx.getString(R.string.tile_time_minutes, TimeUnit.MILLISECONDS.toMinutes(diffMs))
+        diffMs < 86400_000 -> ctx.getString(R.string.tile_time_hours, TimeUnit.MILLISECONDS.toHours(diffMs))
+        else -> ctx.getString(R.string.tile_time_days, TimeUnit.MILLISECONDS.toDays(diffMs))
+    }
+
+    companion object {
         private val DIFF = object : DiffUtil.ItemCallback<AppEntry>() {
             override fun areItemsTheSame(a: AppEntry, b: AppEntry) = a.packageName == b.packageName
             override fun areContentsTheSame(a: AppEntry, b: AppEntry) = a == b

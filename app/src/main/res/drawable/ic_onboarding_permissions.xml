@@ -5,16 +5,16 @@
     android:viewportHeight="96">
     <!-- Toggle / slider switch track -->
     <path
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="@color/loom_text"
         android:strokeWidth="2.5"
         android:pathData="M 32,32 L 64,32 A 16,16 0 0,1 64,64 L 32,64 A 16,16 0 0,1 32,32 Z" />
     <!-- Toggle active knob -->
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="@color/loom_text"
         android:pathData="M 64,48 A 10,10 0 1,0 64,48.01 Z" />
     <!-- Context pulse rings -->
     <path
-        android:strokeColor="#66FFFFFF"
+        android:strokeColor="@color/loom_text_2"
         android:strokeWidth="1.5"
         android:pathData="M 48,16 A 32,32 0 1,0 48,80" />
 </vector>

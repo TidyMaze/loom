@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rank tier "hero" (rank >= 0.85, full row): icon 48dp, label 20sp medium, stats caption, rank bar. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/space_4"
+    android:background="@drawable/tile_bg"
+    android:foreground="@drawable/tile_focus_ring"
+    android:clipToOutline="true"
+    android:focusable="true"
+    android:focusableInTouchMode="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_16"
+        android:paddingEnd="@dimen/space_16"
+        android:paddingTop="@dimen/space_16"
+        android:paddingBottom="@dimen/space_16"
+        android:importantForAccessibility="no">
+
+        <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:scaleType="fitCenter" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/space_12"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_label"
+                style="@style/Loom.Text.Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                
+                android:maxLines="1"
+                android:textColor="@color/loom_text" />
+
+            <TextView
+                android:id="@+id/tv_stats"
+                style="@style/Loom.Text.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+            <LinearLayout
+                android:id="@+id/v_rank"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/rank_bar_height"
+                android:layout_marginTop="@dimen/space_8"
+                android:background="@drawable/rank_track"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/v_rank_fill"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@color/loom_accent" />
+
+                <View
+                    android:id="@+id/v_rank_rest"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

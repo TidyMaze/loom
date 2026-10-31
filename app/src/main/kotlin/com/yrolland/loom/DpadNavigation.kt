@@ -1,5 +1,7 @@
 package com.yrolland.loom
 
+import kotlin.math.abs
+
 enum class DpadDirection {
     UP,
     DOWN,
@@ -30,25 +32,66 @@ object DpadNavigation {
         return unicodeChar in 32..126 || unicodeChar > 127
     }
 
+    /** Uniform grid: every item spans one column. */
     fun calculateNextPosition(current: Int, direction: DpadDirection, cols: Int, total: Int): Int {
+        if (total <= 0) return -1
+        return calculateNextPosition(current, direction, cols, IntArray(total) { 1 })
+    }
+
+    /**
+     * Grid with non-uniform spans (hero = full row, row = half or full, tile = one column; see TileLayout.spanFor).
+     * Cells are placed like GridLayoutManager does: greedy, left to right, wrap when an item does not fit.
+     * UP/DOWN pick the item in the adjacent row whose centre is closest to the current centre (ties: first).
+     * Returns -1 for UP when there is no row above (focus goes to search), and stays put for DOWN on the last row.
+     */
+    fun calculateNextPosition(current: Int, direction: DpadDirection, cols: Int, spanSizes: IntArray): Int {
+        val total = spanSizes.size
         if (total <= 0) return -1
         if (current !in 0 until total) return 0
 
+        val cells = placeCells(spanSizes, cols)
+        val cur = cells[current]
         return when (direction) {
-            DpadDirection.UP -> {
-                val next = current - cols
-                if (next < 0) -1 else next
+            DpadDirection.UP -> nearestInRow(cells, cur.row - 1, cur)
+            DpadDirection.DOWN -> nearestInRow(cells, cur.row + 1, cur).takeIf { it >= 0 } ?: current
+            DpadDirection.LEFT -> if (current == 0 || cells[current - 1].row != cur.row) current else current - 1
+            DpadDirection.RIGHT -> if (current + 1 >= total || cells[current + 1].row != cur.row) current else current + 1
+        }
+    }
+
+    private class Cell(val row: Int, val start: Int, val span: Int) {
+        val center: Double get() = start + span / 2.0
+    }
+
+    private fun placeCells(spanSizes: IntArray, cols: Int): List<Cell> {
+        val columns = cols.coerceAtLeast(1)
+        val cells = ArrayList<Cell>(spanSizes.size)
+        var row = 0
+        var col = 0
+        for (raw in spanSizes) {
+            val span = raw.coerceIn(1, columns)
+            if (col + span > columns) {
+                row++
+                col = 0
             }
-            DpadDirection.DOWN -> {
-                val next = current + cols
-                if (next >= total) current else next
-            }
-            DpadDirection.LEFT -> {
-                if (current % cols == 0) current else current - 1
-            }
-            DpadDirection.RIGHT -> {
-                if (current % cols == cols - 1 || current + 1 >= total) current else current + 1
+            cells.add(Cell(row, col, span))
+            col += span
+        }
+        return cells
+    }
+
+    private fun nearestInRow(cells: List<Cell>, row: Int, from: Cell): Int {
+        var best = -1
+        var bestDistance = Double.MAX_VALUE
+        cells.forEachIndexed { index, cell ->
+            if (cell.row == row) {
+                val distance = abs(cell.center - from.center)
+                if (distance < bestDistance) {
+                    bestDistance = distance
+                    best = index
+                }
             }
         }
+        return best
     }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Loom text styles. System sans only; no fixed heights on text (user font scale). -->
+<resources>
+    <style name="Loom.Text.Display" parent="">
+        <item name="android:textSize">@dimen/text_display</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:textColor">@color/loom_text</item>
+    </style>
+
+    <style name="Loom.Text.Title" parent="">
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/loom_text</item>
+    </style>
+
+    <style name="Loom.Text.Body" parent="">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/loom_text</item>
+    </style>
+
+    <style name="Loom.Text.Label" parent="">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/loom_text</item>
+    </style>
+
+    <style name="Loom.Text.Caption" parent="">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/loom_text_2</item>
+    </style>
+
+    <style name="Loom.Text.Section" parent="">
+        <item name="android:textSize">@dimen/text_section</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textColor">@color/loom_text_2</item>
+    </style>
+</resources>

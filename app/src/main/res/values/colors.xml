@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Loom "quiet ink" tokens, light variant. Dark variant in values-night/colors.xml.
+     Only the gold accent (loom_accent) carries colour; everything else is neutral. -->
+<resources>
+    <color name="loom_bg">#F6F4EF</color>
+    <color name="loom_surface">#FFFFFF</color>
+    <color name="loom_surface_hi">#ECE9E2</color>
+    <color name="loom_stroke">#1F000000</color>
+    <color name="loom_text">#121214</color>
+    <color name="loom_text_2">#5A5A60</color>
+    <!-- Non-text only (icons, dividers): 3.1 to 4.2:1 on the backgrounds, below the 4.5:1 text rule in both themes. Never use for body or label text. -->
+    <color name="loom_text_3">#8A8A90</color>
+    <color name="loom_accent">#8A6A1F</color>
+    <color name="loom_accent_soft">#1F8A6A1F</color>
+    <color name="loom_on_accent">#FFFFFF</color>
+    <color name="loom_danger">#B3261E</color>
+    <color name="loom_scrim">#66000000</color>
+</resources>

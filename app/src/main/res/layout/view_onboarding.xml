@@ -4,7 +4,7 @@
     android:id="@+id/layout_onboarding"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
+    android:background="@color/loom_bg"
     android:visibility="gone"
     android:clickable="true"
     android:focusable="true">
@@ -13,66 +13,106 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center"
-        android:paddingStart="36dp"
-        android:paddingEnd="36dp">
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingBottom="@dimen/space_16">
 
-        <ImageView
-            android:id="@+id/iv_onboarding_icon"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:layout_marginBottom="36dp"
-            android:contentDescription="Illustration" />
-
-        <TextView
-            android:id="@+id/tv_onboarding_title"
+        <!-- Step content: scrolls when the font scale is large; swipe left/right changes step. -->
+        <ScrollView
+            android:id="@+id/onboarding_scroll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:fontFamily="sans-serif-medium"
-            android:layout_marginBottom="14dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/tv_onboarding_subtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="#888888"
-            android:textSize="15sp"
-            android:lineSpacingExtra="4dp"
-            android:fontFamily="sans-serif"
-            android:layout_marginBottom="44dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="@dimen/space_24"
+                android:paddingBottom="@dimen/space_24">
 
-        <!-- Dot indicators container -->
+                <ImageView
+                    android:id="@+id/iv_onboarding_icon"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginBottom="@dimen/space_32"
+                    android:tint="@color/loom_accent"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/tv_onboarding_title"
+                    style="@style/Loom.Text.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_12"
+                    android:accessibilityHeading="true"
+                    android:gravity="center"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/tv_onboarding_subtitle"
+                    style="@style/Loom.Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:maxWidth="280dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="@dimen/space_4"
+                    android:textColor="@color/loom_text_2" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Bottom-anchored controls (thumb zone). -->
         <LinearLayout
-            android:id="@+id/layout_onboarding_dots"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="36dp" />
-
-        <Button
-            android:id="@+id/btn_onboarding_next"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:background="@drawable/search_bg"
-            android:textColor="#FFFFFF"
-            android:textSize="15sp"
-            android:textAllCaps="false"
-            android:fontFamily="sans-serif-medium"
-            android:text="Continue" />
-
-        <TextView
-            android:id="@+id/btn_onboarding_skip"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:text="Skip"
-            android:textColor="#555555"
-            android:textSize="13sp" />
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/layout_onboarding_dots"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="@dimen/space_24"
+                android:orientation="horizontal"
+                android:importantForAccessibility="no" />
+
+            <Button
+                android:id="@+id/btn_onboarding_next"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:background="@drawable/button_primary_bg"
+                android:textColor="@color/loom_on_accent"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/onboarding_continue" />
+
+            <!-- 48dp target, contrast loom_text_2 (>= 4.5:1 on loom_bg). -->
+            <TextView
+                android:id="@+id/btn_onboarding_skip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/space_4"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:gravity="center"
+                android:paddingStart="@dimen/space_16"
+                android:paddingEnd="@dimen/space_16"
+                android:background="@drawable/row_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="@string/onboarding_skip"
+                android:textColor="@color/loom_text_2"
+                android:textSize="@dimen/text_label"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
