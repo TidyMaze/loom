@@ -19,7 +19,7 @@
   <sub>Early Alpha &nbsp;•&nbsp; Vibe Coded &nbsp;•&nbsp; Active Development</sub>
 </p>
 
-No folders. No widgets. No badges. Just a calm grid of app icons, dark or light, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
+No folders. No widgets. No badges. Just a calm grid of app tiles, dark or light, ranked by what you are most likely to need right now based on time of day, day of week, and your past habits.
 
 > [!NOTE]
 > **Early Alpha**: Loom is at the very beginning of its journey and vibe-coded with care. Everything works on-device, but expect rapid evolution. Feedback and bug reports are warmly welcome!
@@ -39,11 +39,19 @@ No folders. No widgets. No badges. Just a calm grid of app icons, dark or light,
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/00_onboarding.png" width="30%" alt="Onboarding tutorial" />
+  <img src="docs/screenshots/00_onboarding.png" width="30%" alt="Onboarding: welcome step" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/screenshots/01_home.png" width="30%" alt="Home screen" />
+  <img src="docs/screenshots/01_home.png" width="30%" alt="Home screen in dark theme: the top app as a full-width hero, then half-width and small tiles ranked by likelihood" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/screenshots/02_search.png" width="30%" alt="Instant search" />
+  <img src="docs/screenshots/02_search.png" width="30%" alt="Instant search: typing 'ma' filters the apps, keyboard open" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/03_sheet.png" width="30%" alt="Long-press sheet on an app: launch count and last open time, Hide app, App info, Reset stats" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/04_settings.png" width="30%" alt="Settings: grid columns, icon size, web search button, hidden apps, tracking permissions" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/05_home_light.png" width="30%" alt="Home screen in light theme" />
 </p>
 
 ---
@@ -158,7 +166,7 @@ No LLM, no neural network, no server. "AI" here only means a small scoring formu
 Apps you have launched come first. While your history is short, the home screen is topped up with unused apps (up to 12 tiles) so it isn't nearly empty; they sit at the bottom and drop out as you use others. To hide an app for sure, long-press it and choose Hide.
 
 ### Why no badges, widgets or folders?
-Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets and folders. App names are shown under every icon so nothing is guesswork. How likely you are to need an app now shows in its size (the best guesses get a full-width row), and a thin gold bar under the name gives the rank relative to the top app.
+Loom started as a text-only list and moved to an icon grid in August 2026. What it still leaves out is everything that pulls at your attention: notification badges, widgets and folders. App names are shown on every tile (beside the icon on the wide ones, under it on the small ones) so nothing is guesswork. How likely you are to need an app now shows in its size (the best guesses get a full-width row), and a thin gold bar under the name gives the rank relative to the top app.
 
 ### How is it different from Before Launcher or other minimal launchers?
 Many minimal launchers ask you to pick favorites and keep the rest in a list with search. Loom doesn't ask you to pick anything: it reorders the apps you actually use by time of day, weekday and the app you just closed, and apps you never open stay at the bottom, out of the way. The gain is modest: it saves a scroll or a search a few times a day, not hours. If a favorites-based launcher already works for you, there's no strong reason to switch.
