@@ -69,14 +69,24 @@
             android:paddingBottom="@dimen/space_8"
             android:visibility="gone">
 
+            <!-- Action rows: leading icon, trailing chevron, surface with ripple. Role "button" is set in MainActivity. -->
             <TextView
                 android:id="@+id/btn_open_chrome"
                 style="@style/Loom.Text.Label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_8"
                 android:minHeight="@dimen/touch_min"
                 android:gravity="center_vertical"
-                android:background="?attr/selectableItemBackground"
+                android:paddingStart="@dimen/space_16"
+                android:paddingTop="@dimen/space_12"
+                android:paddingEnd="@dimen/space_16"
+                android:paddingBottom="@dimen/space_12"
+                android:drawablePadding="@dimen/space_12"
+                android:drawableStart="@drawable/ic_search"
+                android:drawableEnd="@drawable/ic_chevron_right"
+                android:drawableTint="@color/loom_text_2"
+                android:background="@drawable/empty_action_bg"
                 android:foreground="@drawable/focus_ring_loom"
                 android:clickable="true"
                 android:focusable="true" />
@@ -88,8 +98,16 @@
                 android:layout_height="wrap_content"
                 android:minHeight="@dimen/touch_min"
                 android:gravity="center_vertical"
+                android:paddingStart="@dimen/space_16"
+                android:paddingTop="@dimen/space_12"
+                android:paddingEnd="@dimen/space_16"
+                android:paddingBottom="@dimen/space_12"
+                android:drawablePadding="@dimen/space_12"
+                android:drawableStart="@drawable/ic_sparkle"
+                android:drawableEnd="@drawable/ic_chevron_right"
+                android:drawableTint="@color/loom_text_2"
                 android:text="@string/search_gemini"
-                android:background="?attr/selectableItemBackground"
+                android:background="@drawable/empty_action_bg"
                 android:foreground="@drawable/focus_ring_loom"
                 android:clickable="true"
                 android:focusable="true" />

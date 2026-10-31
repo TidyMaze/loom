@@ -27,8 +27,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
@@ -107,6 +109,16 @@ class MainActivity : AppCompatActivity() {
         layoutEmptyState = findViewById(R.id.layout_empty_state)
         btnOpenChrome = findViewById(R.id.btn_open_chrome)
         btnOpenGemini = findViewById(R.id.btn_open_gemini)
+
+        // The empty-state rows are TextViews: announce them to TalkBack as buttons (minSdk 26 has no XML className).
+        listOf(btnOpenChrome, btnOpenGemini).forEach { row ->
+            ViewCompat.setAccessibilityDelegate(row, object : AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    info.className = android.widget.Button::class.java.name
+                }
+            })
+        }
 
         btnOpenChrome.setOnClickListener {
             val query = search.text?.toString()?.trim().orEmpty()
