@@ -174,4 +174,92 @@ class DpadNavigationTest {
             }
         }
     }
+
+    // ---- 3..6 columns, spans as TileLayout produces them (heroes, then rows, then tiles) ----
+
+    private fun tileSpans(cols: Int, heroes: Int, rows: Int, tiles: Int): IntArray {
+        val types = List(heroes) { TileLayout.TYPE_HERO } +
+            List(rows) { TileLayout.TYPE_ROW } +
+            List(tiles) { TileLayout.TYPE_TILE }
+        return types.map { TileLayout.spanFor(it, cols) }.toIntArray()
+    }
+
+    /** Line of each item, found by walking RIGHT: a new line starts where RIGHT from the previous item does not reach it. */
+    private fun lineIndexOf(spans: IntArray, cols: Int): IntArray {
+        val line = IntArray(spans.size)
+        for (i in spans.indices) {
+            if (i == 0) continue
+            val sameLine = DpadNavigation.calculateNextPosition(i - 1, DpadDirection.RIGHT, cols, spans) == i
+            line[i] = if (sameLine) line[i - 1] else line[i - 1] + 1
+        }
+        return line
+    }
+
+    @Test
+    fun `tile layout - every line but the last is exactly full for 3 to 6 columns`() {
+        for (cols in 3..6) for (heroes in 0..2) for (rows in 0..4) for (tiles in 0..6) {
+            if (heroes + rows + tiles == 0) continue
+            val spans = tileSpans(cols, heroes, rows, tiles)
+            val line = lineIndexOf(spans, cols)
+            val lastLine = line.last()
+            for (l in 0 until lastLine) {
+                val used = spans.indices.filter { line[it] == l }.sumOf { spans[it] }
+                assertEquals("cols=$cols heroes=$heroes rows=$rows tiles=$tiles line=$l", cols, used)
+            }
+        }
+    }
+
+    @Test
+    fun `tile layout - DOWN lands in the line directly below and the last line stays put`() {
+        for (cols in 3..6) for (heroes in 0..2) for (rows in 0..4) for (tiles in 0..6) {
+            if (heroes + rows + tiles == 0) continue
+            val spans = tileSpans(cols, heroes, rows, tiles)
+            val line = lineIndexOf(spans, cols)
+            val lastLine = line.last()
+            for (i in spans.indices) {
+                val next = DpadNavigation.calculateNextPosition(i, DpadDirection.DOWN, cols, spans)
+                val where = "cols=$cols heroes=$heroes rows=$rows tiles=$tiles item=$i"
+                if (line[i] == lastLine) {
+                    assertEquals(where, i, next)
+                } else {
+                    assertEquals(where, line[i] + 1, line[next])
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `spans - three columns, hero then two rows then five tiles`() {
+        // Lines: [0] [1] [2] [3 4 5] [6 7]
+        val spans = tileSpans(cols = 3, heroes = 1, rows = 2, tiles = 5)
+        assertEquals(1, DpadNavigation.calculateNextPosition(0, DpadDirection.DOWN, 3, spans))
+        assertEquals(2, DpadNavigation.calculateNextPosition(1, DpadDirection.DOWN, 3, spans))
+        // Row 2 (centre 1.5) goes to the middle tile of the next line, not the first.
+        assertEquals(4, DpadNavigation.calculateNextPosition(2, DpadDirection.DOWN, 3, spans))
+        assertEquals(6, DpadNavigation.calculateNextPosition(3, DpadDirection.DOWN, 3, spans))
+        assertEquals(7, DpadNavigation.calculateNextPosition(5, DpadDirection.DOWN, 3, spans))
+        assertEquals(7, DpadNavigation.calculateNextPosition(7, DpadDirection.DOWN, 3, spans)) // last line
+    }
+
+    @Test
+    fun `spans - five columns, a full-width row above a short last line`() {
+        // Lines: [0 (5 wide)] [1 2 3 4 5] [6]: the lone tile on the last line is reached from every tile above.
+        val spans = tileSpans(cols = 5, heroes = 1, rows = 0, tiles = 6)
+        assertEquals(3, DpadNavigation.calculateNextPosition(0, DpadDirection.DOWN, 5, spans))
+        assertEquals(6, DpadNavigation.calculateNextPosition(1, DpadDirection.DOWN, 5, spans))
+        assertEquals(6, DpadNavigation.calculateNextPosition(5, DpadDirection.DOWN, 5, spans))
+        assertEquals(6, DpadNavigation.calculateNextPosition(6, DpadDirection.DOWN, 5, spans))
+    }
+
+    @Test
+    fun `spans - six columns, rows of three next to tiles`() {
+        // Lines: [0 (6 wide)] [1 (c0-2) 2 (c3-5)] [3 (c0-2) 4 5 6] [7]
+        val spans = tileSpans(cols = 6, heroes = 1, rows = 3, tiles = 4)
+        assertEquals(1, DpadNavigation.calculateNextPosition(0, DpadDirection.DOWN, 6, spans)) // tie: first
+        assertEquals(3, DpadNavigation.calculateNextPosition(1, DpadDirection.DOWN, 6, spans))
+        assertEquals(5, DpadNavigation.calculateNextPosition(2, DpadDirection.DOWN, 6, spans))
+        assertEquals(7, DpadNavigation.calculateNextPosition(3, DpadDirection.DOWN, 6, spans))
+        assertEquals(7, DpadNavigation.calculateNextPosition(4, DpadDirection.DOWN, 6, spans))
+        assertEquals(7, DpadNavigation.calculateNextPosition(7, DpadDirection.DOWN, 6, spans)) // last line
+    }
 }

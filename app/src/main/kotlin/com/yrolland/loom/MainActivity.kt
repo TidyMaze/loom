@@ -301,6 +301,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Focus the app at adapter position [pos]; scroll it into view first when it is not laid out yet. */
+    private fun focusItemAt(pos: Int) {
+        recycler.findViewHolderForAdapterPosition(pos)?.itemView?.let {
+            it.requestFocus()
+            return
+        }
+        recycler.scrollToPosition(pos)
+        recycler.post { recycler.findViewHolderForAdapterPosition(pos)?.itemView?.requestFocus() }
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN) {
             val keyCode = event.keyCode
@@ -320,6 +330,27 @@ class MainActivity : AppCompatActivity() {
                 if (pos == -1 || DpadNavigation.calculateNextPosition(pos, DpadDirection.UP, cols, adapter.spanSizes(cols)) == -1) {
                     showSearch()
                     search.requestFocus()
+                    return true
+                }
+            }
+
+            // D-pad DOWN from the gear or with no focus -> first app; between apps -> the item below
+            // (same placement as UP); from the last row -> search pill, as UP from the top row goes to search.
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && !search.hasFocus()) {
+                val focusedView = currentFocus
+                if (adapter.itemCount > 0 && (focusedView == null || focusedView === btnSettings)) {
+                    focusItemAt(0)
+                    return true
+                }
+                val pos = focusedView?.let { recycler.getChildAdapterPosition(it) } ?: -1
+                if (pos >= 0) {
+                    val cols = (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount ?: 1
+                    val next = DpadNavigation.calculateNextPosition(pos, DpadDirection.DOWN, cols, adapter.spanSizes(cols))
+                    if (next == pos) {
+                        showSearch()
+                    } else {
+                        focusItemAt(next)
+                    }
                     return true
                 }
             }
