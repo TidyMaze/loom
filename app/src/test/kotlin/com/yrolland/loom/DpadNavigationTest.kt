@@ -252,6 +252,56 @@ class DpadNavigationTest {
     }
 
     @Test
+    fun `tile layout - LEFT and RIGHT stay in the same line and stay put at its edges`() {
+        // The grid handles LEFT/RIGHT itself and consumes the key at a line edge (focus must not reach the gear).
+        for (cols in 3..6) for (heroes in 0..2) for (rows in 0..4) for (tiles in 0..6) {
+            if (heroes + rows + tiles == 0) continue
+            val spans = tileSpans(cols, heroes, rows, tiles)
+            val line = lineIndexOf(spans, cols)
+            for (i in spans.indices) {
+                val where = "cols=$cols heroes=$heroes rows=$rows tiles=$tiles item=$i"
+                val right = DpadNavigation.calculateNextPosition(i, DpadDirection.RIGHT, cols, spans)
+                val left = DpadNavigation.calculateNextPosition(i, DpadDirection.LEFT, cols, spans)
+                assertEquals(where, line[i], line[right])
+                assertEquals(where, line[i], line[left])
+                if (right != i) assertEquals(where, i + 1, right)
+                if (left != i) assertEquals(where, i - 1, left)
+            }
+        }
+    }
+
+    @Test
+    fun `tile layout - UP returns -1 exactly for the first line, which is where the gear is reached`() {
+        // MainActivity sends UP from the first line to the gear; UP from any other line stays in the grid.
+        for (cols in 3..6) for (heroes in 0..2) for (rows in 0..4) for (tiles in 0..6) {
+            if (heroes + rows + tiles == 0) continue
+            val spans = tileSpans(cols, heroes, rows, tiles)
+            val line = lineIndexOf(spans, cols)
+            for (i in spans.indices) {
+                val where = "cols=$cols heroes=$heroes rows=$rows tiles=$tiles item=$i"
+                val up = DpadNavigation.calculateNextPosition(i, DpadDirection.UP, cols, spans)
+                if (line[i] == 0) assertEquals(where, -1, up) else assertTrue(where, up >= 0)
+            }
+        }
+    }
+
+    @Test
+    fun `tile layout - a full-width hero or row has no neighbour, so LEFT and RIGHT stay put`() {
+        for (cols in 3..6) {
+            val spans = tileSpans(cols, heroes = 1, rows = 1, tiles = 0)
+            // Hero (item 0) spans the whole grid; with 3 or 5 columns the row (item 1) does too.
+            assertEquals(0, DpadNavigation.calculateNextPosition(0, DpadDirection.RIGHT, cols, spans))
+            assertEquals(0, DpadNavigation.calculateNextPosition(0, DpadDirection.LEFT, cols, spans))
+        }
+        for (cols in listOf(3, 5)) {
+            val spans = tileSpans(cols, heroes = 0, rows = 2, tiles = 0)
+            assertEquals(0, DpadNavigation.calculateNextPosition(0, DpadDirection.RIGHT, cols, spans))
+            assertEquals(1, DpadNavigation.calculateNextPosition(1, DpadDirection.LEFT, cols, spans))
+            assertEquals(1, DpadNavigation.calculateNextPosition(1, DpadDirection.RIGHT, cols, spans))
+        }
+    }
+
+    @Test
     fun `spans - six columns, rows of three next to tiles`() {
         // Lines: [0 (6 wide)] [1 (c0-2) 2 (c3-5)] [3 (c0-2) 4 5 6] [7]
         val spans = tileSpans(cols = 6, heroes = 1, rows = 3, tiles = 4)

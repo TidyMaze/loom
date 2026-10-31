@@ -64,6 +64,8 @@ class MainActivity : AppCompatActivity() {
     /** Adapter position of the app hidden from the sheet, to put focus back on the next row. */
     private var focusAfterHidePos: Int? = null
     private var sheetDialog: Dialog? = null
+    /** Set when Android leaves touch mode; the next key is the one that left it (see dispatchKeyEvent). */
+    private var restoredByTouchModeExit = false
     private val announceResults = Runnable {
         val count = adapter.itemCount
         val text = if (count == 0) getString(R.string.search_results_none)
@@ -192,6 +194,10 @@ class MainActivity : AppCompatActivity() {
 
         needsRefresh = true // treat first launch as coming from outside
 
+        findViewById<View>(android.R.id.content).viewTreeObserver.addOnTouchModeChangeListener { inTouchMode ->
+            if (!inTouchMode) restoredByTouchModeExit = true
+        }
+
         viewModel.apps.observe(this) { apps ->
             fullList = apps
             val restoreAt = focusAfterHidePos
@@ -241,6 +247,9 @@ class MainActivity : AppCompatActivity() {
 
     // The search pill is always visible; "open" means focused or holding text.
     private fun isSearchOpen(): Boolean = search.hasFocus() || !search.text.isNullOrEmpty()
+
+    /** The search field or its pill has focus: the pill itself is focusable, and DOWN from it must reach the first app. */
+    private fun isSearchFocused(): Boolean = search.hasFocus() || findViewById<View>(R.id.search_pill).hasFocus()
 
     private fun showSearch() {
         searchShownAt = System.currentTimeMillis()
@@ -301,6 +310,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Adapter position of [view] when it is an app tile of the grid, else -1.
+     * RecyclerView.getChildAdapterPosition casts the view's LayoutParams, so it must not get the gear or the recycler itself.
+     */
+    private fun positionOf(view: View?): Int =
+        if (view != null && view.parent === recycler) recycler.getChildAdapterPosition(view) else -1
+
     /** Focus the app at adapter position [pos]; scroll it into view first when it is not laid out yet. */
     private fun focusItemAt(pos: Int) {
         recycler.findViewHolderForAdapterPosition(pos)?.itemView?.let {
@@ -312,6 +328,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // The first key after touch mode: Android restored the focus to the first app (the grid is focusedByDefault)
+        // before this key arrived. Read and clear on every key event: the framework may swallow the ACTION_DOWN
+        // itself, so the flag must not survive to the next key.
+        val restored = restoredByTouchModeExit
+        restoredByTouchModeExit = false
+        if (restored && event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN &&
+            !search.hasFocus() && positionOf(currentFocus) >= 0
+        ) {
+            // DOWN is consumed so that it lands on that app, as "DOWN with no focus" does.
+            return true
+        }
+
         if (event.action == KeyEvent.ACTION_DOWN) {
             val keyCode = event.keyCode
 
@@ -322,27 +350,31 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
 
-            // D-pad UP from top row -> focus search
+            // D-pad UP: from the top row -> the gear (its neighbour above the grid); from the gear, the grid itself or
+            // with no focus -> search pill. Search pill is handled by the default focus search (UP -> last row).
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP && !search.hasFocus()) {
-                val focusedView = currentFocus
-                val pos = focusedView?.let { recycler.getChildAdapterPosition(it) } ?: -1
+                val pos = positionOf(currentFocus)
                 val cols = (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount ?: 1
-                if (pos == -1 || DpadNavigation.calculateNextPosition(pos, DpadDirection.UP, cols, adapter.spanSizes(cols)) == -1) {
+                if (pos >= 0 && DpadNavigation.calculateNextPosition(pos, DpadDirection.UP, cols, adapter.spanSizes(cols)) == -1) {
+                    btnSettings.requestFocus()
+                    return true
+                }
+                if (pos == -1) {
                     showSearch()
                     search.requestFocus()
                     return true
                 }
             }
 
-            // D-pad DOWN from the gear or with no focus -> first app; between apps -> the item below
-            // (same placement as UP); from the last row -> search pill, as UP from the top row goes to search.
-            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && !search.hasFocus()) {
+            // D-pad DOWN from the gear, from the grid itself or with no focus -> first app; between apps -> the item below
+            // (same placement as UP); from the last row -> search pill. DOWN from the pill -> first app (see below).
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && !isSearchFocused()) {
                 val focusedView = currentFocus
-                if (adapter.itemCount > 0 && (focusedView == null || focusedView === btnSettings)) {
+                if (adapter.itemCount > 0 && (focusedView == null || focusedView === btnSettings || focusedView === recycler)) {
                     focusItemAt(0)
                     return true
                 }
-                val pos = focusedView?.let { recycler.getChildAdapterPosition(it) } ?: -1
+                val pos = positionOf(focusedView)
                 if (pos >= 0) {
                     val cols = (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount ?: 1
                     val next = DpadNavigation.calculateNextPosition(pos, DpadDirection.DOWN, cols, adapter.spanSizes(cols))
@@ -355,8 +387,21 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            // D-pad LEFT/RIGHT inside the grid: same placement rules as UP/DOWN. At a row edge the key is consumed,
+            // so focus does not leave the grid for the gear (a full-width row has no neighbour on that side).
+            if ((keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) && !search.hasFocus()) {
+                val pos = positionOf(currentFocus)
+                if (pos >= 0) {
+                    val cols = (recycler.layoutManager as? androidx.recyclerview.widget.GridLayoutManager)?.spanCount ?: 1
+                    val direction = if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) DpadDirection.LEFT else DpadDirection.RIGHT
+                    val next = DpadNavigation.calculateNextPosition(pos, direction, cols, adapter.spanSizes(cols))
+                    if (next != pos) focusItemAt(next)
+                    return true
+                }
+            }
+
             // D-pad DOWN from search -> focus first grid item
-            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && search.hasFocus()) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && isSearchFocused()) {
                 if (adapter.itemCount > 0) {
                     search.clearFocus()
                     val firstHolder = recycler.findViewHolderForAdapterPosition(0)
