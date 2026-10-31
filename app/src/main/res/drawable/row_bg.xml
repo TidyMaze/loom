@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings row: touch ripple, plus a visible 2dp accent ring when focused (D-pad / keyboard). -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/loom_surface_hi">
+    <item>
+        <selector>
+            <item android:state_focused="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/loom_surface_hi" />
+                    <stroke android:width="@dimen/focus_ring" android:color="@color/loom_accent" />
+                    <corners android:radius="@dimen/radius_chip" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</ripple>

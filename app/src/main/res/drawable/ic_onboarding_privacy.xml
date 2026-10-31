@@ -5,13 +5,13 @@
     android:viewportHeight="96">
     <!-- Shield contour -->
     <path
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="@color/loom_text"
         android:strokeWidth="2.5"
         android:strokeLineJoin="round"
         android:pathData="M 48,16 L 76,28 C 76,58 48,78 48,78 C 48,78 20,58 20,28 Z" />
     <!-- Center check / privacy lock -->
     <path
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="@color/loom_text"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"

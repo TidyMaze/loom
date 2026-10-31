@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed AlertDialog for Settings (replaces Theme_DeviceDefault_Dialog). Colours come from the Loom tokens. -->
+<resources>
+    <style name="ThemeOverlay.Loom.Dialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_bg</item>
+        <item name="colorBackgroundFloating">@color/loom_surface</item>
+        <item name="android:textColorPrimary">@color/loom_text</item>
+        <item name="android:textColorSecondary">@color/loom_text_2</item>
+        <item name="colorAccent">@color/loom_accent</item>
+        <item name="colorControlActivated">@color/loom_accent</item>
+        <item name="colorControlNormal">@color/loom_text_2</item>
+    </style>
+</resources>

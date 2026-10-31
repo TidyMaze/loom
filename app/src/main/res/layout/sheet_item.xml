@@ -1,68 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Item bottom sheet: bottom-gravity, slides up (MainActivity.showItemSheet). Body scrolls above 70% of screen height. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sheet_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/sheet_glass_bg"
-    android:paddingTop="20dp"
-    android:paddingBottom="16dp"
-    android:paddingStart="20dp"
-    android:paddingEnd="20dp">
-
-    <TextView
-        android:id="@+id/sheet_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:fontFamily="sans-serif-black"
-        android:paddingBottom="12dp" />
+    android:paddingBottom="@dimen/space_8">
 
     <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#1FFFFFFF"
-        android:layout_marginBottom="8dp" />
+        android:id="@+id/sheet_handle"
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/space_8"
+        android:background="@drawable/sheet_handle"
+        android:importantForAccessibility="no" />
 
+    <!-- Header: icon 40dp, title 20sp medium, caption with last-opened and launch count. -->
     <LinearLayout
-        android:id="@+id/layout_shortcuts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone" />
-
-    <TextView
-        android:id="@+id/sheet_hide"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:text="Hide app"
-        android:textSize="16sp"
-        android:textColor="#DDFFFFFF"
-        android:fontFamily="sans-serif-medium"
-        android:background="?attr/selectableItemBackground" />
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_16"
+        android:paddingBottom="@dimen/space_16">
 
-    <TextView
-        android:id="@+id/sheet_reset"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:gravity="center_vertical"
-        android:text="Reset stats"
-        android:textSize="16sp"
-        android:textColor="#FF5252"
-        android:fontFamily="sans-serif-medium"
-        android:background="?attr/selectableItemBackground" />
+        <ImageView
+            android:id="@+id/sheet_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:importantForAccessibility="no" />
 
-    <TextView
-        android:id="@+id/sheet_info"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/space_16">
+
+            <TextView
+                android:id="@+id/sheet_title"
+                style="@style/Loom.Text.Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true" />
+
+            <TextView
+                android:id="@+id/sheet_caption"
+                style="@style/Loom.Text.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/sheet_scroll"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:gravity="center_vertical"
-        android:text="App info"
-        android:textSize="16sp"
-        android:textColor="#DDFFFFFF"
-        android:fontFamily="sans-serif-medium"
-        android:background="?attr/selectableItemBackground" />
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_8">
+
+            <!-- Shortcuts rows are added in code (48dp, icon 24dp). -->
+            <LinearLayout
+                android:id="@+id/layout_shortcuts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/sheet_divider"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/stroke_hairline"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:layout_marginTop="@dimen/space_8"
+                android:layout_marginBottom="@dimen/space_8"
+                android:background="@color/loom_stroke"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/sheet_hide"
+                style="@style/Loom.Text.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_min"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:drawablePadding="@dimen/space_16"
+                android:drawableStart="@drawable/ic_sheet_hide"
+                android:drawableTint="@color/loom_text"
+                android:text="@string/sheet_hide_app"
+                android:background="?attr/selectableItemBackground"
+                android:foreground="@drawable/focus_ring_loom"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/sheet_info"
+                style="@style/Loom.Text.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_min"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:drawablePadding="@dimen/space_16"
+                android:drawableStart="@drawable/ic_sheet_info"
+                android:drawableTint="@color/loom_text"
+                android:text="@string/sheet_app_info"
+                android:background="?attr/selectableItemBackground"
+                android:foreground="@drawable/focus_ring_loom"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Destructive action last. -->
+            <TextView
+                android:id="@+id/sheet_reset"
+                style="@style/Loom.Text.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_min"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:drawablePadding="@dimen/space_16"
+                android:drawableStart="@drawable/ic_sheet_reset"
+                android:drawableTint="@color/loom_danger"
+                android:text="@string/sheet_reset_stats"
+                android:textColor="@color/loom_danger"
+                android:background="?attr/selectableItemBackground"
+                android:foreground="@drawable/focus_ring_loom"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>

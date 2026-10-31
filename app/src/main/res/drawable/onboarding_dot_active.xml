@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Active step: 20x8dp pill (size set in OnboardingController). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/loom_accent" />
+    <corners android:radius="4dp" />
+</shape>

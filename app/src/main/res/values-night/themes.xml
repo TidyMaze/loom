@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Loom" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/loom_surface</item>
+        <item name="colorPrimaryDark">@color/loom_bg</item>
+        <item name="colorAccent">@color/loom_accent</item>
+        <item name="colorControlActivated">@color/loom_accent</item>
+        <item name="colorControlNormal">@color/loom_text_2</item>
+        <item name="android:colorBackground">@color/loom_bg</item>
+        <item name="android:windowBackground">@color/loom_bg</item>
+        <item name="android:textColorPrimary">@color/loom_text</item>
+        <item name="android:textColorSecondary">@color/loom_text_2</item>
+        <item name="android:textColorHint">@color/loom_text_2</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

@@ -1,37 +1,43 @@
 package com.yrolland.loom
 
+import androidx.annotation.StringRes
+
 data class OnboardingStep(
-    val title: String,
-    val subtitle: String,
+    @StringRes val titleRes: Int,
+    @StringRes val bodyRes: Int,
     val iconRes: Int
 )
 
 object OnboardingContent {
     val steps = listOf(
         OnboardingStep(
-            title = "Welcome to Loom",
-            subtitle = "A minimal launcher that quietly learns your habits without clutter, folders, or widgets.",
+            titleRes = R.string.onboarding_welcome_title,
+            bodyRes = R.string.onboarding_welcome_body,
             iconRes = R.drawable.ic_onboarding_welcome
         ),
         OnboardingStep(
-            title = "Smart Ranking",
-            subtitle = "Your apps surface automatically based on the time of day, day of week, and routines.",
+            titleRes = R.string.onboarding_ranking_title,
+            bodyRes = R.string.onboarding_ranking_body,
             iconRes = R.drawable.ic_onboarding_ranking
         ),
         OnboardingStep(
-            title = "Context Awareness",
-            subtitle = "If you allow it, Loom also uses your location, calendar events and connected Bluetooth devices to predict what you need. Everything is processed on your phone.",
+            titleRes = R.string.onboarding_context_title,
+            bodyRes = R.string.onboarding_context_body,
             iconRes = R.drawable.ic_onboarding_permissions
         ),
         OnboardingStep(
-            title = "Swipe Down to Search",
-            subtitle = "Need an app right now? Swipe down anywhere on your home screen to filter instantly.",
+            titleRes = R.string.onboarding_search_title,
+            bodyRes = R.string.onboarding_search_body,
             iconRes = R.drawable.ic_onboarding_search
         ),
         OnboardingStep(
-            title = "Private by Default",
-            subtitle = "Loom works offline: no account, no ads, nothing sent anywhere. If anonymous usage stats are added one day to improve the ranking, they will stay off unless you turn them on.",
+            titleRes = R.string.onboarding_privacy_title,
+            bodyRes = R.string.onboarding_privacy_body,
             iconRes = R.drawable.ic_onboarding_privacy
         )
     )
 }
+
+/** Clamps a step index into [0, count - 1]; used by the onboarding pager for swipe, back and next. */
+internal fun clampOnboardingStep(index: Int, count: Int): Int =
+    index.coerceIn(0, (count - 1).coerceAtLeast(0))

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Loom</string>
+    <string name="settings_title">Settings</string>
+    <string name="notif_access_service_label">Loom Notification Access</string>
+
+    <!-- Home -->
+    <string name="search_hint">Search apps…</string>
+    <string name="search_web">Search the web</string>
+    <string name="search_gemini">Ask Gemini (Google)</string>
+    <string name="greeting_morning">Good morning.</string>
+    <string name="greeting_afternoon">Good afternoon.</string>
+    <string name="greeting_evening">Good evening.</string>
+    <string name="greeting_night">Good night.</string>
+    <string name="shortcut_fallback_label">Shortcut</string>
+
+    <!-- Tile stats -->
+    <string name="stats_never">never</string>
+    <string name="stats_now">now</string>
+    <string name="stats_minutes">%1$dm</string>
+    <string name="stats_hours">%1$dh</string>
+    <string name="stats_days">%1$dd</string>
+
+    <!-- App sheet -->
+    <string name="sheet_hide_app">Hide app</string>
+    <string name="sheet_reset_stats">Reset stats</string>
+    <string name="sheet_app_info">App info</string>
+
+    <!-- Settings -->
+    <string name="section_layout">Layout</string>
+    <string name="section_detox">Detox</string>
+    <string name="section_tracking">Tracking</string>
+    <string name="section_data">Data</string>
+    <string name="setting_grid_columns">Grid columns</string>
+    <string name="setting_icon_size">Icon size</string>
+    <string name="setting_web_search_button">Web search button</string>
+    <string name="setting_choose_hide">Choose apps to hide…</string>
+    <string name="setting_usage_access">Usage access</string>
+    <string name="setting_notif_access">Notification access</string>
+    <string name="setting_clear_usage">Clear usage data</string>
+    <string name="setting_reset_all">Reset everything</string>
+    <string name="grid_columns_status">%1$d columns</string>
+    <string name="icon_scale_status">%1$s (%2$ddp)</string>
+    <string name="icon_scale_name_compact">Compact</string>
+    <string name="icon_scale_name_medium">Medium</string>
+    <string name="icon_scale_name_spacious">Spacious</string>
+    <string name="web_search_enabled">Enabled — shows fallback button when no apps match</string>
+    <string name="web_search_disabled">Disabled — no \'Search the web\' button in empty search</string>
+    <string name="usage_granted">✓ Granted — captures system-wide app launches</string>
+    <string name="usage_not_granted">Not granted — only launcher-tap launches recorded. Tap to enable.</string>
+    <string name="notif_granted">✓ Granted — tracking notification counts (%1$d active). Active notifications boost app rank in ScoreEngine.</string>
+    <string name="notif_not_granted">Not granted — apps with unread notifications won\'t be boosted. Tap to enable.</string>
+    <string name="no_hidden_apps">No hidden apps.</string>
+    <plurals name="hidden_count_status">
+        <item quantity="one">%1$d app hidden</item>
+        <item quantity="other">%1$d apps hidden</item>
+    </plurals>
+    <string name="unhide">Unhide</string>
+    <string name="setting_privacy">Privacy</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="action_back">Back</string>
+
+    <string-array name="columns_options">
+        <item>3 columns</item>
+        <item>4 columns (Default)</item>
+        <item>5 columns</item>
+        <item>6 columns</item>
+    </string-array>
+    <string-array name="icon_scale_options">
+        <item>Compact (36dp)</item>
+        <item>Medium (44dp - Default)</item>
+        <item>Spacious (54dp)</item>
+    </string-array>
+
+    <!-- Dialogs -->
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_done">Done</string>
+    <string name="dialog_grid_columns_title">Select Grid Columns</string>
+    <string name="dialog_icon_size_title">Select Icon Size</string>
+    <string name="dialog_clear_title">Clear usage data?</string>
+    <string name="dialog_clear_message">Removes all launch history. Hidden apps stay.</string>
+    <string name="dialog_clear_action">Clear</string>
+    <string name="dialog_hide_title">Choose apps to hide</string>
+    <string name="dialog_reset_all_title">Reset everything?</string>
+    <string name="dialog_reset_all_message">Clears usage data and hidden apps.</string>
+    <string name="dialog_reset_action">Reset</string>
+    <string name="dialog_reset_app_title">Reset app stats?</string>
+    <string name="dialog_reset_app_message">This will clear usage history for %1$s.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_get_started">Start</string>
+    <string name="onboarding_progress">Step %1$d of %2$d</string>
+    <string name="onboarding_welcome_title">Welcome to Loom</string>
+    <string name="onboarding_welcome_body">A quiet launcher that learns your habits. No clutter, no folders.</string>
+    <string name="onboarding_ranking_title">Smart Ranking</string>
+    <string name="onboarding_ranking_body">Apps rise to the top by time of day and your routines.</string>
+    <string name="onboarding_context_title">Context Awareness</string>
+    <string name="onboarding_context_body">Optional signals: location, calendar, Bluetooth. Stays on your phone.</string>
+    <string name="onboarding_search_title">Swipe Down to Search</string>
+    <string name="onboarding_search_body">Need an app now? Swipe down on home to filter.</string>
+    <string name="onboarding_privacy_title">Private by Default</string>
+    <string name="onboarding_privacy_body">Works offline. No account, no ads, nothing sent anywhere.</string>
+    <string name="privacy_full_body">Loom works offline: no account, no ads, nothing sent anywhere. If anonymous usage stats are added one day to improve the ranking, they will stay off unless you turn them on.</string>
+</resources>

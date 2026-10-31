@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings for the bottom search dock, empty-state rows and the app bottom sheet. -->
+<resources>
+    <string name="search_clear">Clear search</string>
+    <string name="search_web_for">Search the web for “%1$s”</string>
+    <string name="search_results_none">No results</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%d result</item>
+        <item quantity="other">%d results</item>
+    </plurals>
+
+    <string name="sheet_opened_now">Opened just now</string>
+    <string name="sheet_opened_ago">Opened %1$s ago</string>
+    <string name="sheet_never_opened">Never opened</string>
+    <string name="sheet_caption">%1$s · %2$s</string>
+    <plurals name="sheet_launch_count">
+        <item quantity="one">%d launch</item>
+        <item quantity="other">%d launches</item>
+    </plurals>
+</resources>

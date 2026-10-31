@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#111111" />
-    <corners android:radius="12dp" />
-</shape>
+<!-- Search pill: surface + 1dp stroke, full pill radius (52dp high).
+     State selected (field or pill focused, set in MainActivity): 2dp loom_accent ring. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/loom_surface" />
+            <stroke
+                android:width="@dimen/focus_ring"
+                android:color="@color/loom_accent" />
+            <corners android:radius="@dimen/radius_field" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/loom_surface" />
+            <stroke
+                android:width="@dimen/stroke_hairline"
+                android:color="@color/loom_stroke" />
+            <corners android:radius="@dimen/radius_field" />
+        </shape>
+    </item>
+</selector>

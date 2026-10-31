@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Loom "quiet ink" tokens, dark variant (OLED black background). -->
+<resources>
+    <color name="loom_bg">#000000</color>
+    <color name="loom_surface">#111114</color>
+    <color name="loom_surface_hi">#1C1C21</color>
+    <color name="loom_stroke">#26FFFFFF</color>
+    <color name="loom_text">#F2F2F4</color>
+    <color name="loom_text_2">#A3A3AB</color>
+    <color name="loom_text_3">#6E6E76</color>
+    <color name="loom_accent">#E3C57A</color>
+    <color name="loom_accent_soft">#26E3C57A</color>
+    <color name="loom_on_accent">#121214</color>
+    <color name="loom_danger">#FF8A80</color>
+    <color name="loom_scrim">#99000000</color>
+</resources>

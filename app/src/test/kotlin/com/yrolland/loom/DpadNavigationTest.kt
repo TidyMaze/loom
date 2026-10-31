@@ -72,4 +72,106 @@ class DpadNavigationTest {
         assertEquals(-1, DpadNavigation.calculateNextPosition(1, DpadDirection.UP, cols, total)) // reached top
         assertEquals(0, DpadNavigation.calculateNextPosition(3, DpadDirection.UP, cols, total))
     }
+
+    // ---- Non-uniform spans (hero = 4 cols, row = 2 cols, tile = 1 col) ----
+
+    // Layout used below, cols = 4:
+    //   row 0: [0 hero span4]
+    //   row 1: [1 row span2][2 row span2]
+    //   row 2: [3][4][5][6]           (tiles)
+    private val mixedSpans = intArrayOf(4, 2, 2, 1, 1, 1, 1)
+
+    @Test
+    fun `spans - UP from a row item lands on the hero above, not on search`() {
+        assertEquals(0, DpadNavigation.calculateNextPosition(1, DpadDirection.UP, 4, mixedSpans))
+        assertEquals(0, DpadNavigation.calculateNextPosition(2, DpadDirection.UP, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - UP from the top row returns -1 so focus goes to search`() {
+        assertEquals(-1, DpadNavigation.calculateNextPosition(0, DpadDirection.UP, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - UP from a tile picks the item whose centre is closest`() {
+        // Tile 6 (centre 3.5) is nearer to row-item 2 (centre 3.0) than to row-item 1 (centre 1.0).
+        assertEquals(2, DpadNavigation.calculateNextPosition(6, DpadDirection.UP, 4, mixedSpans))
+        // Tile 3 (centre 0.5) is nearer to row-item 1 (centre 1.0).
+        assertEquals(1, DpadNavigation.calculateNextPosition(3, DpadDirection.UP, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - DOWN from the hero goes to the first row item on a tie`() {
+        // Hero centre 2.0 is equidistant from items 1 (centre 1.0) and 2 (centre 3.0): first wins.
+        assertEquals(1, DpadNavigation.calculateNextPosition(0, DpadDirection.DOWN, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - DOWN from a row item goes to the tile under it`() {
+        assertEquals(5, DpadNavigation.calculateNextPosition(2, DpadDirection.DOWN, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - DOWN on the last row stays put`() {
+        assertEquals(6, DpadNavigation.calculateNextPosition(6, DpadDirection.DOWN, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - LEFT and RIGHT stay inside the row`() {
+        // Row 1 holds items 1 and 2; RIGHT from 2 must not jump to row 2.
+        assertEquals(2, DpadNavigation.calculateNextPosition(1, DpadDirection.RIGHT, 4, mixedSpans))
+        assertEquals(2, DpadNavigation.calculateNextPosition(2, DpadDirection.RIGHT, 4, mixedSpans))
+        assertEquals(1, DpadNavigation.calculateNextPosition(2, DpadDirection.LEFT, 4, mixedSpans))
+        assertEquals(1, DpadNavigation.calculateNextPosition(1, DpadDirection.LEFT, 4, mixedSpans))
+        // The hero is alone in its row.
+        assertEquals(0, DpadNavigation.calculateNextPosition(0, DpadDirection.RIGHT, 4, mixedSpans))
+        assertEquals(0, DpadNavigation.calculateNextPosition(0, DpadDirection.LEFT, 4, mixedSpans))
+        // Row start stays put.
+        assertEquals(3, DpadNavigation.calculateNextPosition(3, DpadDirection.LEFT, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - a hero that does not fit wraps and leaves a gap that navigation skips`() {
+        // cols 4: [row span2][hero span4] -> hero wraps to row 1, row 0 has only item 0.
+        val spans = intArrayOf(2, 4, 1)
+        assertEquals(1, DpadNavigation.calculateNextPosition(0, DpadDirection.DOWN, 4, spans))
+        assertEquals(0, DpadNavigation.calculateNextPosition(1, DpadDirection.UP, 4, spans))
+        assertEquals(2, DpadNavigation.calculateNextPosition(1, DpadDirection.DOWN, 4, spans))
+        // Item 2 sits in row 2; the row above holds only the hero (item 1).
+        assertEquals(1, DpadNavigation.calculateNextPosition(2, DpadDirection.UP, 4, spans))
+    }
+
+    @Test
+    fun `spans - DOWN into a shorter row goes to the nearest item instead of staying put`() {
+        // cols 4, 6 tiles: row 0 = [0..3], row 1 = [4, 5]. From 3 (centre 3.5) the nearest is 5 (centre 1.5).
+        val spans = IntArray(6) { 1 }
+        assertEquals(5, DpadNavigation.calculateNextPosition(3, DpadDirection.DOWN, 4, spans))
+    }
+
+    @Test
+    fun `spans - a span wider than the grid is clamped to the column count`() {
+        val spans = intArrayOf(6, 1)
+        assertEquals(0, DpadNavigation.calculateNextPosition(1, DpadDirection.UP, 4, spans))
+        assertEquals(-1, DpadNavigation.calculateNextPosition(0, DpadDirection.UP, 4, spans))
+    }
+
+    @Test
+    fun `spans - empty list and out-of-range current keep the existing contract`() {
+        assertEquals(-1, DpadNavigation.calculateNextPosition(0, DpadDirection.DOWN, 4, IntArray(0)))
+        assertEquals(0, DpadNavigation.calculateNextPosition(42, DpadDirection.DOWN, 4, mixedSpans))
+    }
+
+    @Test
+    fun `spans - all spans equal to one give the same answers as the uniform grid`() {
+        val ones = IntArray(10) { 1 }
+        for (current in 0 until 10) {
+            for (direction in DpadDirection.values()) {
+                assertEquals(
+                    "current=$current direction=$direction",
+                    DpadNavigation.calculateNextPosition(current, direction, 3, 10),
+                    DpadNavigation.calculateNextPosition(current, direction, 3, ones)
+                )
+            }
+        }
+    }
 }

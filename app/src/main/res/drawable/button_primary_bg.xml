@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Onboarding primary button: accent fill, text in loom_on_accent. Focus ring in loom_on_accent: it sits on the accent fill,
+     so loom_text would be 1.5:1 in dark mode; loom_on_accent is >= 5:1 on loom_accent in both themes. --><ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/loom_on_accent">
+    <item>
+        <selector>
+            <item android:state_focused="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/loom_accent" />
+                    <stroke android:width="@dimen/focus_ring" android:color="@color/loom_on_accent" />
+                    <corners android:radius="@dimen/radius_button" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/loom_accent" />
+                    <corners android:radius="@dimen/radius_button" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</ripple>

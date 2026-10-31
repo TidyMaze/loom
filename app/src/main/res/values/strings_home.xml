@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home tile accessibility strings (content descriptions). Visible tile stats stay in strings.xml. -->
+<resources>
+    <!-- Accessibility action on every home item; opens the same item sheet as a long press. -->
+    <string name="tile_action_more">More options</string>
+    <string name="tile_desc_never">%1$s, never opened</string>
+    <string name="tile_desc_used">%1$s, last opened %2$s, %3$s, %4$s</string>
+    <plurals name="tile_launches">
+        <item quantity="one">%d launch</item>
+        <item quantity="other">%d launches</item>
+    </plurals>
+    <string name="tile_time_unknown">time unknown</string>
+    <string name="tile_time_now">just now</string>
+    <string name="tile_time_minutes">%d min ago</string>
+    <string name="tile_time_hours">%d h ago</string>
+    <string name="tile_time_days">%d days ago</string>
+    <string name="tile_freq_top">most used</string>
+    <string name="tile_freq_often">often used</string>
+    <string name="tile_freq_rare">rarely used</string>
+    <string name="tile_more_than_usual">more than usual today</string>
+    <string name="tile_less_than_usual">less than usual today</string>
+</resources>
