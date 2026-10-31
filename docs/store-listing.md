@@ -6,7 +6,7 @@ A minimal Android launcher that quietly learns how you use your phone.
 ## Full description
 Loom is a minimal Android launcher that quietly learns how you use your phone.
 
-The home screen is a dark grid of app icons: no labels, no badges, no folders, no widgets. Apps you use are ordered by how likely you are to open them now, based on time of day, day of the week and the app you just closed. Apps you never open stay off the home screen.
+The home screen is a calm grid of app icons, in dark or light: no badges, no folders, no widgets. The apps you are most likely to open are bigger, with a thin bar showing how likely. Apps you use are ordered by how likely you are to open them now, based on time of day, day of the week and the app you just closed. Apps you never open stay at the bottom, out of the way.
 
 **How it works**
 Every time you open an app, Loom remembers. The ranking is plain arithmetic computed on the phone (no LLM, no neural network, no server), and it runs only when the home screen opens.

@@ -1,6 +1,6 @@
 Loom est un lanceur Android minimaliste qui apprend discretement comment vous utilisez votre telephone.
 
-L'ecran d'accueil est une grille d'icones sur fond noir : pas de noms, pas de pastilles de notification, pas de dossiers, pas de widgets. Les applis que vous utilisez sont classees selon la probabilite que vous les ouvriez maintenant, d'apres l'heure, le jour de la semaine et l'appli que vous venez de fermer. Les applis jamais ouvertes restent hors de l'ecran d'accueil, a un glissement de la recherche.
+L'ecran d'accueil est une grille d'icones calme, en sombre ou en clair : pas de pastilles de notification, pas de dossiers, pas de widgets. Les applis les plus probables sont plus grandes, avec une fine barre qui indique leur probabilite. Les applis que vous utilisez sont classees selon la probabilite que vous les ouvriez maintenant, d'apres l'heure, le jour de la semaine et l'appli que vous venez de fermer. Les applis jamais ouvertes restent en bas, discretes, a un glissement de la recherche.
 
 Fonctionnalites :
 • Classement calcule sur le telephone par un petit modele.
